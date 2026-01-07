@@ -911,43 +911,38 @@
     width: 100%;
     overflow-x: hidden;
     margin: 0;
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
   }
 
   .calendar-wrapper .rdp {
-    --rdp-cell-size: 36px;
+    --rdp-cell-size: 28px;
     padding: 0.25rem;
-    width: fit-content;
+    width: 100%;
     max-width: 100%;
     box-sizing: border-box;
-    margin: 0 auto;
-    transform: scale(0.68);
-    transform-origin: top center;
+    margin: 0;
   }
 
   .calendar-wrapper .rdp-caption {
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     margin-bottom: 0.25rem;
     padding: 0;
   }
 
   .calendar-wrapper .rdp-head_cell {
-    font-size: 0.7rem;
+    font-size: 0.6rem;
     padding: 0;
   }
 
   .calendar-wrapper .rdp-nav_button,
   .calendar-wrapper .rdp-nav button {
-    width: 28px;
-    height: 28px;
-    font-size: 0.85rem;
+    width: 24px;
+    height: 24px;
+    font-size: 0.75rem;
   }
 
   .calendar-wrapper .rdp-button,
   .calendar-wrapper .rdp-day {
-    font-size: 0.9rem;
+    font-size: 0.8rem;
   }
 
   .calendar-wrapper .rdp-months {
@@ -959,6 +954,7 @@
   }
 
   .calendar-wrapper .rdp-table {
+    width: 100%;
     max-width: 100%;
     margin: 0;
     table-layout: fixed;
@@ -967,27 +963,29 @@
   }
 
   .calendar-wrapper .rdp-tbody {
-    max-width: 100%;
+    width: 100%;
   }
 
   .calendar-wrapper .rdp-row {
-    max-width: 100%;
+    width: 100%;
   }
 
   .calendar-wrapper .rdp-cell {
     padding: 0;
+    width: calc(100% / 7);
     max-width: var(--rdp-cell-size);
-    width: var(--rdp-cell-size);
   }
 
   .calendar-wrapper .rdp-head_cell {
+    width: calc(100% / 7);
     max-width: var(--rdp-cell-size);
-    width: var(--rdp-cell-size);
+    padding: 0;
   }
 
   .calendar-wrapper .rdp-button,
   .calendar-wrapper .rdp-day {
     width: 100%;
+    max-width: var(--rdp-cell-size);
     height: var(--rdp-cell-size);
   }
 
