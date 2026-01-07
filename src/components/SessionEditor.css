@@ -298,3 +298,61 @@
   color: var(--muted-foreground);
   opacity: 0.6;
 }
+
+/* Mobile Responsiveness for Modals */
+@media (max-width: 640px) {
+  .modal-overlay {
+    padding: 0.5rem;
+  }
+
+  .modal-content {
+    max-width: 100%;
+    margin: 0;
+  }
+
+  .modal-header {
+    padding: 1.25rem;
+  }
+
+  .modal-header h2 {
+    font-size: 1.25rem;
+  }
+
+  .modal-body {
+    padding: 1.25rem;
+  }
+
+  .modal-footer {
+    padding: 1.25rem;
+    flex-direction: column-reverse;
+    gap: 0.5rem;
+  }
+
+  .cancel-button,
+  .save-button,
+  .delete-button {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .form-group label {
+    font-size: 0.9rem;
+  }
+
+  .time-input,
+  .notes-input,
+  .setting-select {
+    font-size: 16px; /* Prevents zoom on iOS */
+  }
+
+  .error-message,
+  .info-message,
+  .warning-message {
+    font-size: 0.85rem;
+    padding: 0.625rem 0.875rem;
+  }
+
+  .delete-session-info {
+    font-size: 0.85rem;
+  }
+}

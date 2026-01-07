@@ -97,9 +97,74 @@
   gap: 2rem;
 }
 
+/* Mobile Responsiveness */
 @media (max-width: 968px) {
   .main-content {
     grid-template-columns: 1fr;
+    padding: 1.5rem 1rem;
+    gap: 1.5rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .app-container {
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  .app-header {
+    padding: 0.75rem 0;
+  }
+
+  .header-content {
+    padding: 0 1rem;
+    gap: 0.75rem;
+  }
+
+  .header-title {
+    font-size: 1.25rem;
+  }
+
+  .header-right {
+    gap: 0.5rem;
+  }
+
+  .user-info {
+    display: none; /* Hide email on mobile to save space */
+  }
+
+  .sign-out-button {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.85rem;
+  }
+
+  .main-content {
+    padding: 1rem 0.75rem;
+    gap: 1rem;
+  }
+
+  .card {
+    padding: 1rem;
+    border-radius: calc(var(--radius) - 2px);
+  }
+
+  .card-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+
+  .card-title {
+    font-size: 1.1rem;
+  }
+
+  .card-description {
+    font-size: 0.85rem;
+  }
+
+  .add-session-button {
+    width: 100%;
+    justify-content: center;
   }
 }
 
@@ -687,4 +752,103 @@
   background: rgba(59, 130, 246, 0.1);
   color: #3b82f6;
   border: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+/* Additional Mobile Optimizations */
+@media (max-width: 640px) {
+  /* Clock Button - Make smaller on mobile */
+  .clock-button {
+    width: 200px;
+    height: 200px;
+    font-size: 1.4rem;
+  }
+
+  /* Timer Section */
+  .timer-title {
+    font-size: 0.9rem;
+  }
+
+  .elapsed-time {
+    font-size: 2.5rem !important;
+  }
+
+  .time-category-label {
+    font-size: 0.85rem;
+  }
+
+  .time-category-value {
+    font-size: 1.1rem;
+  }
+
+  /* Daily Summary */
+  .daily-summary {
+    flex-direction: column;
+    padding: 1rem;
+    gap: 0.75rem;
+  }
+
+  .summary-stats {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  /* Session Cards */
+  .session-card {
+    padding: 1rem;
+  }
+
+  .session-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .session-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .session-times {
+    font-size: 0.85rem;
+  }
+
+  .session-breakdown {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .breakdown-badge {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .session-notes {
+    font-size: 0.85rem;
+    padding: 0.625rem;
+  }
+
+  /* Period Display */
+  .period-display {
+    flex-direction: column;
+    padding: 0.75rem 1rem;
+    gap: 0.5rem;
+  }
+
+  .period-value {
+    font-size: 0.95rem;
+  }
+
+  /* Edit/Delete Buttons */
+  .edit-session-button,
+  .delete-session-button,
+  .sync-session-button {
+    padding: 0.5rem;
+  }
+
+  .edit-session-button svg,
+  .delete-session-button svg,
+  .sync-session-button svg {
+    width: 16px;
+    height: 16px;
+  }
 }
