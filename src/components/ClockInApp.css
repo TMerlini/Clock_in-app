@@ -182,7 +182,16 @@
     padding: 1rem;
     border-radius: calc(var(--radius) - 2px);
     width: 100%;
+    max-width: 100%;
     box-sizing: border-box;
+    overflow: hidden;
+  }
+
+  .card-content {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    overflow-x: hidden;
   }
 
   .card-header {
@@ -887,5 +896,69 @@
   .sync-session-button svg {
     width: 16px;
     height: 16px;
+  }
+
+  /* Calendar - Critical mobile fixes */
+  .calendar-wrapper {
+    padding: 0.5rem;
+    width: 100%;
+    overflow-x: auto;
+  }
+
+  .calendar-wrapper .rdp {
+    --rdp-cell-size: 40px;
+    padding: 0.75rem;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .calendar-wrapper .rdp-caption {
+    font-size: 1rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .calendar-wrapper .rdp-head_cell {
+    font-size: 0.75rem;
+  }
+
+  .calendar-wrapper .rdp-nav_button,
+  .calendar-wrapper .rdp-nav button {
+    width: 28px;
+    height: 28px;
+  }
+
+  .calendar-wrapper .rdp-months {
+    width: 100%;
+  }
+
+  .calendar-wrapper .rdp-month {
+    width: 100%;
+  }
+
+  .calendar-wrapper .rdp-table {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  /* Ensure all content stays within bounds */
+  .sessions-container,
+  .sessions-list {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    overflow-x: hidden;
+  }
+
+  .daily-summary {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    margin: 1rem 0;
+  }
+
+  .period-display {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
   }
 }
