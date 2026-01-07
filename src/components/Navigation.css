@@ -1,7 +1,7 @@
 .hamburger-button {
   position: fixed;
-  top: 1rem;
-  left: 1rem;
+  top: 0.75rem;
+  left: 0.75rem;
   z-index: 1001;
   width: 48px;
   height: 48px;
@@ -162,6 +162,18 @@
 }
 
 @media (max-width: 480px) {
+  .hamburger-button {
+    top: 0.5rem;
+    left: 0.5rem;
+    width: 44px;
+    height: 44px;
+  }
+
+  .hamburger-button svg {
+    width: 20px;
+    height: 20px;
+  }
+
   .nav-menu {
     width: 90%;
     max-width: 280px;
