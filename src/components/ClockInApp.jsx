@@ -1,0 +1,517 @@
+import { useState, useEffect } from 'react';
+import { signOut } from 'firebase/auth';
+import { collection, addDoc, query, where, getDocs, orderBy } from 'firebase/firestore';
+import { auth, db } from '../lib/firebase';
+import { useGoogleCalendar } from '../hooks/useGoogleCalendar';
+import { Navigation } from './Navigation';
+import { Analytics } from './Analytics';
+import { Settings } from './Settings';
+import { About } from './About';
+import { Calendar } from './ui/calendar';
+import { SessionEditor } from './SessionEditor';
+import { SessionCreator } from './SessionCreator';
+import { DeleteConfirmation } from './DeleteConfirmation';
+import { GoogleCalendarSync } from './GoogleCalendarSync';
+import { Clock, LogOut, User, Calendar as CalendarIcon, Edit2, AlertTriangle, CheckCircle, Info, Plus, Trash2, Share2 } from 'lucide-react';
+import { format, startOfDay, endOfDay } from 'date-fns';
+import 'react-day-picker/style.css';
+import './ClockInApp.css';
+
+export function ClockInApp({ user }) {
+  const [currentPage, setCurrentPage] = useState('home');
+  const [isClockedIn, setIsClockedIn] = useState(false);
+  const [clockInTime, setClockInTime] = useState(null);
+  const [currentTime, setCurrentTime] = useState(Date.now());
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [sessionsForDate, setSessionsForDate] = useState([]);
+  const [datesWithSessions, setDatesWithSessions] = useState(new Set());
+  const [editingSession, setEditingSession] = useState(null);
+  const [creatingSession, setCreatingSession] = useState(false);
+  const [deletingSession, setDeletingSession] = useState(null);
+  const [syncingSession, setSyncingSession] = useState(null);
+
+  // Google Calendar integration
+  const googleCalendar = useGoogleCalendar();
+
+  useEffect(() => {
+    let interval;
+    if (isClockedIn) {
+      interval = setInterval(() => {
+        setCurrentTime(Date.now());
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [isClockedIn]);
+
+  useEffect(() => {
+    loadSessionDates();
+  }, [user]);
+
+  useEffect(() => {
+    loadSessionsForDate(selectedDate);
+  }, [selectedDate, user]);
+
+  const loadSessionDates = async () => {
+    try {
+      const sessionsRef = collection(db, 'sessions');
+      const q = query(
+        sessionsRef,
+        where('userId', '==', user.uid)
+      );
+      const querySnapshot = await getDocs(q);
+      const dates = new Set();
+      querySnapshot.forEach((doc) => {
+        const session = doc.data();
+        const sessionDate = new Date(session.clockIn);
+        dates.add(format(sessionDate, 'yyyy-MM-dd'));
+      });
+      console.log('Dates with sessions:', Array.from(dates));
+      setDatesWithSessions(dates);
+    } catch (error) {
+      console.error('Error loading session dates:', error);
+      console.error('Error details:', error.message);
+    }
+  };
+
+  const loadSessionsForDate = async (date) => {
+    try {
+      const startDate = startOfDay(date);
+      const endDate = endOfDay(date);
+
+      console.log('Loading sessions for date range:', {
+        start: new Date(startDate.getTime()),
+        end: new Date(endDate.getTime())
+      });
+
+      const sessionsRef = collection(db, 'sessions');
+      const q = query(
+        sessionsRef,
+        where('userId', '==', user.uid)
+      );
+
+      const querySnapshot = await getDocs(q);
+      const sessions = [];
+      querySnapshot.forEach((doc) => {
+        const data = doc.data();
+        // Filter by date on the client side
+        if (data.clockIn >= startDate.getTime() && data.clockIn <= endDate.getTime()) {
+          sessions.push({ id: doc.id, ...data });
+        }
+      });
+
+      // Sort by clockIn descending
+      sessions.sort((a, b) => b.clockIn - a.clockIn);
+
+      console.log('Loaded sessions for this date:', sessions);
+      setSessionsForDate(sessions);
+    } catch (error) {
+      console.error('Error loading sessions:', error);
+      console.error('Error details:', error.message);
+      setSessionsForDate([]);
+    }
+  };
+
+  const handleClockInOut = async () => {
+    if (!isClockedIn) {
+      const now = Date.now();
+      console.log('Clocking in at:', new Date(now));
+      setClockInTime(now);
+      setIsClockedIn(true);
+    } else {
+      const clockOutTime = Date.now();
+      const totalHours = (clockOutTime - clockInTime) / (1000 * 60 * 60);
+
+      console.log('Clocking out:', {
+        clockIn: new Date(clockInTime),
+        clockOut: new Date(clockOutTime),
+        totalHours
+      });
+
+      const newSession = {
+        userId: user.uid,
+        userEmail: user.email,
+        clockIn: clockInTime,
+        clockOut: clockOutTime,
+        totalHours: totalHours,
+        regularHours: Math.min(totalHours, 8),
+        unpaidExtraHours: totalHours > 8 ? Math.min(totalHours - 8, 2) : 0,
+        paidExtraHours: totalHours > 10 ? totalHours - 10 : 0,
+      };
+
+      try {
+        console.log('Saving session to Firebase:', newSession);
+        const docRef = await addDoc(collection(db, 'sessions'), newSession);
+        console.log('Session saved successfully with ID:', docRef.id);
+
+        // Automatically create calendar event if authorized
+        if (googleCalendar.isAuthorized) {
+          try {
+            await googleCalendar.createCalendarEvent({
+              clockIn: clockInTime,
+              clockOut: clockOutTime,
+              regularHours: newSession.regularHours,
+              unpaidHours: newSession.unpaidExtraHours,
+              paidHours: newSession.paidExtraHours,
+              notes: ''
+            });
+            console.log('Calendar event created automatically');
+          } catch (calendarError) {
+            console.error('Failed to create calendar event:', calendarError);
+            // Don't block the flow if calendar sync fails
+          }
+        }
+
+        setIsClockedIn(false);
+        setClockInTime(null);
+
+        // Reload sessions to show the new one immediately
+        console.log('Reloading sessions...');
+        await Promise.all([
+          loadSessionDates(),
+          loadSessionsForDate(selectedDate)
+        ]);
+        console.log('Sessions reloaded!');
+      } catch (error) {
+        console.error('Error saving session:', error);
+        alert('Failed to save session: ' + error.message);
+      }
+    }
+  };
+
+  const handleSignOut = async () => {
+    try {
+      await signOut(auth);
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
+  };
+
+  const calculateTimeBreakdown = (totalHours) => {
+    const regularHours = Math.min(totalHours, 8);
+    const unpaidExtraHours = totalHours > 8 ? Math.min(totalHours - 8, 2) : 0;
+    const paidExtraHours = totalHours > 10 ? totalHours - 10 : 0;
+    return { regularHours, unpaidExtraHours, paidExtraHours };
+  };
+
+  const formatTime = (milliseconds) => {
+    const totalSeconds = Math.floor(milliseconds / 1000);
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+    return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+  };
+
+  const formatHours = (hours) => {
+    return hours.toFixed(2);
+  };
+
+  const currentElapsedTime = isClockedIn ? currentTime - clockInTime : 0;
+  const currentTotalHours = currentElapsedTime / (1000 * 60 * 60);
+  const currentBreakdown = isClockedIn ? calculateTimeBreakdown(currentTotalHours) : null;
+
+  const modifiers = {
+    hasSession: (date) => {
+      const dateStr = format(date, 'yyyy-MM-dd');
+      return datesWithSessions.has(dateStr);
+    },
+  };
+
+  const modifiersClassNames = {
+    hasSession: 'has-session',
+  };
+
+  const renderContent = () => {
+    switch (currentPage) {
+      case 'analytics':
+        return <Analytics user={user} />;
+      case 'settings':
+        return <Settings googleCalendar={googleCalendar} />;
+      case 'about':
+        return <About />;
+      case 'calendar':
+      case 'home':
+      default:
+        return (
+          <>
+            <div className="main-content">
+              <div>
+                <div className="card">
+                  <div className="card-header">
+                    <h2 className="card-title">Time Tracker</h2>
+                    <p className="card-description">Click the button below to clock in or out</p>
+                  </div>
+                  <div className="card-content">
+                    <button
+                      onClick={handleClockInOut}
+                      className={`clock-button ${isClockedIn ? 'clocked-in' : 'clocked-out'}`}
+                    >
+                      {isClockedIn ? 'Clock Out' : 'Clock In'}
+                    </button>
+
+                    {isClockedIn && (
+                      <div className="timer-section">
+                        <p className="timer-title">Elapsed Time</p>
+                        <div className="elapsed-time">
+                          {formatTime(currentElapsedTime)}
+                        </div>
+
+                        <div className="time-breakdown">
+                          <div className="time-category regular">
+                            <span className="time-category-label">Regular Hours (0-8h)</span>
+                            <span className="time-category-value">{formatHours(currentBreakdown.regularHours)}h</span>
+                          </div>
+
+                          {currentTotalHours > 8 && (
+                            <div className="time-category unpaid">
+                              <span className="time-category-label">Unpaid Extra (8-10h)</span>
+                              <span className="time-category-value">{formatHours(currentBreakdown.unpaidExtraHours)}h</span>
+                            </div>
+                          )}
+
+                          {currentTotalHours > 10 && (
+                            <div className="time-category paid">
+                              <span className="time-category-label">Paid Extra (10h+)</span>
+                              <span className="time-category-value">{formatHours(currentBreakdown.paidExtraHours)}h</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <div className="card">
+                  <div className="card-header">
+                    <h2 className="card-title">
+                      <CalendarIcon style={{ display: 'inline', width: '20px', height: '20px', marginRight: '8px' }} />
+                      Select Date
+                    </h2>
+                    <p className="card-description">View your sessions for any date</p>
+                  </div>
+                  <div className="calendar-wrapper">
+                    <Calendar
+                      mode="single"
+                      selected={selectedDate}
+                      onSelect={setSelectedDate}
+                      modifiers={modifiers}
+                      modifiersClassNames={modifiersClassNames}
+                    />
+                  </div>
+                </div>
+
+                <div className="card" style={{ marginTop: '2rem' }}>
+                  <div className="card-header">
+                    <div>
+                      <h2 className="card-title">
+                        Sessions for {format(selectedDate, 'MMM dd, yyyy')}
+                      </h2>
+                      <p className="card-description">
+                        {sessionsForDate.length} session{sessionsForDate.length !== 1 ? 's' : ''} found
+                      </p>
+                    </div>
+                    {sessionsForDate.length === 0 ? (
+                      <button
+                        className="add-session-button"
+                        onClick={() => setCreatingSession(true)}
+                        title="Add manual session"
+                      >
+                        <Plus />
+                        Add Session
+                      </button>
+                    ) : (
+                      <button
+                        className="add-session-button"
+                        onClick={() => setEditingSession(sessionsForDate[0])}
+                        title="Edit first session"
+                      >
+                        <Edit2 />
+                        Edit Session
+                      </button>
+                    )}
+                  </div>
+
+                  {sessionsForDate.length > 0 && (() => {
+                    const totalDayHours = sessionsForDate.reduce((sum, s) => sum + s.totalHours, 0);
+                    const totalRegular = sessionsForDate.reduce((sum, s) => sum + s.regularHours, 0);
+                    const totalUnpaid = sessionsForDate.reduce((sum, s) => sum + s.unpaidExtraHours, 0);
+                    const totalPaid = sessionsForDate.reduce((sum, s) => sum + s.paidExtraHours, 0);
+
+                    let notificationType = 'normal';
+                    let notificationIcon = <CheckCircle />;
+                    let notificationText = 'Regular work day';
+
+                    if (totalDayHours > 10) {
+                      notificationType = 'overtime';
+                      notificationIcon = <AlertTriangle />;
+                      notificationText = 'Overtime day - Extra paid hours accumulated';
+                    } else if (totalDayHours > 8) {
+                      notificationType = 'unpaid';
+                      notificationIcon = <Info />;
+                      notificationText = 'Extended hours - Unpaid overtime period';
+                    } else if (totalDayHours < 8) {
+                      notificationType = 'short';
+                      notificationIcon = <Info />;
+                      notificationText = 'Under 8 hours worked';
+                    }
+
+                    return (
+                      <div className={`daily-summary ${notificationType}`}>
+                        <div className="summary-icon">{notificationIcon}</div>
+                        <div className="summary-content">
+                          <div className="summary-text">{notificationText}</div>
+                          <div className="summary-stats">
+                            <span className="stat-item">Total: <strong>{formatHours(totalDayHours)}h</strong></span>
+                            {totalRegular > 0 && <span className="stat-item regular">Regular: {formatHours(totalRegular)}h</span>}
+                            {totalUnpaid > 0 && <span className="stat-item unpaid">Unpaid: {formatHours(totalUnpaid)}h</span>}
+                            {totalPaid > 0 && <span className="stat-item paid">Paid OT: {formatHours(totalPaid)}h</span>}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })()}
+
+                  <div className="sessions-container">
+                    {sessionsForDate.length === 0 ? (
+                      <p className="empty-sessions">
+                        No sessions recorded for this date
+                      </p>
+                    ) : (
+                      <div className="sessions-list">
+                        {sessionsForDate.map((session, index) => (
+                          <div key={session.id} className="session-card">
+                            <div className="session-header">
+                              <span className="session-number">Session {sessionsForDate.length - index}</span>
+                              <div className="session-actions">
+                                <span className="session-total">{formatHours(session.totalHours)}h</span>
+                                <button
+                                  className="sync-session-button"
+                                  onClick={() => setSyncingSession(session)}
+                                  title="Sync to Google Calendar"
+                                >
+                                  <Share2 />
+                                </button>
+                                <button
+                                  className="edit-session-button"
+                                  onClick={() => setEditingSession(session)}
+                                  title="Edit session"
+                                >
+                                  <Edit2 />
+                                </button>
+                                <button
+                                  className="delete-session-button"
+                                  onClick={() => setDeletingSession(session)}
+                                  title="Delete session"
+                                >
+                                  <Trash2 />
+                                </button>
+                              </div>
+                            </div>
+                            <div className="session-times">
+                              <div>In: {format(new Date(session.clockIn), 'HH:mm:ss')}</div>
+                              <div>Out: {format(new Date(session.clockOut), 'HH:mm:ss')}</div>
+                            </div>
+                            <div className="session-breakdown">
+                              <span className="breakdown-badge regular">
+                                Regular: {formatHours(session.regularHours)}h
+                              </span>
+                              {session.unpaidExtraHours > 0 && (
+                                <span className="breakdown-badge unpaid">
+                                  Unpaid: {formatHours(session.unpaidExtraHours)}h
+                                </span>
+                              )}
+                              {session.paidExtraHours > 0 && (
+                                <span className="breakdown-badge paid">
+                                  Paid: {formatHours(session.paidExtraHours)}h
+                                </span>
+                              )}
+                            </div>
+                            {session.notes && (
+                              <div className="session-notes">
+                                {session.notes}
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </>
+        );
+    }
+  };
+
+  return (
+    <div className="app-container">
+      <Navigation currentPage={currentPage} onPageChange={setCurrentPage} />
+
+      <div className="app-header">
+        <div className="header-content">
+          <div className="header-left">
+            <div className="header-icon">
+              <Clock />
+            </div>
+            <h1 className="header-title">Clock In App</h1>
+          </div>
+          <div className="header-right">
+            <div className="user-info">
+              <User />
+              <span>{user.email}</span>
+            </div>
+            <button onClick={handleSignOut} className="sign-out-button">
+              <LogOut />
+              Sign Out
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {renderContent()}
+
+      {editingSession && (
+        <SessionEditor
+          session={editingSession}
+          onClose={() => setEditingSession(null)}
+          onUpdate={async () => {
+            await loadSessionsForDate(selectedDate);
+            await loadSessionDates();
+          }}
+        />
+      )}
+
+      {creatingSession && (
+        <SessionCreator
+          user={user}
+          selectedDate={selectedDate}
+          onClose={() => setCreatingSession(false)}
+          onUpdate={async () => {
+            await loadSessionsForDate(selectedDate);
+            await loadSessionDates();
+          }}
+        />
+      )}
+
+      {deletingSession && (
+        <DeleteConfirmation
+          session={deletingSession}
+          onClose={() => setDeletingSession(null)}
+          onUpdate={async () => {
+            await loadSessionsForDate(selectedDate);
+            await loadSessionDates();
+          }}
+        />
+      )}
+
+      {syncingSession && (
+        <GoogleCalendarSync
+          session={syncingSession}
+          onClose={() => setSyncingSession(null)}
+        />
+      )}
+    </div>
+  );
+}
