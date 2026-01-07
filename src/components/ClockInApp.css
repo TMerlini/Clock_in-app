@@ -173,8 +173,8 @@
   .main-content {
     width: 100%;
     max-width: 100%;
-    padding: 0.75rem 0.125rem;
-    gap: 0.75rem;
+    padding: 0.5rem 0.125rem;
+    gap: 0.5rem;
     box-sizing: border-box;
   }
 
@@ -193,13 +193,14 @@
     max-width: 100%;
     box-sizing: border-box;
     overflow-x: hidden;
+    gap: 0.75rem;
   }
 
   .card-header {
     flex-direction: column;
     align-items: stretch;
-    gap: 0.5rem;
-    margin-bottom: 1rem;
+    gap: 0.25rem;
+    margin-bottom: 0.5rem;
   }
 
   .card-title {
@@ -808,18 +809,20 @@
 @media (max-width: 640px) {
   /* Clock Button - Make smaller on mobile */
   .clock-button {
-    width: 200px;
-    height: 200px;
-    font-size: 1.4rem;
+    width: 160px;
+    height: 160px;
+    font-size: 1.2rem;
   }
 
   /* Timer Section */
   .timer-title {
-    font-size: 0.9rem;
+    font-size: 0.85rem;
+    margin-bottom: 0.5rem;
   }
 
   .elapsed-time {
-    font-size: 2.5rem !important;
+    font-size: 2rem !important;
+    margin-bottom: 1rem;
   }
 
   .time-category-label {
@@ -914,25 +917,25 @@
   }
 
   .calendar-wrapper .rdp {
-    --rdp-cell-size: 38px;
-    padding: 0.5rem;
+    --rdp-cell-size: 36px;
+    padding: 0.25rem;
     width: fit-content;
     max-width: 100%;
     box-sizing: border-box;
-    margin: 0 auto -4rem auto;
-    transform: scale(0.72);
+    margin: 0 auto;
+    transform: scale(0.85);
     transform-origin: top center;
   }
 
   .calendar-wrapper .rdp-caption {
-    font-size: 1rem;
-    margin-bottom: 0.5rem;
-    padding: 0.25rem;
+    font-size: 0.9rem;
+    margin-bottom: 0.25rem;
+    padding: 0;
   }
 
   .calendar-wrapper .rdp-head_cell {
-    font-size: 0.75rem;
-    padding: 0.125rem;
+    font-size: 0.7rem;
+    padding: 0;
   }
 
   .calendar-wrapper .rdp-nav_button,
