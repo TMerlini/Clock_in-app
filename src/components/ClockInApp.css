@@ -181,11 +181,11 @@
   .card {
     padding: 0.5rem;
     border-radius: calc(var(--radius) - 2px);
-    width: 96%;
-    max-width: 96%;
+    width: 100%;
+    max-width: 100%;
     box-sizing: border-box;
     overflow: hidden;
-    margin: 0 auto;
+    margin: 0;
   }
 
   .card-content {
