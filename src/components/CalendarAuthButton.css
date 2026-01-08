@@ -1,0 +1,92 @@
+.calendar-auth-button {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.5rem;
+  background: linear-gradient(135deg, #4285f4, #34a853);
+  border: none;
+  border-radius: 8px;
+  color: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  width: 100%;
+  margin-top: 1rem;
+}
+
+.calendar-auth-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(66, 133, 244, 0.4);
+}
+
+.calendar-auth-button.loading {
+  background: var(--secondary);
+  color: var(--muted-foreground);
+  cursor: not-allowed;
+}
+
+.calendar-auth-button svg {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+}
+
+.button-title {
+  font-weight: 600;
+  font-size: 1rem;
+  text-align: left;
+}
+
+.button-subtitle {
+  font-size: 0.85rem;
+  opacity: 0.9;
+  text-align: left;
+}
+
+.calendar-auth-status {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.5rem;
+  background: rgba(34, 197, 94, 0.1);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  border-radius: 8px;
+  margin-top: 1rem;
+}
+
+.auth-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: #22c55e;
+  font-weight: 600;
+}
+
+.check-icon {
+  width: 20px;
+  height: 20px;
+}
+
+.disconnect-button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: var(--secondary);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--foreground);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.disconnect-button:hover {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: rgba(239, 68, 68, 0.3);
+  color: #ef4444;
+}
+
+.disconnect-button svg {
+  width: 16px;
+  height: 16px;
+}

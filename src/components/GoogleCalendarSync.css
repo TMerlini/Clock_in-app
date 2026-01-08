@@ -1,0 +1,107 @@
+.google-cal-modal {
+  max-width: 500px;
+}
+
+.calendar-info {
+  text-align: center;
+  padding: 2rem 0;
+}
+
+.calendar-icon-large {
+  width: 64px;
+  height: 64px;
+  color: var(--primary);
+  margin: 0 auto 1rem;
+}
+
+.info-text {
+  font-size: 1rem;
+  color: var(--muted-foreground);
+  margin: 0;
+}
+
+.session-preview {
+  background: var(--secondary);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+.session-preview h3 {
+  margin: 0 0 1rem 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--foreground);
+}
+
+.preview-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.5rem 0;
+  font-size: 0.9rem;
+  color: var(--foreground);
+  border-bottom: 1px solid var(--border);
+}
+
+.preview-item:last-child {
+  border-bottom: none;
+}
+
+.preview-item strong {
+  color: var(--muted-foreground);
+}
+
+.google-calendar-button {
+  padding: 0.625rem 1.25rem;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: linear-gradient(135deg, #4285f4, #34a853);
+  border: none;
+  color: white;
+}
+
+.google-calendar-button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(66, 133, 244, 0.4);
+}
+
+.google-calendar-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.google-calendar-button svg {
+  width: 16px;
+  height: 16px;
+}
+
+.success-message-container {
+  text-align: center;
+  padding: 2rem 0;
+}
+
+.success-icon {
+  width: 64px;
+  height: 64px;
+  color: #22c55e;
+  margin: 0 auto 1rem;
+}
+
+.success-text {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--foreground);
+  margin: 0 0 0.5rem 0;
+}
+
+.success-subtext {
+  font-size: 0.9rem;
+  color: var(--muted-foreground);
+  margin: 0;
+}
