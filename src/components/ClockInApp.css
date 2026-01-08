@@ -111,7 +111,7 @@
 @media (max-width: 640px) {
   .app-container {
     padding: 0;
-    overflow-x: hidden;
+    overflow-x: auto;
     width: 100%;
   }
 
@@ -192,7 +192,7 @@
     width: 100%;
     max-width: 100%;
     box-sizing: border-box;
-    overflow-x: hidden;
+    overflow-x: auto;
     gap: 0.75rem;
   }
 
@@ -809,9 +809,9 @@
 @media (max-width: 640px) {
   /* Clock Button - Make smaller on mobile */
   .clock-button {
-    width: 160px;
-    height: 160px;
-    font-size: 1.2rem;
+    width: 140px;
+    height: 140px;
+    font-size: 1.1rem;
   }
 
   /* Timer Section */
@@ -909,7 +909,7 @@
   .calendar-wrapper {
     padding: 0;
     width: 100%;
-    overflow-x: hidden;
+    overflow-x: auto;
     margin: 0;
     box-sizing: border-box;
     display: flex;
@@ -1007,7 +1007,7 @@
     width: 100%;
     max-width: 100%;
     box-sizing: border-box;
-    overflow-x: hidden;
+    overflow-x: auto;
     padding: 0 0.25rem 0.25rem;
   }
 
@@ -1015,7 +1015,7 @@
     width: 100%;
     max-width: 100%;
     box-sizing: border-box;
-    overflow-x: hidden;
+    overflow-x: auto;
   }
 
   .daily-summary {
