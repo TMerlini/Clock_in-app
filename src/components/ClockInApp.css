@@ -179,7 +179,7 @@
   }
 
   .card {
-    padding: 0.75rem 0.5rem;
+    padding: 0.75rem 0.25rem;
     border-radius: calc(var(--radius) - 2px);
     width: 100%;
     max-width: 100%;
@@ -915,8 +915,8 @@
   }
 
   .calendar-wrapper .rdp {
-    --rdp-cell-size: 38px;
-    padding: 0.25rem;
+    --rdp-cell-size: 32px;
+    padding: 0.5rem 0.25rem;
     width: 100%;
     max-width: 100%;
     box-sizing: border-box;
@@ -925,27 +925,24 @@
   }
 
   .calendar-wrapper .rdp-caption {
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     margin-bottom: 0.25rem;
     padding: 0;
   }
 
   .calendar-wrapper .rdp-head_cell {
-    font-size: 0.65rem;
+    font-size: 0.625rem;
     padding: 0;
   }
 
   .calendar-wrapper .rdp-nav_button,
   .calendar-wrapper .rdp-nav button {
-    width: 26px;
-    height: 26px;
-    font-size: 0.8rem;
+    width: 24px;
+    height: 24px;
+    font-size: 0.75rem;
+    padding: 0;
   }
 
-  .calendar-wrapper .rdp-button,
-  .calendar-wrapper .rdp-day {
-    font-size: 0.85rem;
-  }
 
   .calendar-wrapper .rdp-months {
     max-width: 100%;
@@ -964,6 +961,7 @@
     border-spacing: 0;
   }
 
+  .calendar-wrapper .rdp-thead,
   .calendar-wrapper .rdp-tbody {
     width: 100%;
   }
@@ -991,7 +989,8 @@
     height: auto;
     aspect-ratio: 1;
     box-sizing: border-box;
-    font-size: 0.8rem;
+    font-size: 0.75rem;
+    padding: 0;
   }
 
   /* Ensure all content stays within bounds */
