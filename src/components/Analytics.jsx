@@ -17,10 +17,7 @@ export function Analytics({ user }) {
   const [showDeductionForm, setShowDeductionForm] = useState(false);
   const [lunchDuration, setLunchDuration] = useState(1);
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterWeekend, setFilterWeekend] = useState(false);
-  const [filterLunch, setFilterLunch] = useState(false);
-  const [filterMeals, setFilterMeals] = useState(false);
-  const [filterOvertime, setFilterOvertime] = useState(false);
+  const [filterType, setFilterType] = useState('all');
 
   useEffect(() => {
     loadAllSessions();
@@ -127,23 +124,26 @@ export function Analytics({ user }) {
       });
     }
 
-    // Apply checkbox filters
-    if (filterWeekend) {
-      filtered = filtered.filter(s => s.isWeekend);
-    }
-
-    if (filterLunch) {
-      filtered = filtered.filter(s => s.lunchDuration && s.lunchDuration > 0);
-    }
-
-    if (filterMeals) {
-      filtered = filtered.filter(s =>
-        (s.lunchAmount && s.lunchAmount > 0) || (s.dinnerAmount && s.dinnerAmount > 0)
-      );
-    }
-
-    if (filterOvertime) {
-      filtered = filtered.filter(s => s.paidExtraHours > 0);
+    // Apply dropdown filter
+    switch (filterType) {
+      case 'weekend':
+        filtered = filtered.filter(s => s.isWeekend);
+        break;
+      case 'lunch':
+        filtered = filtered.filter(s => s.lunchDuration && s.lunchDuration > 0);
+        break;
+      case 'meals':
+        filtered = filtered.filter(s =>
+          (s.lunchAmount && s.lunchAmount > 0) || (s.dinnerAmount && s.dinnerAmount > 0)
+        );
+        break;
+      case 'overtime':
+        filtered = filtered.filter(s => s.paidExtraHours > 0);
+        break;
+      case 'all':
+      default:
+        // No additional filtering
+        break;
     }
 
     return filtered;
@@ -622,40 +622,19 @@ export function Analytics({ user }) {
                 className="search-input"
               />
             </div>
-            <div className="filter-options">
+            <div className="filter-dropdown">
               <Filter />
-              <label className="filter-checkbox">
-                <input
-                  type="checkbox"
-                  checked={filterWeekend}
-                  onChange={(e) => setFilterWeekend(e.target.checked)}
-                />
-                <span>Weekend</span>
-              </label>
-              <label className="filter-checkbox">
-                <input
-                  type="checkbox"
-                  checked={filterLunch}
-                  onChange={(e) => setFilterLunch(e.target.checked)}
-                />
-                <span>With Lunch</span>
-              </label>
-              <label className="filter-checkbox">
-                <input
-                  type="checkbox"
-                  checked={filterMeals}
-                  onChange={(e) => setFilterMeals(e.target.checked)}
-                />
-                <span>With Meals</span>
-              </label>
-              <label className="filter-checkbox">
-                <input
-                  type="checkbox"
-                  checked={filterOvertime}
-                  onChange={(e) => setFilterOvertime(e.target.checked)}
-                />
-                <span>Paid Overtime</span>
-              </label>
+              <select
+                value={filterType}
+                onChange={(e) => setFilterType(e.target.value)}
+                className="filter-select"
+              >
+                <option value="all">All Sessions</option>
+                <option value="weekend">Weekend Only</option>
+                <option value="lunch">With Lunch</option>
+                <option value="meals">With Meals</option>
+                <option value="overtime">Paid Overtime</option>
+              </select>
             </div>
           </div>
         </div>
