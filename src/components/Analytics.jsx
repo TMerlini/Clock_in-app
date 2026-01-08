@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
-import { collection, query, where, getDocs, addDoc, doc, getDoc } from 'firebase/firestore';
+import { collection, query, where, getDocs, addDoc, doc, getDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
-import { Download, TrendingUp, Clock, AlertTriangle, DollarSign, Coffee, Calendar as CalendarIcon, MinusCircle, UtensilsCrossed, CalendarDays } from 'lucide-react';
+import { Download, TrendingUp, Clock, AlertTriangle, DollarSign, Coffee, Calendar as CalendarIcon, MinusCircle, UtensilsCrossed, CalendarDays, Trash2, Search, Filter } from 'lucide-react';
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfYear, endOfYear, eachDayOfInterval } from 'date-fns';
 import { formatHoursMinutes } from '../lib/utils';
 import './Analytics.css';
@@ -16,6 +16,11 @@ export function Analytics({ user }) {
   const [deductionReason, setDeductionReason] = useState('');
   const [showDeductionForm, setShowDeductionForm] = useState(false);
   const [lunchDuration, setLunchDuration] = useState(1);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterWeekend, setFilterWeekend] = useState(false);
+  const [filterLunch, setFilterLunch] = useState(false);
+  const [filterMeals, setFilterMeals] = useState(false);
+  const [filterOvertime, setFilterOvertime] = useState(false);
 
   useEffect(() => {
     loadAllSessions();
@@ -107,6 +112,41 @@ export function Analytics({ user }) {
     return sessions.filter(s =>
       s.clockIn >= start.getTime() && s.clockIn <= end.getTime()
     );
+  };
+
+  const getSearchAndFilteredSessions = () => {
+    let filtered = getFilteredSessions();
+
+    // Apply search filter
+    if (searchTerm) {
+      const search = searchTerm.toLowerCase();
+      filtered = filtered.filter(s => {
+        const date = format(new Date(s.clockIn), 'MMM dd, yyyy').toLowerCase();
+        const notes = (s.notes || '').toLowerCase();
+        return date.includes(search) || notes.includes(search);
+      });
+    }
+
+    // Apply checkbox filters
+    if (filterWeekend) {
+      filtered = filtered.filter(s => s.isWeekend);
+    }
+
+    if (filterLunch) {
+      filtered = filtered.filter(s => s.lunchDuration && s.lunchDuration > 0);
+    }
+
+    if (filterMeals) {
+      filtered = filtered.filter(s =>
+        (s.lunchAmount && s.lunchAmount > 0) || (s.dinnerAmount && s.dinnerAmount > 0)
+      );
+    }
+
+    if (filterOvertime) {
+      filtered = filtered.filter(s => s.paidExtraHours > 0);
+    }
+
+    return filtered;
   };
 
   const calculateStats = () => {
@@ -205,6 +245,23 @@ export function Analytics({ user }) {
     } catch (error) {
       console.error('Error adding deduction:', error);
       alert('Failed to add deduction. Please try again.');
+    }
+  };
+
+  const handleDeleteDeduction = async (deductionId) => {
+    if (!confirm('Are you sure you want to delete this overwork usage entry?')) {
+      return;
+    }
+
+    try {
+      const deductionRef = doc(db, 'overworkDeductions', deductionId);
+      await deleteDoc(deductionRef);
+
+      // Reload deductions
+      await loadOverworkDeductions();
+    } catch (error) {
+      console.error('Error deleting deduction:', error);
+      alert('Failed to delete entry. Please try again.');
     }
   };
 
@@ -536,6 +593,13 @@ export function Analytics({ user }) {
                       -{formatHoursMinutes(deduction.hours)}
                       <span className="deduction-days">({(deduction.hours / 8).toFixed(2)} days)</span>
                     </div>
+                    <button
+                      className="delete-deduction-button"
+                      onClick={() => handleDeleteDeduction(deduction.id)}
+                      title="Delete this entry"
+                    >
+                      <Trash2 />
+                    </button>
                   </div>
                 ))}
               </div>
@@ -545,9 +609,58 @@ export function Analytics({ user }) {
       </div>
 
       <div className="detailed-table">
-        <h2>Detailed Sessions</h2>
-        {getFilteredSessions().length === 0 ? (
-          <p className="no-data">No sessions found for this period</p>
+        <div className="table-header">
+          <h2>Detailed Sessions</h2>
+          <div className="search-filter-container">
+            <div className="search-box">
+              <Search />
+              <input
+                type="text"
+                placeholder="Search by date or notes..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="search-input"
+              />
+            </div>
+            <div className="filter-options">
+              <Filter />
+              <label className="filter-checkbox">
+                <input
+                  type="checkbox"
+                  checked={filterWeekend}
+                  onChange={(e) => setFilterWeekend(e.target.checked)}
+                />
+                <span>Weekend</span>
+              </label>
+              <label className="filter-checkbox">
+                <input
+                  type="checkbox"
+                  checked={filterLunch}
+                  onChange={(e) => setFilterLunch(e.target.checked)}
+                />
+                <span>With Lunch</span>
+              </label>
+              <label className="filter-checkbox">
+                <input
+                  type="checkbox"
+                  checked={filterMeals}
+                  onChange={(e) => setFilterMeals(e.target.checked)}
+                />
+                <span>With Meals</span>
+              </label>
+              <label className="filter-checkbox">
+                <input
+                  type="checkbox"
+                  checked={filterOvertime}
+                  onChange={(e) => setFilterOvertime(e.target.checked)}
+                />
+                <span>Paid Overtime</span>
+              </label>
+            </div>
+          </div>
+        </div>
+        {getSearchAndFilteredSessions().length === 0 ? (
+          <p className="no-data">No sessions found matching your search and filters</p>
         ) : (
           <div className="table-wrapper">
             <table>
@@ -565,7 +678,7 @@ export function Analytics({ user }) {
                 </tr>
               </thead>
               <tbody>
-                {getFilteredSessions().map((session) => (
+                {getSearchAndFilteredSessions().map((session) => (
                   <tr key={session.id}>
                     <td>{format(new Date(session.clockIn), 'MMM dd, yyyy')}</td>
                     <td>{format(new Date(session.clockIn), 'HH:mm')}</td>
