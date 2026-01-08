@@ -173,13 +173,13 @@
   .main-content {
     width: 100%;
     max-width: 100%;
-    padding: 0.5rem 0.75rem;
+    padding: 0.5rem;
     gap: 0.5rem;
     box-sizing: border-box;
   }
 
   .card {
-    padding: 0.5rem;
+    padding: 0.75rem 0.5rem;
     border-radius: calc(var(--radius) - 2px);
     width: 100%;
     max-width: 100%;
@@ -911,15 +911,17 @@
     width: 100%;
     overflow-x: hidden;
     margin: 0;
+    box-sizing: border-box;
   }
 
   .calendar-wrapper .rdp {
-    --rdp-cell-size: 32px;
-    padding: 0.5rem;
+    --rdp-cell-size: 38px;
+    padding: 0.25rem;
     width: 100%;
     max-width: 100%;
     box-sizing: border-box;
     margin: 0;
+    overflow: hidden;
   }
 
   .calendar-wrapper .rdp-caption {
@@ -973,20 +975,23 @@
   .calendar-wrapper .rdp-cell {
     padding: 0;
     width: calc(100% / 7);
-    max-width: var(--rdp-cell-size);
+    box-sizing: border-box;
   }
 
   .calendar-wrapper .rdp-head_cell {
     width: calc(100% / 7);
-    max-width: var(--rdp-cell-size);
     padding: 0;
+    box-sizing: border-box;
+    font-size: 0.7rem;
   }
 
   .calendar-wrapper .rdp-button,
   .calendar-wrapper .rdp-day {
     width: 100%;
-    max-width: var(--rdp-cell-size);
-    height: var(--rdp-cell-size);
+    height: auto;
+    aspect-ratio: 1;
+    box-sizing: border-box;
+    font-size: 0.8rem;
   }
 
   /* Ensure all content stays within bounds */
