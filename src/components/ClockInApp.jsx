@@ -7,6 +7,7 @@ import { Navigation } from './Navigation';
 import { Analytics } from './Analytics';
 import { Settings } from './Settings';
 import { About } from './About';
+import { FAQ } from './FAQ';
 import { Calendar } from './ui/calendar';
 import { SessionEditor } from './SessionEditor';
 import { SessionCreator } from './SessionCreator';
@@ -239,6 +240,8 @@ export function ClockInApp({ user }) {
     switch (currentPage) {
       case 'analytics':
         return <Analytics user={user} />;
+      case 'faq':
+        return <FAQ />;
       case 'settings':
         return <Settings googleCalendar={googleCalendar} />;
       case 'about':

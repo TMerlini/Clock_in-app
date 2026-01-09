@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Menu, X, Home, Calendar, BarChart3, Info, Settings } from 'lucide-react';
+import { Menu, X, Home, Calendar, BarChart3, Info, Settings, HelpCircle } from 'lucide-react';
 import './Navigation.css';
 
 export function Navigation({ currentPage, onPageChange }) {
@@ -9,6 +9,7 @@ export function Navigation({ currentPage, onPageChange }) {
     { id: 'home', label: 'Home', icon: Home },
     { id: 'calendar', label: 'Calendar', icon: Calendar },
     { id: 'analytics', label: 'Analytics', icon: BarChart3 },
+    { id: 'faq', label: 'Frequent Questions', icon: HelpCircle },
     { id: 'settings', label: 'Settings', icon: Settings },
     { id: 'about', label: 'About', icon: Info }
   ];

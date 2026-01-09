@@ -135,6 +135,7 @@
     right: -80px;
     bottom: 0;
     background: var(--card);
+    background-color: #1d1d1b;
     border-bottom: 1px solid var(--border);
     z-index: -1;
   }
