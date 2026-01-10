@@ -3,7 +3,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #0a0a0a 0%, #1a0a2e 50%, #0a0a0a 100%);
+  background: linear-gradient(135deg, #0a0a0a 0%, #0e0a14 50%, #000f11 100%);
   padding: 1rem;
   position: relative;
   overflow: hidden;
@@ -17,7 +17,7 @@
   transform: translate(-50%, -50%);
   width: 600px;
   height: 600px;
-  background: radial-gradient(circle, rgba(109, 40, 217, 0.15) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(109, 40, 217, 0.15) 0%, transparent 0%);
   filter: blur(80px);
   animation: pulse-glow 4s ease-in-out infinite;
 }
@@ -100,9 +100,9 @@
   padding: 1rem 1.5rem;
   font-size: 1rem;
   font-weight: 600;
-  background: rgba(255, 255, 255, 0.95);
+  background: rgba(224, 220, 199, 0.95);
   color: #1f1f1f;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 3px solid rgba(255, 255, 255, 0.2);
   border-radius: 12px;
   transition: all 0.3s ease;
   position: relative;
@@ -126,7 +126,7 @@
 }
 
 .google-button:hover {
-  background: white;
+  background: rgb(224, 220, 199, 0.95);
   transform: translateY(-2px);
   box-shadow: 0 8px 24px rgba(139, 92, 246, 0.3);
   border-color: rgba(139, 92, 246, 0.3);
