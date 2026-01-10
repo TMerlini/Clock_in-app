@@ -550,25 +550,76 @@
   border: 1px solid #8b5cf6;
 }
 
-.calendar-wrapper .rdp-button.has-session:not(.rdp-day_selected),
-.calendar-wrapper .rdp-day.has-session:not(.rdp-day_selected) {
-  background: rgba(34, 197, 94, 0.15);
-  border: 1px solid rgba(34, 197, 94, 0.4);
-  font-weight: 700;
+/* Regular workday (≤8 hours) - Green circle */
+.calendar-wrapper .rdp-day_regularDay:not(.rdp-day_selected),
+.calendar-wrapper .rdp-button.rdp-day_regularDay:not(.rdp-day_selected),
+.calendar-wrapper .regular-day:not(.rdp-day_selected) {
   position: relative;
 }
 
-.calendar-wrapper .rdp-button.has-session:not(.rdp-day_selected)::after,
-.calendar-wrapper .rdp-day.has-session:not(.rdp-day_selected)::after {
+.calendar-wrapper .rdp-day_regularDay:not(.rdp-day_selected)::after,
+.calendar-wrapper .rdp-button.rdp-day_regularDay:not(.rdp-day_selected)::after,
+.calendar-wrapper .regular-day:not(.rdp-day_selected)::after {
   content: '';
   position: absolute;
-  bottom: 4px;
+  top: 50%;
   left: 50%;
-  transform: translateX(-50%);
-  width: 6px;
-  height: 6px;
-  background: #22c55e;
+  transform: translate(-50%, -50%);
+  width: 25px;
+  height: 25px;
+  border-radius: 25%;
+  box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.4) inset;
+  background: rgba(34, 197, 94, 0.12);
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* Isenção day (>8h, ≤10h) - Yellow/Orange circle */
+.calendar-wrapper .rdp-day_isencaoDay:not(.rdp-day_selected),
+.calendar-wrapper .rdp-button.rdp-day_isencaoDay:not(.rdp-day_selected),
+.calendar-wrapper .isencao-day:not(.rdp-day_selected) {
+  position: relative;
+}
+
+.calendar-wrapper .rdp-day_isencaoDay:not(.rdp-day_selected)::after,
+.calendar-wrapper .rdp-button.rdp-day_isencaoDay:not(.rdp-day_selected)::after,
+.calendar-wrapper .isencao-day:not(.rdp-day_selected)::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 25px;
+  height: 25px;
+  border-radius: 25%;
+  box-shadow: 0 0 0 2px rgba(251, 191, 36, 0.5) inset;
+  background: rgba(251, 191, 36, 0.15);
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* Overwork day (>10h) - Red circle */
+.calendar-wrapper .rdp-day_overworkDay:not(.rdp-day_selected),
+.calendar-wrapper .rdp-button.rdp-day_overworkDay:not(.rdp-day_selected),
+.calendar-wrapper .overwork-day:not(.rdp-day_selected) {
+  position: relative;
+}
+
+.calendar-wrapper .rdp-day_overworkDay:not(.rdp-day_selected)::after,
+.calendar-wrapper .rdp-button.rdp-day_overworkDay:not(.rdp-day_selected)::after,
+.calendar-wrapper .overwork-day:not(.rdp-day_selected)::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
+  box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.5) inset;
+  background: rgba(239, 68, 68, 0.15);
+  z-index: 0;
+  pointer-events: none;
 }
 
 .calendar-wrapper .rdp-nav_button,

@@ -40,7 +40,7 @@ export function ClockInApp({ user }) {
   const [currentTime, setCurrentTime] = useState(Date.now());
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [sessionsForDate, setSessionsForDate] = useState([]);
-  const [datesWithSessions, setDatesWithSessions] = useState(new Set());
+  const [datesWithSessions, setDatesWithSessions] = useState(new Map());
   const [editingSession, setEditingSession] = useState(null);
   const [creatingSession, setCreatingSession] = useState(false);
   const [deletingSession, setDeletingSession] = useState(null);
@@ -140,14 +140,37 @@ export function ClockInApp({ user }) {
         where('userId', '==', user.uid)
       );
       const querySnapshot = await getDocs(q);
-      const dates = new Set();
+
+      // Group sessions by date and calculate total working hours (excluding lunch)
+      const dateHoursMap = new Map();
       querySnapshot.forEach((doc) => {
         const session = doc.data();
         const sessionDate = new Date(session.clockIn);
-        dates.add(format(sessionDate, 'yyyy-MM-dd'));
+        const dateStr = format(sessionDate, 'yyyy-MM-dd');
+
+        // Calculate working hours (total hours - lunch duration)
+        const lunchDuration = session.lunchDuration || 0;
+        const workingHours = session.totalHours - lunchDuration;
+
+        // Sum working hours for this date
+        const currentHours = dateHoursMap.get(dateStr) || 0;
+        dateHoursMap.set(dateStr, currentHours + workingHours);
       });
-      console.log('Dates with sessions:', Array.from(dates));
-      setDatesWithSessions(dates);
+
+      // Categorize each date based on total working hours
+      const dateTypes = new Map();
+      dateHoursMap.forEach((workingHours, dateStr) => {
+        if (workingHours <= 8) {
+          dateTypes.set(dateStr, 'regular');
+        } else if (workingHours <= 10) {
+          dateTypes.set(dateStr, 'isencao');
+        } else {
+          dateTypes.set(dateStr, 'overwork');
+        }
+      });
+
+      console.log('Dates with sessions:', Array.from(dateTypes.entries()));
+      setDatesWithSessions(dateTypes);
     } catch (error) {
       console.error('Error loading session dates:', error);
       console.error('Error details:', error.message);
@@ -362,14 +385,24 @@ export function ClockInApp({ user }) {
   const currentBreakdown = isClockedIn ? calculateTimeBreakdown(currentTotalHours) : null;
 
   const modifiers = {
-    hasSession: (date) => {
+    regularDay: (date) => {
       const dateStr = format(date, 'yyyy-MM-dd');
-      return datesWithSessions.has(dateStr);
+      return datesWithSessions.get(dateStr) === 'regular';
+    },
+    isencaoDay: (date) => {
+      const dateStr = format(date, 'yyyy-MM-dd');
+      return datesWithSessions.get(dateStr) === 'isencao';
+    },
+    overworkDay: (date) => {
+      const dateStr = format(date, 'yyyy-MM-dd');
+      return datesWithSessions.get(dateStr) === 'overwork';
     },
   };
 
   const modifiersClassNames = {
-    hasSession: 'has-session',
+    regularDay: 'regular-day',
+    isencaoDay: 'isencao-day',
+    overworkDay: 'overwork-day',
   };
 
   const renderContent = () => {
