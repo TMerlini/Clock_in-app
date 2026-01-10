@@ -49,15 +49,68 @@ export function ClockInApp({ user }) {
   // Google Calendar integration
   const googleCalendar = useGoogleCalendar();
 
+  // Check for saved clock-in state on mount
+  useEffect(() => {
+    const checkSavedClockIn = async () => {
+      const savedClockInTime = localStorage.getItem(`clockInTime_${user.uid}`);
+
+      if (savedClockInTime) {
+        const clockInTimestamp = parseInt(savedClockInTime, 10);
+        const clockInDate = new Date(clockInTimestamp);
+        const now = new Date();
+
+        // Check if clock-in was on a different day (past midnight)
+        if (clockInDate.getDate() !== now.getDate() ||
+            clockInDate.getMonth() !== now.getMonth() ||
+            clockInDate.getFullYear() !== now.getFullYear()) {
+
+          // Auto clock-out at midnight
+          const midnight = new Date(clockInDate);
+          midnight.setHours(23, 59, 59, 999); // End of that day
+          const midnightTimestamp = midnight.getTime();
+
+          console.log('Auto-clocking out at midnight for previous day session');
+          await autoClockOut(clockInTimestamp, midnightTimestamp);
+
+        } else {
+          // Same day, restore clock-in state
+          console.log('Restoring clock-in state from localStorage');
+          setClockInTime(clockInTimestamp);
+          setIsClockedIn(true);
+        }
+      }
+    };
+
+    checkSavedClockIn();
+  }, [user]);
+
   useEffect(() => {
     let interval;
     if (isClockedIn) {
       interval = setInterval(() => {
-        setCurrentTime(Date.now());
+        const now = Date.now();
+        setCurrentTime(now);
+
+        // Check if we've crossed midnight
+        const clockInDate = new Date(clockInTime);
+        const currentDate = new Date(now);
+
+        if (clockInDate.getDate() !== currentDate.getDate() ||
+            clockInDate.getMonth() !== currentDate.getMonth() ||
+            clockInDate.getFullYear() !== currentDate.getFullYear()) {
+
+          // Auto clock-out at midnight
+          const midnight = new Date(clockInDate);
+          midnight.setHours(23, 59, 59, 999);
+          const midnightTimestamp = midnight.getTime();
+
+          console.log('Midnight crossed - auto-clocking out');
+          autoClockOut(clockInTime, midnightTimestamp);
+        }
       }, 1000);
     }
     return () => clearInterval(interval);
-  }, [isClockedIn]);
+  }, [isClockedIn, clockInTime]);
 
   useEffect(() => {
     loadSessionDates();
@@ -127,12 +180,58 @@ export function ClockInApp({ user }) {
     }
   };
 
+  const autoClockOut = async (clockInTimestamp, clockOutTimestamp) => {
+    const totalHours = (clockOutTimestamp - clockInTimestamp) / (1000 * 60 * 60);
+
+    console.log('Auto-clocking out:', {
+      clockIn: new Date(clockInTimestamp),
+      clockOut: new Date(clockOutTimestamp),
+      totalHours
+    });
+
+    const newSession = {
+      userId: user.uid,
+      userEmail: user.email,
+      clockIn: clockInTimestamp,
+      clockOut: clockOutTimestamp,
+      totalHours: totalHours,
+      regularHours: Math.min(totalHours, 8),
+      unpaidExtraHours: totalHours > 8 ? Math.min(totalHours - 8, 2) : 0,
+      paidExtraHours: totalHours > 10 ? totalHours - 10 : 0,
+    };
+
+    try {
+      console.log('Saving auto-clocked session to Firebase:', newSession);
+      await addDoc(collection(db, 'sessions'), newSession);
+      console.log('Auto-clocked session saved successfully');
+
+      // Clear localStorage and reset state
+      localStorage.removeItem(`clockInTime_${user.uid}`);
+      setIsClockedIn(false);
+      setClockInTime(null);
+
+      // Reload sessions
+      await Promise.all([
+        loadSessionDates(),
+        loadSessionsForDate(selectedDate)
+      ]);
+
+      alert('You were automatically clocked out at midnight (23:59:59).');
+    } catch (error) {
+      console.error('Error saving auto-clocked session:', error);
+      alert('Failed to auto clock-out: ' + error.message);
+    }
+  };
+
   const handleClockInOut = async () => {
     if (!isClockedIn) {
       const now = Date.now();
       console.log('Clocking in at:', new Date(now));
       setClockInTime(now);
       setIsClockedIn(true);
+
+      // Save to localStorage for persistence
+      localStorage.setItem(`clockInTime_${user.uid}`, now.toString());
     } else {
       const clockOutTime = Date.now();
       const totalHours = (clockOutTime - clockInTime) / (1000 * 60 * 60);
@@ -177,6 +276,8 @@ export function ClockInApp({ user }) {
           }
         }
 
+        // Clear localStorage and reset state
+        localStorage.removeItem(`clockInTime_${user.uid}`);
         setIsClockedIn(false);
         setClockInTime(null);
 
@@ -196,6 +297,8 @@ export function ClockInApp({ user }) {
 
   const handleSignOut = async () => {
     try {
+      // Clear clock-in state from localStorage before signing out
+      localStorage.removeItem(`clockInTime_${user.uid}`);
       await signOut(auth);
     } catch (error) {
       console.error('Error signing out:', error);
