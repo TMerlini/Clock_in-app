@@ -7,6 +7,8 @@ import './Settings.css';
 
 export function Settings({ googleCalendar }) {
   const [regularHoursThreshold, setRegularHoursThreshold] = useState(8);
+  const [enableUnpaidExtra, setEnableUnpaidExtra] = useState(true);
+  const [unpaidExtraThreshold, setUnpaidExtraThreshold] = useState(10);
   const [overtimeThreshold, setOvertimeThreshold] = useState(10);
   const [lunchDuration, setLunchDuration] = useState(1);
   const [lunchHours, setLunchHours] = useState(1);
@@ -32,6 +34,8 @@ export function Settings({ googleCalendar }) {
       if (settingsDoc.exists()) {
         const settings = settingsDoc.data();
         setRegularHoursThreshold(settings.regularHoursThreshold || 8);
+        setEnableUnpaidExtra(settings.enableUnpaidExtra !== undefined ? settings.enableUnpaidExtra : true);
+        setUnpaidExtraThreshold(settings.unpaidExtraThreshold || 10);
         setOvertimeThreshold(settings.overtimeThreshold || 10);
         const duration = settings.lunchDuration || 1;
         setLunchDuration(duration);
@@ -59,7 +63,9 @@ export function Settings({ googleCalendar }) {
 
       const settings = {
         regularHoursThreshold,
-        overtimeThreshold,
+        enableUnpaidExtra,
+        unpaidExtraThreshold,
+        overtimeThreshold: enableUnpaidExtra ? unpaidExtraThreshold : regularHoursThreshold,
         lunchDuration: lunchDurationDecimal,
         weekStartDay,
         weekendDaysOff,
@@ -80,6 +86,8 @@ export function Settings({ googleCalendar }) {
 
   const handleReset = () => {
     setRegularHoursThreshold(8);
+    setEnableUnpaidExtra(true);
+    setUnpaidExtraThreshold(10);
     setOvertimeThreshold(10);
     setLunchDuration(1);
     setLunchHours(1);
@@ -119,59 +127,94 @@ export function Settings({ googleCalendar }) {
             Configure how your working hours are categorized. These thresholds determine when regular hours end and overtime begins.
           </p>
 
-          <div className="settings-grid">
-            <div className="setting-item">
-              <div className="setting-header">
-                <Clock className="setting-icon regular" />
-                <div>
-                  <label htmlFor="regularHours">Regular Hours Threshold</label>
-                  <p className="setting-description">Hours up to this value are considered regular work time</p>
-                </div>
-              </div>
-              <div className="setting-input-group">
-                <input
-                  id="regularHours"
-                  type="number"
-                  min="1"
-                  max="24"
-                  step="0.1"
-                  value={regularHoursThreshold}
-                  onChange={(e) => setRegularHoursThreshold(parseFloat(e.target.value))}
-                  className="setting-input"
-                />
-                <span className="input-suffix">hours</span>
+          <div className="setting-item">
+            <div className="setting-header">
+              <Clock className="setting-icon regular" />
+              <div>
+                <label htmlFor="regularHours">Regular Hours Threshold</label>
+                <p className="setting-description">Hours up to this value are considered regular work time</p>
               </div>
             </div>
+            <div className="setting-input-group">
+              <input
+                id="regularHours"
+                type="number"
+                min="1"
+                max="24"
+                step="0.1"
+                value={regularHoursThreshold}
+                onChange={(e) => setRegularHoursThreshold(parseFloat(e.target.value))}
+                className="setting-input"
+              />
+              <span className="input-suffix">hours</span>
+            </div>
+          </div>
 
-            <div className="setting-item">
+          <div className="setting-item checkbox-setting">
+            <div className="setting-header">
+              <AlertTriangle className="setting-icon unpaid" />
+              <div>
+                <label htmlFor="enableUnpaidExtra">Enable Unpaid Extra (Isenção)</label>
+                <p className="setting-description">Track hours between regular and paid overtime as unpaid extra hours</p>
+              </div>
+            </div>
+            <label className="toggle-switch">
+              <input
+                id="enableUnpaidExtra"
+                type="checkbox"
+                checked={enableUnpaidExtra}
+                onChange={(e) => setEnableUnpaidExtra(e.target.checked)}
+              />
+              <span className="toggle-slider"></span>
+            </label>
+          </div>
+
+          {enableUnpaidExtra && (
+            <div className="setting-item indented">
               <div className="setting-header">
-                <DollarSign className="setting-icon overtime" />
+                <AlertTriangle className="setting-icon unpaid" />
                 <div>
-                  <label htmlFor="overtimeHours">Paid Overtime Threshold</label>
+                  <label htmlFor="unpaidExtraThreshold">Unpaid Extra Threshold</label>
                   <p className="setting-description">Hours beyond this value are considered paid overtime</p>
                 </div>
               </div>
               <div className="setting-input-group">
                 <input
-                  id="overtimeHours"
+                  id="unpaidExtraThreshold"
                   type="number"
-                  min="1"
+                  min={regularHoursThreshold + 0.1}
                   max="24"
                   step="0.1"
-                  value={overtimeThreshold}
-                  onChange={(e) => setOvertimeThreshold(parseFloat(e.target.value))}
+                  value={unpaidExtraThreshold}
+                  onChange={(e) => setUnpaidExtraThreshold(parseFloat(e.target.value))}
                   className="setting-input"
                 />
                 <span className="input-suffix">hours</span>
               </div>
             </div>
-          </div>
+          )}
 
           <div className="info-box">
             <AlertTriangle />
             <div>
-              <strong>Unpaid Extra (Isenção)</strong>
-              <p>Hours between {regularHoursThreshold}h and {overtimeThreshold}h are automatically tracked as unpaid overtime.</p>
+              {enableUnpaidExtra ? (
+                <>
+                  <strong>Hour Categories</strong>
+                  <p>
+                    • Regular: 0h - {regularHoursThreshold}h<br />
+                    • Unpaid Extra (Isenção): {regularHoursThreshold}h - {unpaidExtraThreshold}h<br />
+                    • Paid Overtime: {unpaidExtraThreshold}h+
+                  </p>
+                </>
+              ) : (
+                <>
+                  <strong>Hour Categories</strong>
+                  <p>
+                    • Regular: 0h - {regularHoursThreshold}h<br />
+                    • Paid Overtime: {regularHoursThreshold}h+
+                  </p>
+                </>
+              )}
             </div>
           </div>
         </section>
