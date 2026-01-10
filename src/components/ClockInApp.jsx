@@ -558,7 +558,10 @@ export function ClockInApp({ user }) {
         <div className="header-content">
           <div className="header-left">
             <img src="/images/Clock in Logo White.webp" alt="Clock In Logo" className="header-logo" />
-            <h1 className="header-title">Clock In App</h1>
+            <div className="header-title-wrapper">
+              <h1 className="header-title">CLOCK IN</h1>
+              <p className="header-subtitle">Time Manager</p>
+            </div>
           </div>
           <div className="header-right">
             <div className="user-info">
