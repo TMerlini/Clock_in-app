@@ -875,6 +875,119 @@
   border: 1px solid rgba(59, 130, 246, 0.2);
 }
 
+/* Daily Stats Grid */
+.daily-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.daily-stat-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  transition: all 0.3s ease;
+}
+
+.daily-stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.daily-stat-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.daily-stat-icon svg {
+  width: 24px;
+  height: 24px;
+}
+
+.daily-stat-icon.hours {
+  background: rgba(139, 92, 246, 0.1);
+  color: #8b5cf6;
+}
+
+.daily-stat-icon.isencao {
+  background: rgba(249, 115, 22, 0.1);
+  color: #f97316;
+}
+
+.daily-stat-icon.overwork {
+  background: rgba(34, 197, 94, 0.1);
+  color: #22c55e;
+}
+
+.daily-stat-icon.lunch {
+  background: rgba(251, 191, 36, 0.1);
+  color: #fbbf24;
+}
+
+.daily-stat-icon.expenses {
+  background: rgba(236, 72, 153, 0.1);
+  color: #ec4899;
+}
+
+.daily-stat-icon.clock-times {
+  background: rgba(59, 130, 246, 0.1);
+  color: #3b82f6;
+}
+
+.daily-stat-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.daily-stat-label {
+  font-size: 0.875rem;
+  color: var(--muted-foreground);
+  font-weight: 500;
+  margin-bottom: 0.25rem;
+}
+
+.daily-stat-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--foreground);
+  font-family: 'Courier New', monospace;
+}
+
+.clock-io-times {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.25rem;
+}
+
+.clock-in-time {
+  color: #22c55e;
+}
+
+.clock-separator {
+  color: var(--muted-foreground);
+  font-weight: 400;
+}
+
+.clock-out-time {
+  color: #ef4444;
+}
+
+.no-data {
+  color: var(--muted-foreground);
+  font-size: 1.25rem;
+}
+
 /* Additional Mobile Optimizations */
 @media (max-width: 640px) {
   /* Clock Button - Make smaller on mobile */
@@ -1114,5 +1227,38 @@
     width: 100%;
     max-width: 100%;
     box-sizing: border-box;
+  }
+
+  /* Daily Stats Grid - Mobile */
+  .daily-stats-grid {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+    margin-top: 1rem;
+  }
+
+  .daily-stat-card {
+    padding: 1rem;
+  }
+
+  .daily-stat-icon {
+    width: 40px;
+    height: 40px;
+  }
+
+  .daily-stat-icon svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .daily-stat-label {
+    font-size: 0.8rem;
+  }
+
+  .daily-stat-value {
+    font-size: 1.25rem;
+  }
+
+  .clock-io-times {
+    font-size: 1.1rem;
   }
 }

@@ -13,7 +13,7 @@ import { SessionEditor } from './SessionEditor';
 import { SessionCreator } from './SessionCreator';
 import { DeleteConfirmation } from './DeleteConfirmation';
 import { GoogleCalendarSync } from './GoogleCalendarSync';
-import { Clock, LogOut, User, Calendar as CalendarIcon, Edit2, AlertTriangle, CheckCircle, Info, Plus, Trash2 } from 'lucide-react';
+import { Clock, LogOut, User, Calendar as CalendarIcon, Edit2, AlertTriangle, CheckCircle, Info, Plus, Trash2, TrendingUp, DollarSign, Coffee, UtensilsCrossed } from 'lucide-react';
 import { format, startOfDay, endOfDay } from 'date-fns';
 import { formatHoursMinutes } from '../lib/utils';
 import 'react-day-picker/style.css';
@@ -296,6 +296,93 @@ export function ClockInApp({ user }) {
                       </div>
                     )}
                   </div>
+                </div>
+
+                {/* Daily Stats Cards */}
+                <div className="daily-stats-grid">
+                  {(() => {
+                    const totalDayHours = sessionsForDate.reduce((sum, s) => sum + s.totalHours, 0);
+                    const totalUnpaid = sessionsForDate.reduce((sum, s) => sum + s.unpaidExtraHours, 0);
+                    const totalPaid = sessionsForDate.reduce((sum, s) => sum + s.paidExtraHours, 0);
+                    const totalLunchTime = sessionsForDate.reduce((sum, s) => sum + (s.lunchDuration || 0), 0);
+                    const totalExpenses = sessionsForDate.reduce((sum, s) => sum + (s.lunchAmount || 0) + (s.dinnerAmount || 0), 0);
+                    const firstSession = sessionsForDate.length > 0 ? sessionsForDate[sessionsForDate.length - 1] : null;
+                    const lastSession = sessionsForDate.length > 0 ? sessionsForDate[0] : null;
+
+                    return (
+                      <>
+                        <div className="daily-stat-card">
+                          <div className="daily-stat-icon hours">
+                            <Clock />
+                          </div>
+                          <div className="daily-stat-content">
+                            <div className="daily-stat-label">Hours Day</div>
+                            <div className="daily-stat-value">{formatHoursMinutes(totalDayHours)}</div>
+                          </div>
+                        </div>
+
+                        <div className="daily-stat-card">
+                          <div className="daily-stat-icon isencao">
+                            <AlertTriangle />
+                          </div>
+                          <div className="daily-stat-content">
+                            <div className="daily-stat-label">Isenção</div>
+                            <div className="daily-stat-value">{formatHoursMinutes(totalUnpaid)}</div>
+                          </div>
+                        </div>
+
+                        <div className="daily-stat-card">
+                          <div className="daily-stat-icon overwork">
+                            <TrendingUp />
+                          </div>
+                          <div className="daily-stat-content">
+                            <div className="daily-stat-label">Overwork</div>
+                            <div className="daily-stat-value">{formatHoursMinutes(totalPaid)}</div>
+                          </div>
+                        </div>
+
+                        <div className="daily-stat-card">
+                          <div className="daily-stat-icon lunch">
+                            <Coffee />
+                          </div>
+                          <div className="daily-stat-content">
+                            <div className="daily-stat-label">Lunch Time</div>
+                            <div className="daily-stat-value">{formatHoursMinutes(totalLunchTime)}</div>
+                          </div>
+                        </div>
+
+                        <div className="daily-stat-card">
+                          <div className="daily-stat-icon expenses">
+                            <UtensilsCrossed />
+                          </div>
+                          <div className="daily-stat-content">
+                            <div className="daily-stat-label">Expenses</div>
+                            <div className="daily-stat-value">€{totalExpenses.toFixed(2)}</div>
+                          </div>
+                        </div>
+
+                        <div className="daily-stat-card">
+                          <div className="daily-stat-icon clock-times">
+                            <Clock />
+                          </div>
+                          <div className="daily-stat-content">
+                            <div className="daily-stat-label">Clock In/Out</div>
+                            <div className="daily-stat-value clock-io-times">
+                              {firstSession ? (
+                                <>
+                                  <span className="clock-in-time">{format(new Date(firstSession.clockIn), 'HH:mm')}</span>
+                                  <span className="clock-separator">→</span>
+                                  <span className="clock-out-time">{format(new Date(lastSession.clockOut), 'HH:mm')}</span>
+                                </>
+                              ) : (
+                                <span className="no-data">--:--</span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </>
+                    );
+                  })()}
                 </div>
               </div>
 
