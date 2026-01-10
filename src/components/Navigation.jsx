@@ -9,8 +9,8 @@ export function Navigation({ currentPage, onPageChange }) {
     { id: 'home', label: 'Home', icon: Home },
     { id: 'calendar', label: 'Calendar', icon: Calendar },
     { id: 'analytics', label: 'Analytics', icon: BarChart3 },
-    { id: 'faq', label: 'Frequent Questions', icon: HelpCircle },
     { id: 'settings', label: 'Settings', icon: Settings },
+    { id: 'faq', label: 'Frequent Questions', icon: HelpCircle },
     { id: 'about', label: 'About', icon: Info }
   ];
 

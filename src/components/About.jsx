@@ -1,13 +1,13 @@
-import { Clock, Coffee, AlertTriangle, DollarSign, TrendingUp, Calendar, BarChart3, Info } from 'lucide-react';
+import { Clock, Coffee, AlertTriangle, DollarSign, TrendingUp, Calendar, BarChart3, Info, UtensilsCrossed, MapPin, Globe } from 'lucide-react';
 import './About.css';
 
 export function About() {
   return (
     <div className="about-container">
       <div className="about-header">
-        <Clock className="about-logo" />
-        <h1>Clock In App</h1>
-        <p className="about-subtitle">Your personal time tracking solution</p>
+        <img src="/images/Clock in Logo White.webp" alt="Clock In Logo" className="about-logo-img" />
+        <h1>Clock In</h1>
+        <p className="about-subtitle">Intelligent Time Manager</p>
       </div>
 
       <div className="about-content">
@@ -17,9 +17,14 @@ export function About() {
             <h2>About This App</h2>
           </div>
           <p>
-            Clock In App is designed to help you track your work hours efficiently.
-            Whether you're a freelancer, contractor, or employee, this app makes it easy
-            to monitor your time and understand how your work hours are categorized.
+            Clock In is a comprehensive time tracking solution designed to help professionals
+            manage their work hours with precision and intelligence. Whether you're a freelancer,
+            contractor, remote worker, or full-time employee, Clock In provides powerful tools
+            to track time, analyze patterns, manage expenses, and optimize your productivity.
+          </p>
+          <p>
+            Built with modern web technologies and designed for real-world use, Clock In adapts
+            to your workflow and provides actionable insights into how you spend your time.
           </p>
         </section>
 
@@ -64,8 +69,8 @@ export function About() {
                 <TrendingUp />
               </div>
               <div className="category-content">
-                <h3>Regular Hours (0-8h)</h3>
-                <p>Your standard work time. These are the first 8 hours of any work session.</p>
+                <h3>Regular Hours</h3>
+                <p>Your standard work time up to your configured threshold (default: 8 hours). These hours form the foundation of your daily work schedule.</p>
               </div>
             </div>
 
@@ -74,8 +79,8 @@ export function About() {
                 <AlertTriangle />
               </div>
               <div className="category-content">
-                <h3>Isenção - Unpaid Extra (8-10h)</h3>
-                <p>Hours between 8 and 10 hours. These are tracked separately as unpaid overtime.</p>
+                <h3>Isenção - Unpaid Extra (Optional)</h3>
+                <p>Configure unpaid overtime tracking for hours beyond regular time. Can be enabled/disabled in Settings with custom thresholds to match your work agreement.</p>
               </div>
             </div>
 
@@ -84,8 +89,8 @@ export function About() {
                 <DollarSign />
               </div>
               <div className="category-content">
-                <h3>Overwork - Paid Overtime (10h+)</h3>
-                <p>Any hours beyond 10 hours are considered paid overtime and compensated accordingly.</p>
+                <h3>Overwork - Paid Overtime</h3>
+                <p>Hours beyond your overtime threshold that are compensated. Accumulated overwork can be tracked and converted to days off (8h = 1 day).</p>
               </div>
             </div>
 
@@ -94,8 +99,8 @@ export function About() {
                 <Coffee />
               </div>
               <div className="category-content">
-                <h3>Lunch Time</h3>
-                <p>When editing sessions, you can mark lunch time to deduct 1 hour from working hours. This hour doesn't count towards the 8-hour regular time.</p>
+                <h3>Lunch & Break Time</h3>
+                <p>Track lunch duration with customizable hours and minutes. Set your default lunch time in Settings for quick session creation.</p>
               </div>
             </div>
           </div>
@@ -104,34 +109,80 @@ export function About() {
         <section className="about-section">
           <div className="section-header">
             <Calendar />
-            <h2>Features</h2>
+            <h2>Key Features</h2>
           </div>
-          <ul className="features-list">
-            <li>
-              <strong>Real-time tracking:</strong> See your hours update live as you work
-            </li>
-            <li>
-              <strong>Calendar view:</strong> Browse past sessions by date with visual indicators
-            </li>
-            <li>
-              <strong>Manual sessions:</strong> Add or edit sessions for days you forgot to clock in
-            </li>
-            <li>
-              <strong>Lunch time tracking:</strong> Deduct lunch breaks from your working hours
-            </li>
-            <li>
-              <strong>Google Calendar sync:</strong> Export your sessions to Google Calendar
-            </li>
-            <li>
-              <strong>Analytics dashboard:</strong> View detailed reports by day, week, month, or year
-            </li>
-            <li>
-              <strong>CSV export:</strong> Download your time reports for external use
-            </li>
-            <li>
-              <strong>Multiple sessions:</strong> Track multiple work sessions per day
-            </li>
-          </ul>
+          <div className="features-grid">
+            <div className="feature-item">
+              <Clock />
+              <div>
+                <strong>Real-Time Tracking</strong>
+                <p>Live timer with automatic hour categorization as you work</p>
+              </div>
+            </div>
+            <div className="feature-item">
+              <Calendar />
+              <div>
+                <strong>Interactive Calendar</strong>
+                <p>Visual session indicators and quick date navigation</p>
+              </div>
+            </div>
+            <div className="feature-item">
+              <BarChart3 />
+              <div>
+                <strong>Advanced Analytics</strong>
+                <p>Daily, weekly, monthly, and yearly reports with detailed breakdowns</p>
+              </div>
+            </div>
+            <div className="feature-item">
+              <Globe />
+              <div>
+                <strong>Google Calendar Integration</strong>
+                <p>One-click sync of work sessions to your calendar</p>
+              </div>
+            </div>
+            <div className="feature-item">
+              <Coffee />
+              <div>
+                <strong>Flexible Lunch Tracking</strong>
+                <p>Customizable lunch duration with hours and minutes</p>
+              </div>
+            </div>
+            <div className="feature-item">
+              <UtensilsCrossed />
+              <div>
+                <strong>Expense Management</strong>
+                <p>Track lunch and dinner expenses per session</p>
+              </div>
+            </div>
+            <div className="feature-item">
+              <MapPin />
+              <div>
+                <strong>Location Notes</strong>
+                <p>Add work location to sessions (office, home, client site, etc.)</p>
+              </div>
+            </div>
+            <div className="feature-item">
+              <DollarSign />
+              <div>
+                <strong>Weekend Work Benefits</strong>
+                <p>Configure days off earned and bonus compensation for weekend work</p>
+              </div>
+            </div>
+            <div className="feature-item">
+              <TrendingUp />
+              <div>
+                <strong>Overwork Management</strong>
+                <p>Track accumulated overtime and usage history (8h = 1 day off)</p>
+              </div>
+            </div>
+            <div className="feature-item">
+              <AlertTriangle />
+              <div>
+                <strong>Customizable Thresholds</strong>
+                <p>Configure regular hours, unpaid extra, and paid overtime limits</p>
+              </div>
+            </div>
+          </div>
         </section>
 
         <section className="about-section">
@@ -140,25 +191,56 @@ export function About() {
             <h2>Analytics & Reports</h2>
           </div>
           <p>
-            The Analytics page provides comprehensive insights into your work patterns.
-            You can filter by daily, weekly, monthly, or yearly periods to understand:
+            Gain deep insights into your work patterns with comprehensive analytics dashboards:
           </p>
-          <ul className="features-list">
-            <li>Total hours worked</li>
-            <li>Regular vs. overtime breakdown</li>
-            <li>Unpaid extra hours (Isenção)</li>
-            <li>Paid overtime hours</li>
-            <li>Lunch time taken</li>
-            <li>Detailed session logs with all timestamps</li>
-          </ul>
+          <div className="analytics-features">
+            <div className="analytics-item">
+              <h4>📊 Multiple Report Views</h4>
+              <p>Daily, weekly, monthly, and yearly time period analysis</p>
+            </div>
+            <div className="analytics-item">
+              <h4>🔍 Search & Filter</h4>
+              <p>Find sessions by date, notes, weekend work, meals, or overtime</p>
+            </div>
+            <div className="analytics-item">
+              <h4>📈 Visual Stats Cards</h4>
+              <p>Total hours, regular time, isenção, overwork, lunch time, and expenses</p>
+            </div>
+            <div className="analytics-item">
+              <h4>💾 CSV Export</h4>
+              <p>Download detailed reports for spreadsheets, payroll, or accounting systems</p>
+            </div>
+            <div className="analytics-item">
+              <h4>⏱️ Overwork Tracker</h4>
+              <p>Monitor accumulated overtime with conversion to days off and usage history</p>
+            </div>
+            <div className="analytics-item">
+              <h4>💰 Expense Reports</h4>
+              <p>Track meal costs with separate lunch and dinner expense totals</p>
+            </div>
+          </div>
+        </section>
+
+        <section className="about-section">
+          <div className="section-header">
+            <Info />
+            <h2>Technology Stack</h2>
+          </div>
           <p>
-            All data can be exported to CSV format for use in spreadsheets or payroll systems.
+            Built with modern, reliable technologies to ensure a fast, secure, and scalable experience:
           </p>
+          <ul className="tech-list">
+            <li><strong>React 18</strong> - Modern UI framework with hooks</li>
+            <li><strong>Firebase</strong> - Real-time database and authentication</li>
+            <li><strong>Google Calendar API</strong> - Seamless calendar integration</li>
+            <li><strong>Vite</strong> - Lightning-fast build tool</li>
+            <li><strong>Vercel</strong> - Global edge network deployment</li>
+          </ul>
         </section>
 
         <section className="about-section footer-section">
-          <p className="version">Version 1.0.0</p>
-          <p className="copyright">© 2026 Clock In App. Built for tracking your time efficiently.</p>
+          <p className="version">Version 2.0.0 - January 2026</p>
+          <p className="copyright">© 2026 Clock In - Intelligent Time Manager. Built for professionals who value their time.</p>
         </section>
       </div>
     </div>
