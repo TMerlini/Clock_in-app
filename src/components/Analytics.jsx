@@ -12,6 +12,7 @@ export function Analytics({ user }) {
   const [reportType, setReportType] = useState('monthly');
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [overworkDeductions, setOverworkDeductions] = useState([]);
+  const [deductionDays, setDeductionDays] = useState('');
   const [deductionHours, setDeductionHours] = useState('');
   const [deductionReason, setDeductionReason] = useState('');
   const [showDeductionForm, setShowDeductionForm] = useState(false);
@@ -212,15 +213,19 @@ export function Analytics({ user }) {
   };
 
   const handleAddDeduction = async () => {
-    if (!deductionHours || parseFloat(deductionHours) <= 0) {
-      alert('Please enter a valid number of hours');
+    const days = parseFloat(deductionDays) || 0;
+    const hours = parseFloat(deductionHours) || 0;
+
+    if (days <= 0 && hours <= 0) {
+      alert('Please enter valid days or hours');
       return;
     }
 
-    const hours = parseFloat(deductionHours);
+    // Convert days to hours (1 day = 8 hours) and add to hours
+    const totalHours = (days * 8) + hours;
     const overworkStats = calculateOverworkStats();
 
-    if (hours > overworkStats.remainingOverworkHours) {
+    if (totalHours > overworkStats.remainingOverworkHours) {
       alert(`You cannot deduct more hours than available. Remaining: ${formatHoursMinutes(overworkStats.remainingOverworkHours)}`);
       return;
     }
@@ -229,13 +234,14 @@ export function Analytics({ user }) {
       const deductionsRef = collection(db, 'overworkDeductions');
       await addDoc(deductionsRef, {
         userId: user.uid,
-        hours: hours,
+        hours: totalHours,
         reason: deductionReason || 'No reason provided',
         timestamp: Date.now(),
         createdAt: new Date().toISOString()
       });
 
       // Reset form
+      setDeductionDays('');
       setDeductionHours('');
       setDeductionReason('');
       setShowDeductionForm(false);
@@ -333,10 +339,6 @@ export function Analytics({ user }) {
     <div className="analytics-container">
       <div className="analytics-header">
         <h1>Analytics & Reports</h1>
-        <button className="export-button" onClick={exportToCSV}>
-          <Download />
-          Export CSV
-        </button>
       </div>
 
       <div className="report-controls">
@@ -487,6 +489,7 @@ export function Analytics({ user }) {
         <div className="overwork-stats-grid">
           {(() => {
             const overworkStats = calculateOverworkStats();
+            const stats = calculateStats();
             return (
               <>
                 <div className="overwork-stat-card total-accumulated">
@@ -494,9 +497,11 @@ export function Analytics({ user }) {
                     <Clock className="overwork-stat-icon" />
                     <span className="overwork-stat-label">Total Accumulated</span>
                   </div>
-                  <div className="overwork-stat-value">{formatHoursMinutes(overworkStats.totalOverworkHours)}</div>
+                  <div className="overwork-stat-value">
+                    {overworkStats.totalOverworkDays.toFixed(1)} days
+                  </div>
                   <div className="overwork-stat-sublabel">
-                    {overworkStats.totalOverworkDays.toFixed(2)} work days
+                    {formatHoursMinutes(overworkStats.totalOverworkHours)}
                   </div>
                 </div>
 
@@ -511,14 +516,25 @@ export function Analytics({ user }) {
                   </div>
                 </div>
 
+                <div className="overwork-stat-card days-off">
+                  <div className="overwork-stat-header">
+                    <CalendarDays className="overwork-stat-icon" />
+                    <span className="overwork-stat-label">Days Off Earned</span>
+                  </div>
+                  <div className="overwork-stat-value">{stats.totalWeekendDaysOff.toFixed(1)}</div>
+                  <div className="overwork-stat-sublabel">
+                    {stats.weekendSessions} weekend sessions
+                  </div>
+                </div>
+
                 <div className="overwork-stat-card remaining">
                   <div className="overwork-stat-header">
                     <DollarSign className="overwork-stat-icon" />
-                    <span className="overwork-stat-label">Remaining Balance</span>
+                    <span className="overwork-stat-label">Overwork Hours</span>
                   </div>
                   <div className="overwork-stat-value highlight">{formatHoursMinutes(overworkStats.remainingOverworkHours)}</div>
                   <div className="overwork-stat-sublabel">
-                    {overworkStats.remainingDays.toFixed(2)} work days available
+                    {overworkStats.remainingDays.toFixed(1)} days available
                   </div>
                 </div>
               </>
@@ -542,11 +558,25 @@ export function Analytics({ user }) {
             <div className="deduction-form">
               <div className="form-row">
                 <div className="form-group">
+                  <label htmlFor="deductionDays">Days to Use</label>
+                  <input
+                    id="deductionDays"
+                    type="number"
+                    min="0"
+                    step="0.5"
+                    value={deductionDays}
+                    onChange={(e) => setDeductionDays(e.target.value)}
+                    placeholder="0"
+                    className="form-input"
+                  />
+                </div>
+
+                <div className="form-group">
                   <label htmlFor="deductionHours">Hours to Use</label>
                   <input
                     id="deductionHours"
                     type="number"
-                    min="0.25"
+                    min="0"
                     step="0.25"
                     value={deductionHours}
                     onChange={(e) => setDeductionHours(e.target.value)}
@@ -674,6 +704,12 @@ export function Analytics({ user }) {
             </table>
           </div>
         )}
+        <div className="table-footer">
+          <button className="export-button" onClick={exportToCSV}>
+            <Download />
+            Export CSV
+          </button>
+        </div>
       </div>
     </div>
   );
