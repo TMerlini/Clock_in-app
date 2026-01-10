@@ -879,8 +879,8 @@
 @media (max-width: 640px) {
   /* Clock Button - Make smaller on mobile */
   .clock-button {
-    width: 140px;
-    height: 140px;
+    width: 145px;
+    height: 155px;
     font-size: 1.1rem;
   }
 
@@ -1004,7 +1004,7 @@
     width: 100%;
     max-width: 100%;
     box-sizing: border-box;
-    margin: 0;
+    margin: 10;
     overflow: hidden;
     display: block;
   }

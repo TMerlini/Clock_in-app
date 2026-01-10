@@ -5,8 +5,8 @@
   z-index: 1001;
   width: 48px;
   height: 48px;
-  background: linear-gradient(135deg, var(--primary), var(--accent));
-  border: none;
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px solid white;
   border-radius: 12px;
   color: white;
   display: flex;
@@ -15,11 +15,13 @@
   cursor: pointer;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
   transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
 }
 
 .hamburger-button:hover {
   transform: scale(1.05);
-  box-shadow: 0 6px 16px rgba(139, 92, 246, 0.4);
+  background: rgba(255, 255, 255, 0.2);
+  box-shadow: 0 6px 16px rgba(255, 255, 255, 0.3);
 }
 
 .hamburger-button svg {
