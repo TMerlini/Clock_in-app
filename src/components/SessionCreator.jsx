@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { addDoc, collection, doc, getDoc } from 'firebase/firestore';
 import { db, auth } from '../lib/firebase';
-import { X, Save, AlertCircle, Plus } from 'lucide-react';
+import { X, Save, AlertCircle, Plus, MapPin } from 'lucide-react';
 import { format } from 'date-fns';
 import { formatHoursMinutes } from '../lib/utils';
 import './SessionEditor.css';
@@ -14,6 +14,7 @@ export function SessionCreator({ user, selectedDate, onClose, onUpdate }) {
   const [lunchAmount, setLunchAmount] = useState('');
   const [hadDinner, setHadDinner] = useState(false);
   const [dinnerAmount, setDinnerAmount] = useState('');
+  const [location, setLocation] = useState('');
   const [notes, setNotes] = useState('');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
@@ -91,6 +92,7 @@ export function SessionCreator({ user, selectedDate, onClose, onUpdate }) {
       isWeekend: isWeekend,
       weekendDaysOff: isWeekend ? weekendDaysOff : 0,
       weekendBonus: isWeekend ? weekendBonus : 0,
+      location: location,
       notes: notes,
       regularHours: Math.min(workingHours, 8),
       unpaidExtraHours: workingHours > 8 ? Math.min(workingHours - 8, 2) : 0,
@@ -242,6 +244,20 @@ export function SessionCreator({ user, selectedDate, onClose, onUpdate }) {
               />
             </div>
           )}
+
+          <div className="form-group">
+            <label>
+              <MapPin className="label-icon" />
+              Location (optional)
+            </label>
+            <input
+              type="text"
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+              className="time-input"
+              placeholder="Add location (e.g., Office, Home, Client site, etc.)"
+            />
+          </div>
 
           <div className="form-group">
             <label>Notes (optional)</label>

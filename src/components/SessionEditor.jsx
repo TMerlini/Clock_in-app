@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { doc, updateDoc, getDoc } from 'firebase/firestore';
 import { db, auth } from '../lib/firebase';
-import { X, Save, AlertCircle } from 'lucide-react';
+import { X, Save, AlertCircle, MapPin } from 'lucide-react';
 import { format } from 'date-fns';
 import { formatHoursMinutes } from '../lib/utils';
 import './SessionEditor.css';
@@ -17,6 +17,7 @@ export function SessionEditor({ session, onClose, onUpdate }) {
   const [lunchAmount, setLunchAmount] = useState(session.lunchAmount ? session.lunchAmount.toString() : '');
   const [hadDinner, setHadDinner] = useState(session.hadDinner || false);
   const [dinnerAmount, setDinnerAmount] = useState(session.dinnerAmount ? session.dinnerAmount.toString() : '');
+  const [location, setLocation] = useState(session.location || '');
   const [notes, setNotes] = useState(session.notes || '');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
@@ -82,6 +83,7 @@ export function SessionEditor({ session, onClose, onUpdate }) {
       isWeekend: isWeekend,
       weekendDaysOff: isWeekend ? weekendDaysOff : 0,
       weekendBonus: isWeekend ? weekendBonus : 0,
+      location: location,
       notes: notes,
       regularHours: Math.min(workingHours, 8),
       unpaidExtraHours: workingHours > 8 ? Math.min(workingHours - 8, 2) : 0,
@@ -229,6 +231,20 @@ export function SessionEditor({ session, onClose, onUpdate }) {
               />
             </div>
           )}
+
+          <div className="form-group">
+            <label>
+              <MapPin className="label-icon" />
+              Location (optional)
+            </label>
+            <input
+              type="text"
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+              className="time-input"
+              placeholder="Add location (e.g., Office, Home, Client site, etc.)"
+            />
+          </div>
 
           <div className="form-group">
             <label>Notes (optional)</label>

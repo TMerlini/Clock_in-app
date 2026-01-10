@@ -27,20 +27,10 @@
   gap: 1rem;
 }
 
-.header-icon {
-  width: 40px;
+.header-logo {
   height: 40px;
-  background: linear-gradient(135deg, var(--primary), var(--accent));
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.header-icon svg {
-  width: 24px;
-  height: 24px;
-  color: white;
+  width: auto;
+  object-fit: contain;
 }
 
 .header-title {
@@ -140,15 +130,10 @@
     flex-shrink: 1;
   }
 
-  .header-icon {
-    width: 36px;
+  .header-logo {
     height: 36px;
+    width: auto;
     flex-shrink: 0;
-  }
-
-  .header-icon svg {
-    width: 20px;
-    height: 20px;
   }
 
   .header-title {
@@ -289,41 +274,119 @@
   width: 280px;
   height: 280px;
   border-radius: 50%;
-  border: none;
   font-size: 1.75rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 1px;
   color: white;
-  transition: all 0.3s ease;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+  transition: all 0.4s ease;
+  position: relative;
+  cursor: pointer;
+  background: rgba(26, 26, 26, 0.6);
+  backdrop-filter: blur(1px);
+  border: none;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.clock-button.clocked-out {
-  background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+.clock-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: 50%;
+  padding: 4px;
+  background: linear-gradient(135deg, #6d28d9, #5b21b6, #4c1d95);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  z-index: 0;
+  transition: all 0.4s ease;
+}
+
+.clock-button::after {
+  content: '';
+  position: absolute;
+  top: -10px;
+  left: -10px;
+  right: -10px;
+  bottom: -10px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #6d28d9, #5b21b6, #4c1d95);
+  filter: blur(20px);
+  opacity: 0.3;
+  z-index: -1;
+  transition: all 0.4s ease;
+}
+
+.clock-button > span {
+  position: relative;
+  z-index: 1;
+}
+
+.clock-button.clocked-out::before {
+  background: conic-gradient(from 0deg, #6d28d9, #5b21b6, #4c1d95, #6d28d9);
+  animation: rotate-border 3s linear infinite;
+}
+
+.clock-button.clocked-out::after {
+  background: linear-gradient(135deg, #6d28d9, #5b21b6, #4c1d95);
+  opacity: 0.3;
 }
 
 .clock-button.clocked-out:hover {
   transform: scale(1.05);
-  box-shadow: 0 15px 50px rgba(139, 92, 246, 0.4);
+  box-shadow: 0 0 60px rgba(109, 40, 217, 0.6);
 }
 
-.clock-button.clocked-in {
-  background: linear-gradient(135deg, #ec4899, #db2777);
-  animation: pulse 2s ease-in-out infinite;
+.clock-button.clocked-out:hover::after {
+  opacity: 0.5;
+  filter: blur(30px);
+}
+
+.clock-button.clocked-in::before {
+  background: conic-gradient(from 0deg, #ec4899, #db2777, #f472b6, #ec4899);
+  animation: rotate-border 3s linear infinite;
+}
+
+.clock-button.clocked-in::after {
+  background: linear-gradient(135deg, #ec4899, #db2777, #f472b6);
+  opacity: 0.4;
+  animation: pulse-glow 2s ease-in-out infinite;
 }
 
 .clock-button.clocked-in:hover {
   transform: scale(1.05);
-  box-shadow: 0 15px 50px rgba(236, 72, 153, 0.4);
+  box-shadow: 0 0 60px rgba(236, 72, 153, 0.6);
 }
 
-@keyframes pulse {
+.clock-button.clocked-in:hover::after {
+  opacity: 0.6;
+  filter: blur(30px);
+}
+
+@keyframes rotate-border {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes pulse-glow {
   0%, 100% {
-    box-shadow: 0 10px 40px rgba(236, 72, 153, 0.3);
+    opacity: 0.4;
+    transform: scale(1);
   }
   50% {
-    box-shadow: 0 15px 50px rgba(236, 72, 153, 0.6);
+    opacity: 0.6;
+    transform: scale(1.05);
   }
 }
 
@@ -817,6 +880,17 @@
     width: 140px;
     height: 140px;
     font-size: 1.1rem;
+  }
+
+  .clock-button::before {
+    padding: 3px;
+  }
+
+  .clock-button::after {
+    top: -8px;
+    left: -8px;
+    right: -8px;
+    bottom: -8px;
   }
 
   /* Timer Section */

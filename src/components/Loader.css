@@ -1,0 +1,118 @@
+.loader-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
+  z-index: 9999;
+  animation: fadeIn 0.3s ease-in;
+}
+
+.loader-glassmorphism {
+  background: rgba(26, 26, 26, 0.4);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-radius: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 3rem;
+  box-shadow:
+    0 8px 32px 0 rgba(0, 0, 0, 0.37),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.05);
+  animation: slideUp 0.5s ease-out;
+}
+
+.loader-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.loader-gif {
+  width: 120px;
+  height: 120px;
+  object-fit: contain;
+  filter: drop-shadow(0 0 20px rgba(139, 92, 246, 0.3));
+  animation: pulse 2s ease-in-out infinite;
+  margin-bottom: 1.5rem;
+}
+
+.loader-title {
+  font-size: 3rem;
+  font-weight: 700;
+  color: var(--foreground);
+  margin: 0;
+  letter-spacing: -0.5px;
+  background: linear-gradient(135deg, #ffffff 0%, #e0e0e0 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: slideUp 0.7s ease-out 0.3s backwards;
+}
+
+.loader-subtitle {
+  font-size: 0.75rem;
+  font-weight: 400;
+  color: var(--muted-foreground);
+  margin: 0.5rem 0 0 0;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  opacity: 0.7;
+  animation: slideUp 0.7s ease-out 0.5s backwards;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    filter: drop-shadow(0 0 20px rgba(139, 92, 246, 0.3));
+  }
+  50% {
+    filter: drop-shadow(0 0 30px rgba(139, 92, 246, 0.6));
+  }
+}
+
+/* Mobile responsiveness */
+@media (max-width: 640px) {
+  .loader-glassmorphism {
+    padding: 2rem 1.5rem;
+    border-radius: 20px;
+  }
+
+  .loader-gif {
+    width: 100px;
+    height: 100px;
+    margin-bottom: 1rem;
+  }
+
+  .loader-title {
+    font-size: 2.5rem;
+  }
+
+  .loader-subtitle {
+    font-size: 0.65rem;
+    letter-spacing: 1.5px;
+  }
+}

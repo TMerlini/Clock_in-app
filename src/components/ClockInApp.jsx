@@ -263,7 +263,7 @@ export function ClockInApp({ user }) {
                       onClick={handleClockInOut}
                       className={`clock-button ${isClockedIn ? 'clocked-in' : 'clocked-out'}`}
                     >
-                      {isClockedIn ? 'Clock Out' : 'Clock In'}
+                      <span>{isClockedIn ? 'Clock Out' : 'Clock In'}</span>
                     </button>
 
                     {isClockedIn && (
@@ -470,9 +470,7 @@ export function ClockInApp({ user }) {
       <div className="app-header">
         <div className="header-content">
           <div className="header-left">
-            <div className="header-icon">
-              <Clock />
-            </div>
+            <img src="/images/Clock in Logo White.webp" alt="Clock In Logo" className="header-logo" />
             <h1 className="header-title">Clock In App</h1>
           </div>
           <div className="header-right">
