@@ -321,6 +321,7 @@ The app is configured for automatic deployment to Vercel:
 - `isWeekend`: boolean
 - `weekendDaysOff`: number
 - `weekendBonus`: number
+- `location`: string (optional)
 - `notes`: string (optional)
 
 **overworkDeductions** - Overwork usage tracking
@@ -329,6 +330,52 @@ The app is configured for automatic deployment to Vercel:
 - `reason`: string
 - `timestamp`: number
 - `createdAt`: string (ISO date)
+
+## Future Development
+
+This app is actively maintained with regular updates and new features. For a comprehensive list of planned enhancements, see **[FUTURE_ENHANCEMENTS.md](FUTURE_ENHANCEMENTS.md)**.
+
+### 🚀 Upcoming Features (2026 Roadmap)
+
+**Phase 1 - Critical Improvements (Q1 2026)**
+- ✅ Data Backup & Export - Full backup and restore capabilities
+- ✅ Session Validation - Prevent overlapping sessions and data errors
+- ✅ Two-Way Calendar Sync - Import events from Google Calendar
+- ✅ Email Report Sharing - Send reports directly to email
+- ✅ Progressive Web App - Install on mobile devices
+
+**Phase 2 - User Experience (Q2 2026)**
+- Dashboard Customization - Personalized widget layouts
+- Keyboard Shortcuts - Quick actions and navigation
+- Onboarding Tutorial - Interactive first-time experience
+- Time Zone Support - Multi-timezone tracking
+- Auto-Sync Calendar - Automatic calendar event creation
+
+**Phase 3 - Advanced Features (Q3 2026)**
+- Offline Mode - Work without internet connection
+- Invoice Generation - Create professional invoices
+- Project Time Tracking - Track hours by project/client
+- Advanced Visualizations - Charts and graphs
+- Multi-Language Support - Portuguese, Spanish, English
+
+**Phase 4 - Integrations (Q4 2026)**
+- Team Features - Multi-user workspaces
+- Public API - Programmatic access to data
+- Slack/Teams Integration - Chat bot commands
+- Browser Extension - Quick access from toolbar
+- Enhanced Security - 2FA and GDPR compliance
+
+### 💡 Feature Requests
+
+Have ideas for new features? We'd love to hear them! Check out our [Future Enhancements](FUTURE_ENHANCEMENTS.md) document for details on:
+- 37+ planned features across 7 categories
+- Google Calendar integration enhancements (Two-way sync, auto-sync, smart coloring)
+- Analytics improvements (Email sharing, charts, custom reports)
+- User experience upgrades (Dark mode, shortcuts, AI suggestions)
+- Integration capabilities (Invoicing, payroll, project tracking)
+- Technical priorities and implementation timelines
+
+Open an issue on GitHub to suggest new features or vote on existing proposals!
 
 ## Contributing
 
