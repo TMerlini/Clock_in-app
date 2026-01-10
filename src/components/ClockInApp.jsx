@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { signOut } from 'firebase/auth';
-import { collection, addDoc, query, where, getDocs, orderBy } from 'firebase/firestore';
+import { collection, addDoc, query, where, getDocs, orderBy, doc, setDoc, deleteDoc, onSnapshot } from 'firebase/firestore';
 import { auth, db } from '../lib/firebase';
 import { useGoogleCalendar } from '../hooks/useGoogleCalendar';
 import { Navigation } from './Navigation';
@@ -49,15 +49,20 @@ export function ClockInApp({ user }) {
   // Google Calendar integration
   const googleCalendar = useGoogleCalendar();
 
-  // Check for saved clock-in state on mount
+  // Listen for active clock-in state from Firestore (real-time sync across devices)
   useEffect(() => {
-    const checkSavedClockIn = async () => {
-      const savedClockInTime = localStorage.getItem(`clockInTime_${user.uid}`);
+    if (!user) return;
 
-      if (savedClockInTime) {
-        const clockInTimestamp = parseInt(savedClockInTime, 10);
+    const activeClockInRef = doc(db, 'activeClockIns', user.uid);
+
+    const unsubscribe = onSnapshot(activeClockInRef, async (docSnap) => {
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        const clockInTimestamp = data.clockInTime;
         const clockInDate = new Date(clockInTimestamp);
         const now = new Date();
+
+        console.log('Active clock-in detected from Firestore:', new Date(clockInTimestamp));
 
         // Check if clock-in was on a different day (past midnight)
         if (clockInDate.getDate() !== now.getDate() ||
@@ -66,22 +71,29 @@ export function ClockInApp({ user }) {
 
           // Auto clock-out at midnight
           const midnight = new Date(clockInDate);
-          midnight.setHours(23, 59, 59, 999); // End of that day
+          midnight.setHours(23, 59, 59, 999);
           const midnightTimestamp = midnight.getTime();
 
           console.log('Auto-clocking out at midnight for previous day session');
           await autoClockOut(clockInTimestamp, midnightTimestamp);
 
         } else {
-          // Same day, restore clock-in state
-          console.log('Restoring clock-in state from localStorage');
+          // Same day, restore/sync clock-in state
+          console.log('Syncing clock-in state from Firestore');
           setClockInTime(clockInTimestamp);
           setIsClockedIn(true);
         }
+      } else {
+        // No active clock-in in Firestore
+        console.log('No active clock-in found in Firestore');
+        setIsClockedIn(false);
+        setClockInTime(null);
       }
-    };
+    }, (error) => {
+      console.error('Error listening to active clock-in:', error);
+    });
 
-    checkSavedClockIn();
+    return () => unsubscribe();
   }, [user]);
 
   useEffect(() => {
@@ -205,10 +217,12 @@ export function ClockInApp({ user }) {
       await addDoc(collection(db, 'sessions'), newSession);
       console.log('Auto-clocked session saved successfully');
 
-      // Clear localStorage and reset state
-      localStorage.removeItem(`clockInTime_${user.uid}`);
-      setIsClockedIn(false);
-      setClockInTime(null);
+      // Delete active clock-in from Firestore (syncs across all devices)
+      const activeClockInRef = doc(db, 'activeClockIns', user.uid);
+      await deleteDoc(activeClockInRef);
+      console.log('Active clock-in deleted from Firestore');
+
+      // State will be updated by the Firestore listener
 
       // Reload sessions
       await Promise.all([
@@ -227,11 +241,23 @@ export function ClockInApp({ user }) {
     if (!isClockedIn) {
       const now = Date.now();
       console.log('Clocking in at:', new Date(now));
-      setClockInTime(now);
-      setIsClockedIn(true);
 
-      // Save to localStorage for persistence
-      localStorage.setItem(`clockInTime_${user.uid}`, now.toString());
+      try {
+        // Save active clock-in to Firestore (syncs across all devices)
+        const activeClockInRef = doc(db, 'activeClockIns', user.uid);
+        await setDoc(activeClockInRef, {
+          clockInTime: now,
+          userId: user.uid,
+          userEmail: user.email,
+          createdAt: now
+        });
+        console.log('Active clock-in saved to Firestore');
+
+        // State will be updated by the Firestore listener
+      } catch (error) {
+        console.error('Error saving clock-in to Firestore:', error);
+        alert('Failed to clock in: ' + error.message);
+      }
     } else {
       const clockOutTime = Date.now();
       const totalHours = (clockOutTime - clockInTime) / (1000 * 60 * 60);
@@ -276,10 +302,12 @@ export function ClockInApp({ user }) {
           }
         }
 
-        // Clear localStorage and reset state
-        localStorage.removeItem(`clockInTime_${user.uid}`);
-        setIsClockedIn(false);
-        setClockInTime(null);
+        // Delete active clock-in from Firestore (syncs across all devices)
+        const activeClockInRef = doc(db, 'activeClockIns', user.uid);
+        await deleteDoc(activeClockInRef);
+        console.log('Active clock-in deleted from Firestore');
+
+        // State will be updated by the Firestore listener
 
         // Reload sessions to show the new one immediately
         console.log('Reloading sessions...');
@@ -297,8 +325,13 @@ export function ClockInApp({ user }) {
 
   const handleSignOut = async () => {
     try {
-      // Clear clock-in state from localStorage before signing out
-      localStorage.removeItem(`clockInTime_${user.uid}`);
+      // Delete active clock-in from Firestore before signing out
+      const activeClockInRef = doc(db, 'activeClockIns', user.uid);
+      await deleteDoc(activeClockInRef).catch(() => {
+        // Ignore error if document doesn't exist
+        console.log('No active clock-in to delete');
+      });
+
       await signOut(auth);
     } catch (error) {
       console.error('Error signing out:', error);
