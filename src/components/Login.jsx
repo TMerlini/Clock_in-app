@@ -1,6 +1,5 @@
 import { signInWithPopup } from 'firebase/auth';
 import { auth, googleProvider } from '../lib/firebase';
-import { LogIn } from 'lucide-react';
 import './Login.css';
 
 export function Login({ onLogin }) {
@@ -19,11 +18,11 @@ export function Login({ onLogin }) {
       <div className="login-card">
         <div className="login-header">
           <div className="login-icon">
-            <LogIn />
+            <img src="/images/animated white.gif" alt="Clock In" className="login-gif" />
           </div>
-          <h1 className="login-title">Clock In App</h1>
+          <h1 className="login-title">Clock In</h1>
           <p className="login-description">
-            Track your work hours with ease
+            Intelligent Time Manager
           </p>
         </div>
 
