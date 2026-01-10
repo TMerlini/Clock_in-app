@@ -52,7 +52,9 @@ A comprehensive time tracking application for managing work hours, overtime, mea
 ### ⚙️ Customizable Settings
 - **Hour Thresholds**:
   - Regular hours limit (default: 8h)
-  - Paid overtime threshold (default: 10h)
+  - Unpaid Extra (Isenção) toggle - enable/disable unpaid overtime tracking
+  - Unpaid Extra threshold (default: 10h, configurable when enabled)
+  - Paid overtime starts after unpaid extra threshold (or regular hours if disabled)
 - **Break Settings**:
   - Default lunch duration (hours and minutes)
 - **Calendar Settings**:
@@ -205,8 +207,11 @@ A comprehensive time tracking application for managing work hours, overtime, mea
 #### Configure Hour Thresholds
 1. Navigate to Settings page
 2. Set "Regular Hours Threshold" (e.g., 8 hours)
-3. Set "Paid Overtime Threshold" (e.g., 10 hours)
-4. Hours between these values count as unpaid overtime ("Isenção")
+3. Toggle "Enable Unpaid Extra (Isenção)" to include or exclude unpaid overtime tracking
+4. If enabled, set "Unpaid Extra Threshold" (e.g., 10 hours)
+   - Hours between regular and unpaid extra threshold count as unpaid overtime ("Isenção")
+   - Hours beyond unpaid extra threshold count as paid overtime
+5. If disabled, paid overtime starts immediately after regular hours
 
 #### Set Default Lunch Duration
 1. In "Break Settings" section
@@ -298,7 +303,9 @@ The app is configured for automatic deployment to Vercel:
 
 **userSettings** - User preferences
 - `regularHoursThreshold`: number
-- `overtimeThreshold`: number
+- `enableUnpaidExtra`: boolean (default: true)
+- `unpaidExtraThreshold`: number
+- `overtimeThreshold`: number (calculated based on enableUnpaidExtra)
 - `lunchDuration`: number (decimal hours)
 - `weekStartDay`: string ('monday' | 'sunday')
 - `weekendDaysOff`: number
