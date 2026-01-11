@@ -103,6 +103,9 @@ export function useGoogleCalendar() {
     }
 
     try {
+      // Set the access token for this request
+      window.gapi.client.setToken({ access_token: accessToken });
+      
       const { clockIn, clockOut, regularHours, unpaidHours, paidHours, notes, isPlaceholder } = eventDetails;
 
       const event = {
@@ -142,6 +145,9 @@ Paid Overtime: ${formatHoursMinutes(paidHours)}${notes ? '\n\nNotes: ' + notes :
     }
 
     try {
+      // Set the access token for this request
+      window.gapi.client.setToken({ access_token: accessToken });
+      
       const { clockIn, clockOut, regularHours, unpaidHours, paidHours, notes } = eventDetails;
 
       const event = {
