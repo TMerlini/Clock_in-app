@@ -316,6 +316,26 @@ export function ClockInApp({ user }) {
         totalHours
       });
 
+      // Check if clock-in was on a weekend (Saturday=6 or Sunday=0)
+      const clockInDate = new Date(clockInTime);
+      const dayOfWeek = clockInDate.getDay();
+      const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+
+      // Load weekend settings
+      let weekendDaysOff = 1;
+      let weekendBonus = 100;
+      try {
+        const settingsRef = doc(db, 'userSettings', user.uid);
+        const settingsDoc = await getDoc(settingsRef);
+        if (settingsDoc.exists()) {
+          const settings = settingsDoc.data();
+          weekendDaysOff = settings.weekendDaysOff || 1;
+          weekendBonus = settings.weekendBonus || 100;
+        }
+      } catch (error) {
+        console.error('Error loading weekend settings:', error);
+      }
+
       const newSession = {
         userId: user.uid,
         userEmail: user.email,
@@ -325,6 +345,9 @@ export function ClockInApp({ user }) {
         regularHours: Math.min(totalHours, 8),
         unpaidExtraHours: totalHours > 8 ? Math.min(totalHours - 8, 2) : 0,
         paidExtraHours: totalHours > 10 ? totalHours - 10 : 0,
+        isWeekend: isWeekend,
+        weekendDaysOff: isWeekend ? weekendDaysOff : 0,
+        weekendBonus: isWeekend ? weekendBonus : 0,
         calendarEventId: null,
         calendarSyncStatus: 'not_synced',
         lastSyncAt: null
