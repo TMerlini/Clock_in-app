@@ -12,16 +12,28 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
+  cursor: grab;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
   transition: all 0.3s ease;
   backdrop-filter: blur(10px);
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
+}
+
+.hamburger-button.dragging {
+  transition: none;
+  cursor: grabbing;
 }
 
 .hamburger-button:hover {
   transform: scale(1.05);
   background: rgba(255, 255, 255, 0.2);
   box-shadow: 0 6px 16px rgba(255, 255, 255, 0.3);
+}
+
+.hamburger-button:active {
+  cursor: grabbing;
 }
 
 .hamburger-button svg {

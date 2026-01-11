@@ -4,10 +4,11 @@ import './Navigation.css';
 
 export function Navigation({ currentPage, onPageChange }) {
   const [isOpen, setIsOpen] = useState(false);
-  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [buttonPosition, setButtonPosition] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
-  const menuRef = useRef(null);
+  const buttonRef = useRef(null);
+  const dragTimeout = useRef(null);
 
   const menuItems = [
     { id: 'home', label: 'Home', icon: Home },
@@ -23,12 +24,97 @@ export function Navigation({ currentPage, onPageChange }) {
     setIsOpen(false);
   };
 
+  // Handle button drag start
+  const handleButtonDragStart = (e) => {
+    const clientX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
+    const clientY = e.type.includes('touch') ? e.touches[0].clientY : e.clientY;
+    
+    // Start a timeout - if user holds for 100ms, it's a drag, not a click
+    dragTimeout.current = setTimeout(() => {
+      setIsDragging(true);
+      
+      const buttonRect = buttonRef.current?.getBoundingClientRect();
+      if (buttonRect) {
+        setDragStart({
+          x: clientX - buttonRect.left,
+          y: clientY - buttonRect.top
+        });
+      }
+    }, 100);
+  };
+
+  // Handle dragging the button
+  useEffect(() => {
+    if (!isDragging) return;
+
+    const handleDrag = (e) => {
+      e.preventDefault();
+      const clientX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
+      const clientY = e.type.includes('touch') ? e.touches[0].clientY : e.clientY;
+
+      const newX = clientX - dragStart.x;
+      const newY = clientY - dragStart.y;
+
+      // Constrain to viewport
+      const buttonSize = buttonRef.current?.offsetWidth || 48;
+      
+      const maxX = window.innerWidth - buttonSize;
+      const maxY = window.innerHeight - buttonSize;
+
+      setButtonPosition({
+        x: Math.max(0, Math.min(newX, maxX)),
+        y: Math.max(0, Math.min(newY, maxY))
+      });
+    };
+
+    const handleDragEnd = () => {
+      setIsDragging(false);
+    };
+
+    document.addEventListener('mousemove', handleDrag);
+    document.addEventListener('mouseup', handleDragEnd);
+    document.addEventListener('touchmove', handleDrag, { passive: false });
+    document.addEventListener('touchend', handleDragEnd);
+
+    return () => {
+      document.removeEventListener('mousemove', handleDrag);
+      document.removeEventListener('mouseup', handleDragEnd);
+      document.removeEventListener('touchmove', handleDrag);
+      document.removeEventListener('touchend', handleDragEnd);
+    };
+  }, [isDragging, dragStart]);
+
+  // Handle button click (toggle menu)
+  const handleButtonClick = () => {
+    if (!isDragging) {
+      setIsOpen(!isOpen);
+    }
+  };
+
+  // Clear drag timeout on mouse/touch end
+  const handleButtonEnd = () => {
+    if (dragTimeout.current) {
+      clearTimeout(dragTimeout.current);
+      dragTimeout.current = null;
+    }
+  };
+
   return (
     <>
       <button
-        className="hamburger-button"
-        onClick={() => setIsOpen(!isOpen)}
+        ref={buttonRef}
+        className={`hamburger-button ${isDragging ? 'dragging' : ''}`}
+        onClick={handleButtonClick}
+        onMouseDown={handleButtonDragStart}
+        onMouseUp={handleButtonEnd}
+        onTouchStart={handleButtonDragStart}
+        onTouchEnd={handleButtonEnd}
         aria-label="Toggle menu"
+        style={{
+          left: buttonPosition.x !== 0 ? `${buttonPosition.x}px` : undefined,
+          top: buttonPosition.y !== 0 ? `${buttonPosition.y}px` : undefined,
+          cursor: isDragging ? 'grabbing' : 'grab'
+        }}
       >
         {isOpen ? <X /> : <Menu />}
       </button>
