@@ -1,6 +1,6 @@
 .hamburger-button {
   position: fixed;
-  top: 0.75rem;
+  top: 75px;
   left: 0.75rem;
   z-index: 1001;
   width: 48px;
@@ -165,7 +165,7 @@
 
 @media (max-width: 480px) {
   .hamburger-button {
-    top: 0.5rem;
+    top: 70px;
     left: 0.5rem;
     width: 44px;
     height: 44px;
