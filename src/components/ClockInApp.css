@@ -442,9 +442,6 @@
   font-weight: 500;
   color: var(--muted-foreground);
   margin-bottom: 1.5rem;
-  padding: 0.5rem 1rem;
-  background: rgba(139, 92, 246, 0.1);
-  border-radius: 8px;
   font-style: italic;
   animation: fadeIn 0.5s ease-in;
 }

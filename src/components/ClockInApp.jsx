@@ -382,27 +382,27 @@ export function ClockInApp({ user }) {
 
   const getWorkingMessage = (hours) => {
     if (hours < 1) {
-      return "Just getting started! 💪";
+      return "Just getting started!";
     } else if (hours < 2) {
       return "Rome wasn't built in a day...";
     } else if (hours < 3) {
-      return "You're on fire! Keep going! 🔥";
+      return "You're on fire! Keep going!";
     } else if (hours < 4) {
-      return "Halfway through the morning! ☕";
+      return "Halfway through the morning!";
     } else if (hours < 5) {
-      return "Maybe time for a little break, sunshine? ☀️";
+      return "Maybe time for a little break, sunshine?";
     } else if (hours < 6) {
-      return "Looking good! Stay hydrated! 💧";
+      return "Looking good! Stay hydrated!";
     } else if (hours < 7) {
-      return "The finish line is in sight! 🏁";
+      return "The finish line is in sight!";
     } else if (hours < 8) {
-      return "Almost there champion! 🏆";
+      return "Almost there champion!";
     } else if (hours < 9) {
-      return "Into the extended hours zone! 😅";
+      return "Into the extended hours zone!";
     } else if (hours < 10) {
-      return "You're a machine! But seriously... 🤖";
+      return "You're a machine! But seriously...";
     } else {
-      return "Stop it, really! It's been 10+ hours! 😱";
+      return "Stop it, really! It's been 10+ hours!";
     }
   };
 
