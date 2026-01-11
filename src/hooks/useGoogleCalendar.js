@@ -38,10 +38,17 @@ export function useGoogleCalendar() {
   const initializeGapiClient = async () => {
     try {
       await new Promise((resolve) => window.gapi.load('client', resolve));
-      await window.gapi.client.init({
-        apiKey: GOOGLE_API_KEY,
+      
+      // Only include API key if it's set (not the placeholder)
+      const initConfig = {
         discoveryDocs: [DISCOVERY_DOC],
-      });
+      };
+      
+      if (GOOGLE_API_KEY && !GOOGLE_API_KEY.includes('YOUR_GOOGLE_API_KEY')) {
+        initConfig.apiKey = GOOGLE_API_KEY;
+      }
+      
+      await window.gapi.client.init(initConfig);
       setGapiInited(true);
       console.log('GAPI client initialized');
     } catch (error) {
@@ -96,11 +103,13 @@ export function useGoogleCalendar() {
     }
 
     try {
-      const { clockIn, clockOut, regularHours, unpaidHours, paidHours, notes } = eventDetails;
+      const { clockIn, clockOut, regularHours, unpaidHours, paidHours, notes, isPlaceholder } = eventDetails;
 
       const event = {
-        summary: 'Work Session',
-        description: `Regular Hours: ${formatHoursMinutes(regularHours)}
+        summary: isPlaceholder ? 'Work Session (In Progress)' : 'Work Session',
+        description: isPlaceholder 
+          ? 'Clock-in recorded. Session in progress...'
+          : `Regular Hours: ${formatHoursMinutes(regularHours)}
 Unpaid Extra (Isenção): ${formatHoursMinutes(unpaidHours)}
 Paid Overtime: ${formatHoursMinutes(paidHours)}${notes ? '\n\nNotes: ' + notes : ''}`,
         start: {
@@ -111,7 +120,7 @@ Paid Overtime: ${formatHoursMinutes(paidHours)}${notes ? '\n\nNotes: ' + notes :
           dateTime: new Date(clockOut).toISOString(),
           timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
         },
-        colorId: '9', // Blue color for work events
+        colorId: isPlaceholder ? '11' : '9', // Red for in-progress, Blue for completed
       };
 
       const response = await window.gapi.client.calendar.events.insert({
@@ -127,6 +136,44 @@ Paid Overtime: ${formatHoursMinutes(paidHours)}${notes ? '\n\nNotes: ' + notes :
     }
   };
 
+  const updateCalendarEvent = async (eventId, eventDetails) => {
+    if (!gapiInited || !accessToken) {
+      throw new Error('Calendar API not initialized or not authorized');
+    }
+
+    try {
+      const { clockIn, clockOut, regularHours, unpaidHours, paidHours, notes } = eventDetails;
+
+      const event = {
+        summary: 'Work Session',
+        description: `Regular Hours: ${formatHoursMinutes(regularHours)}
+Unpaid Extra (Isenção): ${formatHoursMinutes(unpaidHours)}
+Paid Overtime: ${formatHoursMinutes(paidHours)}${notes ? '\n\nNotes: ' + notes : ''}`,
+        start: {
+          dateTime: new Date(clockIn).toISOString(),
+          timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        },
+        end: {
+          dateTime: new Date(clockOut).toISOString(),
+          timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        },
+        colorId: '9', // Blue color for completed work events
+      };
+
+      const response = await window.gapi.client.calendar.events.patch({
+        calendarId: 'primary',
+        eventId: eventId,
+        resource: event,
+      });
+
+      console.log('Event updated:', response.result);
+      return response.result;
+    } catch (error) {
+      console.error('Error updating calendar event:', error);
+      throw error;
+    }
+  };
+
   const isAuthorized = () => {
     return gapiInited && gisInited && accessToken !== null;
   };
@@ -137,5 +184,6 @@ Paid Overtime: ${formatHoursMinutes(paidHours)}${notes ? '\n\nNotes: ' + notes :
     requestAuthorization,
     revokeAuthorization,
     createCalendarEvent,
+    updateCalendarEvent,
   };
 }

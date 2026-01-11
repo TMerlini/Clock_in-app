@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { signOut } from 'firebase/auth';
-import { collection, addDoc, query, where, getDocs, orderBy, doc, setDoc, deleteDoc, onSnapshot } from 'firebase/firestore';
+import { collection, addDoc, query, where, getDocs, orderBy, doc, setDoc, deleteDoc, onSnapshot, getDoc } from 'firebase/firestore';
 import { auth, db } from '../lib/firebase';
 import { useGoogleCalendar } from '../hooks/useGoogleCalendar';
 import { Navigation } from './Navigation';
@@ -266,13 +266,38 @@ export function ClockInApp({ user }) {
       console.log('Clocking in at:', new Date(now));
 
       try {
+        let calendarEventId = null;
+
+        // Create placeholder calendar event if authorized
+        if (googleCalendar.isAuthorized) {
+          try {
+            // Create placeholder event with estimated end time (8 hours from now)
+            const estimatedEndTime = now + (8 * 60 * 60 * 1000);
+            const placeholderEvent = await googleCalendar.createCalendarEvent({
+              clockIn: now,
+              clockOut: estimatedEndTime,
+              regularHours: 0,
+              unpaidHours: 0,
+              paidHours: 0,
+              notes: '',
+              isPlaceholder: true
+            });
+            calendarEventId = placeholderEvent.id;
+            console.log('Placeholder calendar event created:', calendarEventId);
+          } catch (calendarError) {
+            console.error('Failed to create placeholder calendar event:', calendarError);
+            // Continue without calendar event
+          }
+        }
+
         // Save active clock-in to Firestore (syncs across all devices)
         const activeClockInRef = doc(db, 'activeClockIns', user.uid);
         await setDoc(activeClockInRef, {
           clockInTime: now,
           userId: user.uid,
           userEmail: user.email,
-          createdAt: now
+          createdAt: now,
+          calendarEventId: calendarEventId // Store event ID for later update
         });
         console.log('Active clock-in saved to Firestore');
 
@@ -300,33 +325,61 @@ export function ClockInApp({ user }) {
         regularHours: Math.min(totalHours, 8),
         unpaidExtraHours: totalHours > 8 ? Math.min(totalHours - 8, 2) : 0,
         paidExtraHours: totalHours > 10 ? totalHours - 10 : 0,
+        calendarEventId: null,
+        calendarSyncStatus: 'not_synced',
+        lastSyncAt: null
       };
 
       try {
-        console.log('Saving session to Firebase:', newSession);
-        const docRef = await addDoc(collection(db, 'sessions'), newSession);
-        console.log('Session saved successfully with ID:', docRef.id);
+        // Get the calendar event ID from active clock-in
+        const activeClockInRef = doc(db, 'activeClockIns', user.uid);
+        const activeClockInSnap = await getDoc(activeClockInRef);
+        const storedCalendarEventId = activeClockInSnap.exists() ? activeClockInSnap.data().calendarEventId : null;
 
-        // Automatically create calendar event if authorized
+        // Update or create calendar event if authorized
         if (googleCalendar.isAuthorized) {
           try {
-            await googleCalendar.createCalendarEvent({
-              clockIn: clockInTime,
-              clockOut: clockOutTime,
-              regularHours: newSession.regularHours,
-              unpaidHours: newSession.unpaidExtraHours,
-              paidHours: newSession.paidExtraHours,
-              notes: ''
-            });
-            console.log('Calendar event created automatically');
+            if (storedCalendarEventId) {
+              // Update existing placeholder event
+              await googleCalendar.updateCalendarEvent(storedCalendarEventId, {
+                clockIn: clockInTime,
+                clockOut: clockOutTime,
+                regularHours: newSession.regularHours,
+                unpaidHours: newSession.unpaidExtraHours,
+                paidHours: newSession.paidExtraHours,
+                notes: ''
+              });
+              newSession.calendarEventId = storedCalendarEventId;
+              newSession.calendarSyncStatus = 'synced';
+              newSession.lastSyncAt = Date.now();
+              console.log('Calendar event updated:', storedCalendarEventId);
+            } else {
+              // Create new event if placeholder wasn't created
+              const calendarEvent = await googleCalendar.createCalendarEvent({
+                clockIn: clockInTime,
+                clockOut: clockOutTime,
+                regularHours: newSession.regularHours,
+                unpaidHours: newSession.unpaidExtraHours,
+                paidHours: newSession.paidExtraHours,
+                notes: ''
+              });
+              newSession.calendarEventId = calendarEvent.id;
+              newSession.calendarSyncStatus = 'synced';
+              newSession.lastSyncAt = Date.now();
+              console.log('Calendar event created:', calendarEvent.id);
+            }
           } catch (calendarError) {
-            console.error('Failed to create calendar event:', calendarError);
+            console.error('Failed to sync calendar event:', calendarError);
+            newSession.calendarSyncStatus = 'failed';
             // Don't block the flow if calendar sync fails
           }
         }
 
+        console.log('Saving session to Firebase:', newSession);
+        const docRef = await addDoc(collection(db, 'sessions'), newSession);
+        console.log('Session saved successfully with ID:', docRef.id);
+
         // Delete active clock-in from Firestore (syncs across all devices)
-        const activeClockInRef = doc(db, 'activeClockIns', user.uid);
         await deleteDoc(activeClockInRef);
         console.log('Active clock-in deleted from Firestore');
 

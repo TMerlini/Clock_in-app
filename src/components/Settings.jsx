@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc, collection, query, where, getDocs, updateDoc } from 'firebase/firestore';
 import { db, auth } from '../lib/firebase';
 import { CalendarAuthButton } from './CalendarAuthButton';
-import { Settings as SettingsIcon, Save, RotateCcw, Clock, Coffee, AlertTriangle, DollarSign, Calendar } from 'lucide-react';
+import { Settings as SettingsIcon, Save, RotateCcw, Clock, Coffee, AlertTriangle, DollarSign, Calendar, CheckCircle, XCircle, AlertCircle, RefreshCw } from 'lucide-react';
+import { format } from 'date-fns';
 import './Settings.css';
 
 export function Settings({ googleCalendar }) {
@@ -18,10 +19,22 @@ export function Settings({ googleCalendar }) {
   const [weekendBonus, setWeekendBonus] = useState(100);
   const [saved, setSaved] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [syncing, setSyncing] = useState(false);
+  const [showSetupInstructions, setShowSetupInstructions] = useState(false);
+  const [syncStats, setSyncStats] = useState({
+    totalSessions: 0,
+    syncedSessions: 0,
+    unsyncedSessions: 0,
+    failedSessions: 0,
+    lastSyncAt: null
+  });
 
   useEffect(() => {
     loadSettings();
-  }, []);
+    if (googleCalendar?.isAuthorized) {
+      loadSyncStats();
+    }
+  }, [googleCalendar?.isAuthorized]);
 
   const loadSettings = async () => {
     try {
@@ -50,6 +63,136 @@ export function Settings({ googleCalendar }) {
       console.error('Error loading settings:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadSyncStats = async () => {
+    try {
+      const user = auth.currentUser;
+      if (!user) return;
+
+      const sessionsQuery = query(
+        collection(db, 'sessions'),
+        where('userId', '==', user.uid)
+      );
+      const sessionsSnapshot = await getDocs(sessionsQuery);
+      
+      let synced = 0;
+      let unsynced = 0;
+      let failed = 0;
+      let latestSyncTime = null;
+
+      sessionsSnapshot.forEach((doc) => {
+        const session = doc.data();
+        const status = session.calendarSyncStatus || 'not_synced';
+        
+        if (status === 'synced') {
+          synced++;
+          if (session.lastSyncAt && (!latestSyncTime || session.lastSyncAt > latestSyncTime)) {
+            latestSyncTime = session.lastSyncAt;
+          }
+        } else if (status === 'failed') {
+          failed++;
+        } else {
+          unsynced++;
+        }
+      });
+
+      setSyncStats({
+        totalSessions: sessionsSnapshot.size,
+        syncedSessions: synced,
+        unsyncedSessions: unsynced,
+        failedSessions: failed,
+        lastSyncAt: latestSyncTime
+      });
+    } catch (error) {
+      console.error('Error loading sync stats:', error);
+    }
+  };
+
+  const handleBatchSync = async () => {
+    if (!googleCalendar || !googleCalendar.isAuthorized) {
+      alert('Please authorize Google Calendar first');
+      return;
+    }
+
+    setSyncing(true);
+    try {
+      const user = auth.currentUser;
+      if (!user) return;
+
+      // Get all unsynced and failed sessions
+      const sessionsQuery = query(
+        collection(db, 'sessions'),
+        where('userId', '==', user.uid)
+      );
+      const sessionsSnapshot = await getDocs(sessionsQuery);
+      
+      const unsyncedSessions = [];
+      sessionsSnapshot.forEach((docSnap) => {
+        const session = docSnap.data();
+        const status = session.calendarSyncStatus || 'not_synced';
+        if (status === 'not_synced' || status === 'failed') {
+          unsyncedSessions.push({ id: docSnap.id, ...session });
+        }
+      });
+
+      if (unsyncedSessions.length === 0) {
+        alert('All sessions are already synced!');
+        setSyncing(false);
+        return;
+      }
+
+      let successCount = 0;
+      let failCount = 0;
+
+      for (const session of unsyncedSessions) {
+        try {
+          // Create calendar event
+          const calendarEvent = await googleCalendar.createCalendarEvent({
+            clockIn: session.clockIn,
+            clockOut: session.clockOut,
+            regularHours: session.regularHours,
+            unpaidHours: session.unpaidExtraHours,
+            paidHours: session.paidExtraHours,
+            notes: session.notes || ''
+          });
+
+          // Update session with sync info
+          const sessionRef = doc(db, 'sessions', session.id);
+          await updateDoc(sessionRef, {
+            calendarEventId: calendarEvent.id,
+            calendarSyncStatus: 'synced',
+            lastSyncAt: Date.now()
+          });
+
+          successCount++;
+        } catch (error) {
+          console.error(`Failed to sync session ${session.id}:`, error);
+          
+          // Mark as failed
+          const sessionRef = doc(db, 'sessions', session.id);
+          await updateDoc(sessionRef, {
+            calendarSyncStatus: 'failed'
+          });
+          
+          failCount++;
+        }
+      }
+
+      // Reload stats
+      await loadSyncStats();
+
+      if (failCount === 0) {
+        alert(`Successfully synced ${successCount} session(s)!`);
+      } else {
+        alert(`Synced ${successCount} session(s). ${failCount} failed.`);
+      }
+    } catch (error) {
+      console.error('Error during batch sync:', error);
+      alert('Failed to sync sessions. Please try again.');
+    } finally {
+      setSyncing(false);
     }
   };
 
@@ -368,6 +511,51 @@ export function Settings({ googleCalendar }) {
               onAuthorize={googleCalendar.requestAuthorization}
               onRevoke={googleCalendar.revokeAuthorization}
             />
+
+            {googleCalendar.isAuthorized && (
+              <div className="sync-status-container">
+                <h3 className="sync-status-title">Sync Status</h3>
+                <div className="sync-stats-grid">
+                  <div className="sync-stat-card synced">
+                    <CheckCircle className="stat-icon" />
+                    <div className="stat-content">
+                      <div className="stat-value">{syncStats.syncedSessions}</div>
+                      <div className="stat-label">Synced</div>
+                    </div>
+                  </div>
+                  <div className="sync-stat-card unsynced">
+                    <AlertCircle className="stat-icon" />
+                    <div className="stat-content">
+                      <div className="stat-value">{syncStats.unsyncedSessions}</div>
+                      <div className="stat-label">Pending</div>
+                    </div>
+                  </div>
+                  <div className="sync-stat-card failed">
+                    <XCircle className="stat-icon" />
+                    <div className="stat-content">
+                      <div className="stat-value">{syncStats.failedSessions}</div>
+                      <div className="stat-label">Failed</div>
+                    </div>
+                  </div>
+                </div>
+                {syncStats.lastSyncAt && (
+                  <div className="last-sync-info">
+                    <Clock className="last-sync-icon" />
+                    <span>Last synced: {format(new Date(syncStats.lastSyncAt), 'MMM dd, yyyy HH:mm')}</span>
+                  </div>
+                )}
+                {(syncStats.unsyncedSessions > 0 || syncStats.failedSessions > 0) && (
+                  <button 
+                    className="batch-sync-button" 
+                    onClick={handleBatchSync}
+                    disabled={syncing}
+                  >
+                    <RefreshCw className={syncing ? 'spinning' : ''} />
+                    {syncing ? 'Syncing...' : `Sync ${syncStats.unsyncedSessions + syncStats.failedSessions} Session(s)`}
+                  </button>
+                )}
+              </div>
+            )}
           </section>
         )}
 
