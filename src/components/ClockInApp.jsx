@@ -380,6 +380,32 @@ export function ClockInApp({ user }) {
     return hours.toFixed(2);
   };
 
+  const getWorkingMessage = (hours) => {
+    if (hours < 1) {
+      return "Just getting started! 💪";
+    } else if (hours < 2) {
+      return "Rome wasn't built in a day...";
+    } else if (hours < 3) {
+      return "You're on fire! Keep going! 🔥";
+    } else if (hours < 4) {
+      return "Halfway through the morning! ☕";
+    } else if (hours < 5) {
+      return "Maybe time for a little break, sunshine? ☀️";
+    } else if (hours < 6) {
+      return "Looking good! Stay hydrated! 💧";
+    } else if (hours < 7) {
+      return "The finish line is in sight! 🏁";
+    } else if (hours < 8) {
+      return "Almost there champion! 🏆";
+    } else if (hours < 9) {
+      return "Into the extended hours zone! 😅";
+    } else if (hours < 10) {
+      return "You're a machine! But seriously... 🤖";
+    } else {
+      return "Stop it, really! It's been 10+ hours! 😱";
+    }
+  };
+
   const currentElapsedTime = isClockedIn ? currentTime - clockInTime : 0;
   const currentTotalHours = currentElapsedTime / (1000 * 60 * 60);
   const currentBreakdown = isClockedIn ? calculateTimeBreakdown(currentTotalHours) : null;
@@ -440,6 +466,10 @@ export function ClockInApp({ user }) {
                         <p className="timer-title">Elapsed Time</p>
                         <div className="elapsed-time">
                           {formatTime(currentElapsedTime)}
+                        </div>
+
+                        <div className="working-message">
+                          {getWorkingMessage(currentTotalHours)}
                         </div>
 
                         <div className="time-breakdown">
