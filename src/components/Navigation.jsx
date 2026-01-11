@@ -1,9 +1,13 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Menu, X, Home, Calendar, BarChart3, Info, Settings, HelpCircle } from 'lucide-react';
 import './Navigation.css';
 
 export function Navigation({ currentPage, onPageChange }) {
   const [isOpen, setIsOpen] = useState(false);
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const menuRef = useRef(null);
 
   const menuItems = [
     { id: 'home', label: 'Home', icon: Home },

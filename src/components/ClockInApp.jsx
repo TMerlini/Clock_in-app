@@ -451,7 +451,6 @@ export function ClockInApp({ user }) {
                 <div className="card">
                   <div className="card-header">
                     <h2 className="card-title">Time Tracker</h2>
-                    <p className="card-description">Click ▼</p>
                   </div>
                   <div className="card-content">
                     <button
