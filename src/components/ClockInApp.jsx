@@ -608,6 +608,8 @@ export function ClockInApp({ user }) {
 
                   {sessionsForDate.length > 0 && (() => {
                     const totalDayHours = sessionsForDate.reduce((sum, s) => sum + s.totalHours, 0);
+                    const totalLunchTime = sessionsForDate.reduce((sum, s) => sum + (s.lunchDuration || 0), 0);
+                    const totalWorkingHours = totalDayHours - totalLunchTime;
                     const totalRegular = sessionsForDate.reduce((sum, s) => sum + s.regularHours, 0);
                     const totalUnpaid = sessionsForDate.reduce((sum, s) => sum + s.unpaidExtraHours, 0);
                     const totalPaid = sessionsForDate.reduce((sum, s) => sum + s.paidExtraHours, 0);
@@ -616,15 +618,15 @@ export function ClockInApp({ user }) {
                     let notificationIcon = <CheckCircle />;
                     let notificationText = 'Regular work day';
 
-                    if (totalDayHours > 10) {
+                    if (totalWorkingHours > 10) {
                       notificationType = 'overtime';
                       notificationIcon = <AlertTriangle />;
                       notificationText = 'Overtime day - Extra paid hours accumulated';
-                    } else if (totalDayHours > 8) {
+                    } else if (totalWorkingHours > 8) {
                       notificationType = 'unpaid';
                       notificationIcon = <Info />;
                       notificationText = 'Extended hours - Unpaid overtime period';
-                    } else if (totalDayHours < 8) {
+                    } else if (totalWorkingHours < 8) {
                       notificationType = 'short';
                       notificationIcon = <Info />;
                       notificationText = 'Under 8 hours worked';
@@ -636,7 +638,7 @@ export function ClockInApp({ user }) {
                         <div className="summary-content">
                           <div className="summary-text">{notificationText}</div>
                           <div className="summary-stats">
-                            <span className="stat-item">Total: <strong>{formatHoursMinutes(totalDayHours)}</strong></span>
+                            <span className="stat-item">Working: <strong>{formatHoursMinutes(totalWorkingHours)}</strong></span>
                             {totalRegular > 0 && <span className="stat-item regular">Regular: {formatHoursMinutes(totalRegular)}</span>}
                             {totalUnpaid > 0 && <span className="stat-item unpaid">Unpaid: {formatHoursMinutes(totalUnpaid)}</span>}
                             {totalPaid > 0 && <span className="stat-item paid">Paid OT: {formatHoursMinutes(totalPaid)}</span>}
