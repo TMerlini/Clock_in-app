@@ -28,16 +28,16 @@
 }
 
 .header-logo-wrapper {
-  width: 50px;
+  width: 45px;
   height: 50px;
-  background: rgba(139, 92, 246, 0.08);
-  backdrop-filter: blur(10px);
+  background: rgba(139, 92, 246, 0.05);
+  backdrop-filter: blur(5px);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 0.5rem;
-  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.15);
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.02);
   position: relative;
   flex-shrink: 0;
 }
@@ -69,7 +69,7 @@
   bottom: -5px;
   border-radius: 50%;
   background: linear-gradient(135deg, #6d28d9, #5b21b6, #4c1d95);
-  filter: blur(8px);
+  filter: blur(4px);
   opacity: 0.3;
   z-index: -1;
   animation: pulse-icon-glow 2s ease-in-out infinite;
@@ -205,7 +205,7 @@
   }
 
   .header-logo-wrapper {
-    width: 44px;
+    width: 48px;
     height: 44px;
     padding: 0.4rem;
   }
