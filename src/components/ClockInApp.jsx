@@ -758,7 +758,9 @@ export function ClockInApp({ user }) {
       <div className="app-header">
         <div className="header-content">
           <div className="header-left">
-            <img src="/images/animated white.gif" alt="Clock In Logo" className="header-logo" />
+            <div className="header-logo-wrapper">
+              <img src="/images/animated white.gif" alt="Clock In Logo" className="header-logo" />
+            </div>
             <div className="header-title-wrapper">
               <h1 className="header-title">CLOCK IN</h1>
               <p className="header-subtitle">Time Manager</p>
