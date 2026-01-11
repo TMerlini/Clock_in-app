@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { doc, getDoc, setDoc, deleteDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc, deleteDoc, onSnapshot } from 'firebase/firestore';
 import { auth, db } from '../lib/firebase';
 import { GOOGLE_CLIENT_ID, CALENDAR_SCOPES, GOOGLE_API_KEY } from '../lib/googleConfig';
 import { formatHoursMinutes } from '../lib/utils';
@@ -36,6 +36,33 @@ export function useGoogleCalendar() {
     loadGapi();
     loadGis();
   }, []);
+
+  // Set up real-time listener for token changes (syncs across devices)
+  useEffect(() => {
+    if (!gapiInited || !gisInited) return;
+
+    const user = auth.currentUser;
+    if (!user) return;
+
+    const tokenRef = doc(db, 'calendarTokens', user.uid);
+    
+    // Real-time listener for token changes
+    const unsubscribe = onSnapshot(tokenRef, (docSnap) => {
+      if (docSnap.exists()) {
+        const storedToken = docSnap.data().accessToken;
+        setAccessToken(storedToken);
+        console.log('Token synced from Firestore (real-time)');
+      } else {
+        // Token was deleted (user disconnected on another device)
+        setAccessToken(null);
+        console.log('Token removed (disconnected on another device)');
+      }
+    }, (error) => {
+      console.error('Error listening to token changes:', error);
+    });
+
+    return () => unsubscribe();
+  }, [gapiInited, gisInited]);
 
   const initializeGapiClient = async () => {
     try {
@@ -88,25 +115,6 @@ export function useGoogleCalendar() {
       setTokenClient(client);
       setGisInited(true);
       console.log('GIS client initialized');
-
-      // Check if we have a stored token in Firestore
-      const loadStoredToken = async () => {
-        const user = auth.currentUser;
-        if (user) {
-          try {
-            const tokenRef = doc(db, 'calendarTokens', user.uid);
-            const tokenDoc = await getDoc(tokenRef);
-            if (tokenDoc.exists()) {
-              const storedToken = tokenDoc.data().accessToken;
-              setAccessToken(storedToken);
-              console.log('Loaded stored token from Firestore');
-            }
-          } catch (error) {
-            console.error('Error loading token from Firestore:', error);
-          }
-        }
-      };
-      loadStoredToken();
     } catch (error) {
       console.error('Error initializing GIS client:', error);
     }
