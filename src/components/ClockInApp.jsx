@@ -129,7 +129,20 @@ export function ClockInApp({ user }) {
   }, [user]);
 
   useEffect(() => {
-    loadSessionsForDate(selectedDate);
+    // Set up real-time listener for sessions
+    const sessionsRef = collection(db, 'sessions');
+    const q = query(
+      sessionsRef,
+      where('userId', '==', user.uid)
+    );
+
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      console.log('Sessions updated via real-time listener');
+      loadSessionsForDate(selectedDate);
+      loadSessionDates();
+    });
+
+    return () => unsubscribe();
   }, [selectedDate, user]);
 
   const loadSessionDates = async () => {

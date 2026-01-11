@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react';
+import { doc, getDoc, setDoc, deleteDoc } from 'firebase/firestore';
+import { auth, db } from '../lib/firebase';
 import { GOOGLE_CLIENT_ID, CALENDAR_SCOPES, GOOGLE_API_KEY } from '../lib/googleConfig';
 import { formatHoursMinutes } from '../lib/utils';
 
@@ -61,10 +63,24 @@ export function useGoogleCalendar() {
       const client = window.google.accounts.oauth2.initTokenClient({
         client_id: GOOGLE_CLIENT_ID,
         scope: CALENDAR_SCOPES,
-        callback: (response) => {
+        callback: async (response) => {
           if (response.access_token) {
             setAccessToken(response.access_token);
-            localStorage.setItem('googleCalendarToken', response.access_token);
+            
+            // Store token in Firestore for cross-device sync
+            const user = auth.currentUser;
+            if (user) {
+              try {
+                const tokenRef = doc(db, 'calendarTokens', user.uid);
+                await setDoc(tokenRef, {
+                  accessToken: response.access_token,
+                  updatedAt: Date.now()
+                });
+                console.log('Access token saved to Firestore');
+              } catch (error) {
+                console.error('Error saving token to Firestore:', error);
+              }
+            }
             console.log('Access token received');
           }
         },
@@ -73,11 +89,24 @@ export function useGoogleCalendar() {
       setGisInited(true);
       console.log('GIS client initialized');
 
-      // Check if we have a stored token
-      const storedToken = localStorage.getItem('googleCalendarToken');
-      if (storedToken) {
-        setAccessToken(storedToken);
-      }
+      // Check if we have a stored token in Firestore
+      const loadStoredToken = async () => {
+        const user = auth.currentUser;
+        if (user) {
+          try {
+            const tokenRef = doc(db, 'calendarTokens', user.uid);
+            const tokenDoc = await getDoc(tokenRef);
+            if (tokenDoc.exists()) {
+              const storedToken = tokenDoc.data().accessToken;
+              setAccessToken(storedToken);
+              console.log('Loaded stored token from Firestore');
+            }
+          } catch (error) {
+            console.error('Error loading token from Firestore:', error);
+          }
+        }
+      };
+      loadStoredToken();
     } catch (error) {
       console.error('Error initializing GIS client:', error);
     }
@@ -89,11 +118,22 @@ export function useGoogleCalendar() {
     }
   };
 
-  const revokeAuthorization = () => {
+  const revokeAuthorization = async () => {
     if (accessToken) {
       window.google.accounts.oauth2.revoke(accessToken);
       setAccessToken(null);
-      localStorage.removeItem('googleCalendarToken');
+      
+      // Remove token from Firestore
+      const user = auth.currentUser;
+      if (user) {
+        try {
+          const tokenRef = doc(db, 'calendarTokens', user.uid);
+          await deleteDoc(tokenRef);
+          console.log('Token removed from Firestore');
+        } catch (error) {
+          console.error('Error removing token from Firestore:', error);
+        }
+      }
     }
   };
 
