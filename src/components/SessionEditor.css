@@ -147,6 +147,23 @@
   font-size: 0.95rem;
 }
 
+.form-group-inline {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+.inline-field {
+  flex: 1;
+  min-width: 0;
+}
+
+.inline-field.checkbox-group {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+}
+
 .label-icon {
   width: 18px;
   height: 18px;
@@ -385,6 +402,11 @@
 
   .form-group label {
     font-size: 0.9rem;
+  }
+
+  .form-group-inline {
+    flex-direction: column;
+    gap: 1rem;
   }
 
   .time-input,

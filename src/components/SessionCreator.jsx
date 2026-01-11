@@ -170,8 +170,8 @@ export function SessionCreator({ user, selectedDate, onClose, onUpdate }) {
           </div>
 
           {includeLunchTime && (
-            <>
-              <div className="form-group">
+            <div className="form-group form-group-inline">
+              <div className="inline-field">
                 <label>Lunch Duration</label>
                 <div className="lunch-duration-inputs">
                   <div className="time-input-wrapper">
@@ -201,7 +201,7 @@ export function SessionCreator({ user, selectedDate, onClose, onUpdate }) {
                 </div>
               </div>
 
-              <div className="form-group">
+              <div className="inline-field">
                 <label htmlFor="lunchAmount">Lunch Amount (€)</label>
                 <input
                   id="lunchAmount"
@@ -214,36 +214,38 @@ export function SessionCreator({ user, selectedDate, onClose, onUpdate }) {
                   placeholder="0.00"
                 />
               </div>
-            </>
-          )}
-
-          <div className="form-group checkbox-group">
-            <label className="checkbox-label">
-              <input
-                type="checkbox"
-                checked={hadDinner}
-                onChange={(e) => setHadDinner(e.target.checked)}
-                className="checkbox-input"
-              />
-              <span>Had dinner</span>
-            </label>
-          </div>
-
-          {hadDinner && (
-            <div className="form-group">
-              <label htmlFor="dinnerAmount">Dinner Amount (€)</label>
-              <input
-                id="dinnerAmount"
-                type="number"
-                min="0"
-                step="0.01"
-                value={dinnerAmount}
-                onChange={(e) => setDinnerAmount(e.target.value)}
-                className="time-input"
-                placeholder="0.00"
-              />
             </div>
           )}
+
+          <div className="form-group form-group-inline">
+            <div className="inline-field checkbox-group">
+              <label className="checkbox-label">
+                <input
+                  type="checkbox"
+                  checked={hadDinner}
+                  onChange={(e) => setHadDinner(e.target.checked)}
+                  className="checkbox-input"
+                />
+                <span>Had dinner</span>
+              </label>
+            </div>
+
+            {hadDinner && (
+              <div className="inline-field">
+                <label htmlFor="dinnerAmount">Dinner Amount (€)</label>
+                <input
+                  id="dinnerAmount"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={dinnerAmount}
+                  onChange={(e) => setDinnerAmount(e.target.value)}
+                  className="time-input"
+                  placeholder="0.00"
+                />
+              </div>
+            )}
+          </div>
 
           <div className="form-group">
             <label>
