@@ -297,6 +297,39 @@ export function CalendarImport({ user }) {
                 </select>
               </div>
 
+              <div className="filter-mode-selector">
+                <label>Event Filter:</label>
+                <div className="filter-radio-group">
+                  <label className="filter-radio-label">
+                    <input
+                      type="radio"
+                      name="filterMode"
+                      value="work-session-only"
+                      checked={filterMode === 'work-session-only'}
+                      onChange={(e) => setFilterMode(e.target.value)}
+                      disabled={loading}
+                    />
+                    <span>Work Session Only</span>
+                  </label>
+                  <label className="filter-radio-label">
+                    <input
+                      type="radio"
+                      name="filterMode"
+                      value="all-events"
+                      checked={filterMode === 'all-events'}
+                      onChange={(e) => setFilterMode(e.target.value)}
+                      disabled={loading}
+                    />
+                    <span>All Events</span>
+                  </label>
+                </div>
+                <p className="filter-helper-text">
+                  {filterMode === 'work-session-only' 
+                    ? 'Only shows events with "Work Session" in the title'
+                    : 'Shows all calendar events in the selected date range'}
+                </p>
+              </div>
+
               <button
                 className="refresh-button"
                 onClick={loadCalendarEvents}
@@ -334,11 +367,22 @@ export function CalendarImport({ user }) {
             ) : filteredEvents.length === 0 ? (
               <div className="empty-state">
                 <Calendar size={48} />
-                <h2>No Work Sessions Found</h2>
-                <p>No "Work Session" events found in the selected date range.</p>
+                <h2>No Events Found</h2>
+                <p>
+                  {filterMode === 'work-session-only' 
+                    ? 'No "Work Session" events found in the selected date range.'
+                    : 'No calendar events found in the selected date range.'}
+                </p>
               </div>
             ) : (
-              <div className="import-events-list">
+              <>
+                <div className="events-count-badge">
+                  Found {filteredEvents.length} event{filteredEvents.length !== 1 ? 's' : ''}
+                  {filterMode === 'work-session-only' && (
+                    <span className="filter-badge">Work Session Only</span>
+                  )}
+                </div>
+                <div className="import-events-list">
                 {filteredEvents.map((event) => {
                   const conflict = checkConflict(event);
                   return (
@@ -353,7 +397,8 @@ export function CalendarImport({ user }) {
                     />
                   );
                 })}
-              </div>
+                </div>
+              </>
             )}
 
             {importResults && (
