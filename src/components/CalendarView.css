@@ -41,14 +41,35 @@
   padding: 1rem;
 }
 
-/* Calendar modifiers for imported sessions - use deep selector to target react-day-picker */
-.calendar-wrapper :deep(.has-imported-sessions) {
-  background-color: rgba(139, 92, 246, 0.2) !important;
-  border-radius: 6px;
+/* Calendar modifiers for days with events - purple filled circle */
+.calendar-view-container .calendar-wrapper .has-imported-sessions:not(.rdp-day_selected),
+.calendar-view-container .calendar-wrapper .rdp-day_button.has-imported-sessions:not(.rdp-day_selected),
+.calendar-view-container .calendar-wrapper .rdp-button.has-imported-sessions:not(.rdp-day_selected) {
+  position: relative;
 }
 
-.calendar-wrapper :deep(.has-imported-sessions:hover) {
-  background-color: rgba(139, 92, 246, 0.3) !important;
+.calendar-view-container .calendar-wrapper .has-imported-sessions:not(.rdp-day_selected)::after,
+.calendar-view-container .calendar-wrapper .rdp-day_button.has-imported-sessions:not(.rdp-day_selected)::after,
+.calendar-view-container .calendar-wrapper .rdp-button.has-imported-sessions:not(.rdp-day_selected)::after {
+  content: '';
+  position: absolute;
+  bottom: 4px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #8b5cf6;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.calendar-view-container .calendar-wrapper .has-imported-sessions:hover:not(.rdp-day_selected)::after,
+.calendar-view-container .calendar-wrapper .rdp-day_button.has-imported-sessions:hover:not(.rdp-day_selected)::after,
+.calendar-view-container .calendar-wrapper .rdp-button.has-imported-sessions:hover:not(.rdp-day_selected)::after {
+  background: #7c3aed;
+  width: 7px;
+  height: 7px;
 }
 
 .sessions-container {
