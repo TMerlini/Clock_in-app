@@ -6,11 +6,13 @@ A comprehensive time tracking application for managing work hours, overtime, mea
 
 ### 🕐 Time Tracking
 - **Real-time Clock In/Out** - Track work sessions with live timer display
+- **Active Session Card** - Real-time session tracking while clocked in with editable details (lunch, dinner, location, notes) that auto-save
+- **Cross-Device Sync** - Active sessions and data sync in real-time across all devices
 - **Manual Session Creation** - Add historical sessions with custom times
 - **Session Editing** - Modify existing sessions with full details
 - **Automatic Calculations** - Real-time computation of regular hours, unpaid overtime, and paid overtime
-- **Lunch Break Management** - Customizable lunch duration with flexible hour/minute input
-- **Weekend Detection** - Automatically identifies Saturday/Sunday sessions
+- **Lunch Break Management** - Customizable lunch duration with flexible hour/minute input (inline fields for compact UI)
+- **Weekend Detection** - Automatically identifies Saturday/Sunday sessions with automatic benefits application
 
 ### 📊 Analytics & Reporting
 - **Multiple Report Types** - Daily, Weekly, Monthly, and Yearly views
@@ -45,11 +47,19 @@ A comprehensive time tracking application for managing work hours, overtime, mea
 - **Analytics Dashboard** - Track total days off earned and bonus accumulated
 
 ### 📅 Google Calendar Integration
-- **One-Click Sync** - Export work sessions to Google Calendar
-- **Detailed Event Information** - Includes clock in/out times, hours breakdown
-- **Location Support** - Add location when creating calendar events (done in Google Calendar)
+- **Two-Way Sync** - Automatic sync of work sessions to Google Calendar
+- **Placeholder Events** - Creates calendar events immediately on clock-in (red/in-progress status)
+- **Auto-Update Events** - Updates placeholder events on clock-out with final session details
+- **Sync Status Indicator** - Visual indicator in header showing connection status and remaining token time
+- **Manual Sync** - Click the cloud icon to manually sync pending/failed sessions
+- **Token Management** - Automatic token refresh with expiration warnings
+- **Cross-Device Auth Sync** - Calendar authorization syncs across all devices via Firestore
+- **Detailed Event Information** - Includes clock in/out times, hours breakdown, and session notes
+- **Timezone Support** - Events use browser's local timezone for accurate display
 
 ### ⚙️ Customizable Settings
+- **Profile**:
+  - Username/Alias - Set display name with @ prefix (shown in header instead of email)
 - **Hour Thresholds**:
   - Regular hours limit (default: 8h)
   - Unpaid Extra (Isenção) toggle - enable/disable unpaid overtime tracking
@@ -62,11 +72,17 @@ A comprehensive time tracking application for managing work hours, overtime, mea
 - **Weekend Work Defaults**:
   - Days off per weekend work day
   - Weekend bonus amount (€)
+- **Google Calendar Sync**:
+  - Enable/disable calendar integration
+  - Sync status display (synced, pending, failed sessions)
+  - Batch sync for pending/failed sessions
 
-### 🔐 Authentication
+### 🔐 Authentication & User Profile
 - **Firebase Authentication** - Secure user authentication
 - **Google Sign-In** - Easy login with Google account
 - **User-specific Data** - Each user's data is private and isolated
+- **Username/Alias** - Custom display name shown in header (with @ prefix)
+- **Real-time Profile Sync** - Username syncs across all devices
 
 ## Technology Stack
 
@@ -108,19 +124,16 @@ A comprehensive time tracking application for managing work hours, overtime, mea
 2. **Clock In**
    - Click the "CLOCK IN" button on the home page
    - Timer starts automatically
+   - Active Session Card appears in sessions list (orange/amber themed)
+   - Add session details while working (lunch, dinner, location, notes) - auto-saves
    - Current time breakdown displays in real-time
 
 3. **Clock Out**
    - Click the "CLOCK OUT" button when finished
-   - Select lunch options if applicable:
-     - Check "Lunch time" checkbox
-     - Enter custom duration (hours and minutes)
-     - Add lunch expense amount (€)
-   - Select dinner options if applicable:
-     - Check "Had dinner" checkbox
-     - Add dinner expense amount (€)
-   - Add optional notes about the session
-   - Click "Clock Out" to save
+   - All details from Active Session Card are automatically included
+   - Session is saved with all previously entered details
+   - Calendar event is automatically updated/created
+   - No need to re-enter information unless you want to edit
 
 ### Managing Sessions
 
@@ -148,11 +161,23 @@ A comprehensive time tracking application for managing work hours, overtime, mea
 5. Add notes (optional)
 6. Click "Create Session"
 
-#### Sync to Google Calendar
-1. Click the Google Calendar icon on any session
-2. Review session details in the modal
-3. Click "Open Google Calendar"
-4. Add location and save the event in Google Calendar
+#### Google Calendar Sync
+
+**Automatic Sync**
+- Sessions automatically sync to Google Calendar on clock-out
+- Placeholder events created on clock-in (shows as in-progress)
+- Events update automatically when clocking out
+
+**Manual Sync**
+- Click the cloud icon in the header to sync pending/failed sessions
+- View sync status in Settings page
+- Use batch sync to sync multiple sessions at once
+
+**Sync Status**
+- Green cloud icon: Connected and synced
+- Warning icon: Token expiring soon or expired (click to refresh)
+- Gray icon: Not connected
+- Hover over icon to see detailed status and remaining time
 
 ### Analytics & Reports
 
@@ -228,10 +253,24 @@ A comprehensive time tracking application for managing work hours, overtime, mea
 2. Set "Weekend Bonus" amount (e.g., 100€)
 3. These apply automatically to Saturday/Sunday sessions
 
+#### Configure Profile
+1. In "Profile" section, enter your username/alias
+2. Username will be displayed in header with @ prefix (e.g., @johndoe)
+3. If not set, email address is shown instead
+4. Hover over username in header to see full email
+
+#### Google Calendar Integration
+1. Click "Enable Google Calendar" to authorize
+2. Grant permissions when prompted
+3. View sync status (synced, pending, failed sessions)
+4. Use "Sync All Pending/Failed" button to batch sync sessions
+5. Sync status indicator in header shows connection status
+
 #### Save Settings
 1. Click "Save Settings" button
 2. Changes apply to new sessions immediately
 3. Existing sessions remain unchanged
+4. Profile changes (username) update immediately in header
 
 ### Tips & Best Practices
 
@@ -301,21 +340,12 @@ The app is configured for automatic deployment to Vercel:
 
 ### Collections
 
-**userSettings** - User preferences
-- `regularHoursThreshold`: number
-- `enableUnpaidExtra`: boolean (default: true)
-- `unpaidExtraThreshold`: number
-- `overtimeThreshold`: number (calculated based on enableUnpaidExtra)
-- `lunchDuration`: number (decimal hours)
-- `weekStartDay`: string ('monday' | 'sunday')
-- `weekendDaysOff`: number
-- `weekendBonus`: number
 
 **sessions** - Work sessions
 - `userId`: string
 - `userEmail`: string
-- `clockIn`: timestamp
-- `clockOut`: timestamp
+- `clockIn`: timestamp (UTC)
+- `clockOut`: timestamp (UTC)
 - `totalHours`: number
 - `regularHours`: number
 - `unpaidExtraHours`: number
@@ -330,6 +360,41 @@ The app is configured for automatic deployment to Vercel:
 - `weekendBonus`: number
 - `location`: string (optional)
 - `notes`: string (optional)
+- `calendarEventId`: string (optional, Google Calendar event ID)
+- `calendarSyncStatus`: string ('synced' | 'not_synced' | 'failed')
+- `lastSyncAt`: timestamp (optional)
+
+**activeClockIns** - Active clock-in sessions
+- `userId`: string
+- `userEmail`: string
+- `clockInTime`: timestamp (UTC)
+- `calendarEventId`: string (optional, placeholder event ID)
+- `sessionDetails`: object (optional, from Active Session Card)
+  - `includeLunchTime`: boolean
+  - `lunchHours`: number
+  - `lunchMinutes`: number
+  - `lunchAmount`: number
+  - `hadDinner`: boolean
+  - `dinnerAmount`: number
+  - `location`: string
+  - `notes`: string
+  - `isWeekend`: boolean
+
+**calendarTokens** - Google Calendar OAuth tokens (cross-device sync)
+- `accessToken`: string
+- `expiresAt`: timestamp
+- `updatedAt`: timestamp
+
+**userSettings** - User preferences
+- `username`: string (optional, display name)
+- `regularHoursThreshold`: number
+- `enableUnpaidExtra`: boolean (default: true)
+- `unpaidExtraThreshold`: number
+- `overtimeThreshold`: number (calculated based on enableUnpaidExtra)
+- `lunchDuration`: number (decimal hours)
+- `weekStartDay`: string ('monday' | 'sunday')
+- `weekendDaysOff`: number
+- `weekendBonus`: number
 
 **overworkDeductions** - Overwork usage tracking
 - `userId`: string
@@ -342,14 +407,26 @@ The app is configured for automatic deployment to Vercel:
 
 This app is actively maintained with regular updates and new features. For a comprehensive list of planned enhancements, see **[FUTURE_ENHANCEMENTS.md](FUTURE_ENHANCEMENTS.md)**.
 
+### 🚀 Recent Updates (2026)
+
+**Implemented Features**
+- ✅ Active Session Card - Real-time session tracking during clock-in with auto-save
+- ✅ Google Calendar Two-Way Sync - Automatic event creation and updates
+- ✅ Sync Status Indicator - Visual connection status in header with manual sync
+- ✅ Username/Alias System - Custom display names with @ prefix
+- ✅ Cross-Device Real-Time Sync - Sessions and calendar auth sync across devices
+- ✅ Token Expiration Management - Automatic refresh with warnings
+- ✅ Compact UI - Inline form fields for lunch/dinner in session modals
+- ✅ Mobile Responsive Improvements - Fixed date selector overflow, optimized layouts
+
 ### 🚀 Upcoming Features (2026 Roadmap)
 
 **Phase 1 - Critical Improvements (Q1 2026)**
 - ✅ Data Backup & Export - Full backup and restore capabilities
 - ✅ Session Validation - Prevent overlapping sessions and data errors
-- ✅ Two-Way Calendar Sync - Import events from Google Calendar
-- ✅ Email Report Sharing - Send reports directly to email
-- ✅ Progressive Web App - Install on mobile devices
+- ✅ Two-Way Calendar Sync - Export to Google Calendar (import planned)
+- ⏳ Email Report Sharing - Send reports directly to email
+- ⏳ Progressive Web App - Install on mobile devices
 
 **Phase 2 - User Experience (Q2 2026)**
 - Dashboard Customization - Personalized widget layouts
