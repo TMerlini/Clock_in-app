@@ -249,7 +249,6 @@ export function CalendarView({ user }) {
                               <div className="event-title">{event.summary}</div>
                             )}
                           </div>
-                          <span className="event-total">{formatHoursMinutes(totalHours)}</span>
                         </div>
                         {sourceCalendar && (
                           <div className="calendar-source-badge-inline">
