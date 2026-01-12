@@ -12,12 +12,16 @@
   width: 28px;
   height: 28px;
   border-radius: 50%;
-  cursor: pointer;
   transition: all 0.2s ease;
 }
 
-.sync-indicator:hover {
+.sync-indicator.clickable {
+  cursor: pointer;
+}
+
+.sync-indicator.clickable:hover {
   background: var(--secondary);
+  transform: scale(1.1);
 }
 
 .calendar-icon-wrapper {

@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { Cloud, CloudOff, AlertTriangle, RefreshCw } from 'lucide-react';
+import { collection, query, where, getDocs, updateDoc, doc } from 'firebase/firestore';
+import { auth, db } from '../lib/firebase';
 import './SyncStatusIndicator.css';
 
 // Google Calendar Icon Component
@@ -25,6 +27,7 @@ const GoogleCalendarIcon = ({ size = 20 }) => (
 export function SyncStatusIndicator({ googleCalendar }) {
   const [showTooltip, setShowTooltip] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isSyncing, setIsSyncing] = useState(false);
 
   const handleRefresh = async () => {
     if (isRefreshing) return;
@@ -39,15 +42,92 @@ export function SyncStatusIndicator({ googleCalendar }) {
     }
   };
 
+  const handleSync = async () => {
+    if (isSyncing || !googleCalendar.isAuthorized) return;
+    
+    setIsSyncing(true);
+    try {
+      const user = auth.currentUser;
+      if (!user) {
+        setIsSyncing(false);
+        return;
+      }
+
+      // Get all unsynced and failed sessions
+      const sessionsQuery = query(
+        collection(db, 'sessions'),
+        where('userId', '==', user.uid)
+      );
+      const sessionsSnapshot = await getDocs(sessionsQuery);
+      
+      const unsyncedSessions = [];
+      sessionsSnapshot.forEach((docSnap) => {
+        const session = docSnap.data();
+        const status = session.calendarSyncStatus || 'not_synced';
+        if (status === 'not_synced' || status === 'failed') {
+          unsyncedSessions.push({ id: docSnap.id, ...session });
+        }
+      });
+
+      if (unsyncedSessions.length === 0) {
+        // No sessions to sync - could show a subtle notification
+        setIsSyncing(false);
+        return;
+      }
+
+      let successCount = 0;
+      let failCount = 0;
+
+      for (const session of unsyncedSessions) {
+        try {
+          // Create calendar event
+          const calendarEvent = await googleCalendar.createCalendarEvent({
+            clockIn: session.clockIn,
+            clockOut: session.clockOut,
+            regularHours: session.regularHours,
+            unpaidHours: session.unpaidExtraHours,
+            paidHours: session.paidExtraHours,
+            notes: session.notes || ''
+          });
+
+          // Update session with sync info
+          const sessionRef = doc(db, 'sessions', session.id);
+          await updateDoc(sessionRef, {
+            calendarEventId: calendarEvent.id,
+            calendarSyncStatus: 'synced',
+            lastSyncAt: Date.now()
+          });
+
+          successCount++;
+        } catch (error) {
+          console.error(`Failed to sync session ${session.id}:`, error);
+          
+          // Mark as failed
+          const sessionRef = doc(db, 'sessions', session.id);
+          await updateDoc(sessionRef, {
+            calendarSyncStatus: 'failed'
+          });
+          
+          failCount++;
+        }
+      }
+
+      setIsSyncing(false);
+    } catch (error) {
+      console.error('Error during sync:', error);
+      setIsSyncing(false);
+    }
+  };
+
   const getStatus = () => {
     if (!googleCalendar.isReady) {
-      return { icon: CloudOff, color: 'gray', text: 'Calendar API loading...' };
+      return { icon: CloudOff, color: 'gray', text: 'Calendar API loading...', clickable: false };
     }
     if (!googleCalendar.isAuthorized) {
       if (googleCalendar.isTokenExpired) {
-        return { icon: AlertTriangle, color: 'warning', text: 'Token expired - click to refresh' };
+        return { icon: AlertTriangle, color: 'warning', text: 'Token expired - click to refresh', clickable: true };
       }
-      return { icon: CloudOff, color: 'disconnected', text: 'Calendar not connected' };
+      return { icon: CloudOff, color: 'disconnected', text: 'Calendar not connected', clickable: false };
     }
     
     const minutes = googleCalendar.tokenExpiryMinutes;
@@ -55,19 +135,32 @@ export function SyncStatusIndicator({ googleCalendar }) {
       return { 
         icon: AlertTriangle, 
         color: 'warning', 
-        text: `Token expires in ${minutes} min - click to refresh` 
+        text: `Token expires in ${minutes} min - click to refresh`, 
+        clickable: true 
       };
     }
     
     return { 
       icon: Cloud, 
       color: 'connected', 
-      text: minutes ? `Calendar synced (${minutes} min remaining)` : 'Calendar synced' 
+      text: minutes ? `Calendar synced (${minutes} min remaining) - click to sync pending sessions` : 'Calendar synced - click to sync pending sessions',
+      clickable: true 
     };
   };
 
   const status = getStatus();
   const StatusIcon = status.icon;
+  const isActive = isRefreshing || isSyncing;
+
+  const handleClick = () => {
+    if (!status.clickable || isActive) return;
+    
+    if (status.color === 'warning' || googleCalendar.isTokenExpired) {
+      handleRefresh();
+    } else if (status.color === 'connected' && googleCalendar.isAuthorized) {
+      handleSync();
+    }
+  };
 
   return (
     <div 
@@ -76,17 +169,13 @@ export function SyncStatusIndicator({ googleCalendar }) {
       onMouseLeave={() => setShowTooltip(false)}
     >
       <div 
-        className={`sync-indicator ${status.color}`}
-        onClick={() => {
-          if (status.color === 'warning' || googleCalendar.isTokenExpired) {
-            handleRefresh();
-          }
-        }}
+        className={`sync-indicator ${status.color} ${status.clickable ? 'clickable' : ''}`}
+        onClick={handleClick}
         role="button"
-        tabIndex={0}
+        tabIndex={status.clickable ? 0 : -1}
         aria-label={status.text}
       >
-        {isRefreshing ? (
+        {isActive ? (
           <RefreshCw className="sync-icon spinning" size={16} />
         ) : (
           <StatusIcon className="sync-icon" size={16} />
