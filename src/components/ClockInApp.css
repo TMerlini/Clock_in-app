@@ -756,6 +756,17 @@
   stroke-width: 2 !important;
 }
 
+.calendar-wrapper .rdp-nav_button svg polygon,
+.calendar-wrapper .rdp-nav button svg polygon,
+.calendar-wrapper button.rdp-nav_button svg polygon,
+.calendar-wrapper button.rdp-nav_button_previous svg polygon,
+.calendar-wrapper button.rdp-nav_button_next svg polygon,
+.calendar-wrapper .rdp-button_reset.rdp-nav_button svg polygon,
+.calendar-wrapper .rdp-nav svg polygon {
+  fill: #8b5cf6 !important;
+  stroke: #8b5cf6 !important;
+}
+
 .calendar-wrapper .rdp-nav_button:hover svg,
 .calendar-wrapper .rdp-nav button:hover svg,
 .calendar-wrapper button.rdp-nav_button:hover svg,
