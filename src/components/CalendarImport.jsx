@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { collection, query, where, getDocs, addDoc, doc, getDoc } from 'firebase/firestore';
-import { db, auth } from '../lib/firebase';
+import { db } from '../lib/firebase';
 import { useGoogleCalendar } from '../hooks/useGoogleCalendar';
 import { ImportEventCard } from './ImportEventCard';
 import { Calendar, RefreshCw, Download, AlertCircle, CheckCircle } from 'lucide-react';
@@ -67,7 +67,17 @@ export function CalendarImport({ user }) {
       setSelectedEvents(new Set());
     } catch (error) {
       console.error('Error loading calendar events:', error);
-      alert('Failed to load calendar events: ' + error.message);
+      
+      // Check if it's an authentication error
+      const isAuthError = error.status === 401 || 
+        (error.result && error.result.error && error.result.error.code === 401) ||
+        (error.message && error.message.includes('401'));
+      
+      if (isAuthError) {
+        alert('Your Google Calendar token has expired. Please click the cloud icon (⚠️) in the header to refresh it, or go to Settings and re-authorize Google Calendar.');
+      } else {
+        alert('Failed to load calendar events: ' + (error.message || (error.result?.error?.message) || 'Unknown error'));
+      }
     } finally {
       setLoading(false);
     }
