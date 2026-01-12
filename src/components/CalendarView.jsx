@@ -257,10 +257,6 @@ export function CalendarView({ user }) {
                             <span>{sourceCalendar.summary}</span>
                           </div>
                         )}
-                        <div className="calendar-event-times">
-                          <div>Start: {format(eventStart, 'HH:mm:ss')}</div>
-                          <div>End: {format(eventEnd, 'HH:mm:ss')}</div>
-                        </div>
                         {event.location && (
                           <div className="calendar-event-location">
                             <strong>Location:</strong> {event.location}
