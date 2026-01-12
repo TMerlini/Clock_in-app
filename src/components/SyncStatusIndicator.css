@@ -24,7 +24,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  opacity: 0.9;
+  width: 22px;
+  height: 22px;
 }
 
 .sync-indicator.connected {

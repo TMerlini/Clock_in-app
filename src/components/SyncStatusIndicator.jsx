@@ -3,16 +3,17 @@ import { Cloud, CloudOff, AlertTriangle, RefreshCw } from 'lucide-react';
 import './SyncStatusIndicator.css';
 
 // Google Calendar Icon Component
-const GoogleCalendarIcon = ({ size = 16 }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="-11.4 -19 98.8 114" width={size} height={size}>
-    <path fill="#fff" d="M58 18H18v40h40z"/>
-    <path fill="#1a73e8" d="M45 40.3L42 37l-4.8 4.8-4.8-4.7-3 3 4.8 4.7-4.8 4.8 3 3 4.8-4.8 4.8 4.8 3-3-4.8-4.8z"/>
-    <path fill="#ea4335" d="M58 18H18L5 31v32c0 3.3 2.7 6 6 6h6V38h14V18z"/>
-    <path fill="#34a853" d="M18 69l13-13H18z"/>
-    <path fill="#4285f4" d="M58 18v20H38v31h27c3.3 0 6-2.7 6-6V31z"/>
-    <path fill="#188038" d="M65 69H38V38h20v20h13z"/>
-    <path fill="#fbbc04" d="M71 38H58V18l13 13z"/>
-    <path fill="#1967d2" d="M71 31L58 18v13z"/>
+const GoogleCalendarIcon = ({ size = 20 }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width={size} height={size}>
+    <path fill="#fff" d="M152.637 47.363H47.363v105.273h105.273z"/>
+    <path fill="#1a73e8" d="M121.491 94.49l-8.073-6.36-10.29 10.29-10.29-10.29-8.073 6.36 10.29 10.29-10.29 10.29 8.073 6.36 10.29-10.29 10.29 10.29 8.073-6.36-10.29-10.29z"/>
+    <path fill="#ea4335" d="M152.637 47.363H47.363L18.182 76.545v79.091c0 9 7.364 16.364 16.364 16.364h12.727V98.182h38.182V47.363z"/>
+    <path fill="#34a853" d="M47.363 172l35.455-35.455H47.363z"/>
+    <path fill="#4285f4" d="M152.637 47.363v54.546h-54.546v70.091h73.637c9 0 16.364-7.364 16.364-16.364V76.545z"/>
+    <path fill="#188038" d="M171.727 172H98.09V98.182h54.546v54.545h19.09z"/>
+    <path fill="#fbbc04" d="M171.727 76.545h-35.454V47.363l35.454 29.182z"/>
+    <path fill="#1967d2" d="M171.727 76.545l-35.454-29.182v29.182z"/>
+    <rect fill="none" width="200" height="200"/>
   </svg>
 );
 
