@@ -713,7 +713,8 @@
 .calendar-wrapper .rdp-nav button,
 .calendar-wrapper button.rdp-nav_button,
 .calendar-wrapper button.rdp-nav_button_previous,
-.calendar-wrapper button.rdp-nav_button_next {
+.calendar-wrapper button.rdp-nav_button_next,
+.calendar-wrapper .rdp-button_reset.rdp-nav_button {
   color: #8b5cf6 !important;
   background: rgba(139, 92, 246, 0.1) !important;
   border: 1px solid rgba(139, 92, 246, 0.3) !important;
@@ -728,7 +729,8 @@
 .calendar-wrapper .rdp-nav button:hover,
 .calendar-wrapper button.rdp-nav_button:hover,
 .calendar-wrapper button.rdp-nav_button_previous:hover,
-.calendar-wrapper button.rdp-nav_button_next:hover {
+.calendar-wrapper button.rdp-nav_button_next:hover,
+.calendar-wrapper .rdp-button_reset.rdp-nav_button:hover {
   background: #8b5cf6 !important;
   color: white !important;
   border-color: #8b5cf6 !important;
@@ -740,20 +742,26 @@
 .calendar-wrapper .rdp-nav button svg,
 .calendar-wrapper button.rdp-nav_button svg,
 .calendar-wrapper button.rdp-nav_button_previous svg,
-.calendar-wrapper button.rdp-nav_button_next svg {
+.calendar-wrapper button.rdp-nav_button_next svg,
+.calendar-wrapper .rdp-button_reset.rdp-nav_button svg,
+.calendar-wrapper .rdp-nav svg {
   color: #8b5cf6 !important;
   stroke: #8b5cf6 !important;
   fill: none !important;
+  stroke-width: 2 !important;
 }
 
 .calendar-wrapper .rdp-nav_button:hover svg,
 .calendar-wrapper .rdp-nav button:hover svg,
 .calendar-wrapper button.rdp-nav_button:hover svg,
 .calendar-wrapper button.rdp-nav_button_previous:hover svg,
-.calendar-wrapper button.rdp-nav_button_next:hover svg {
+.calendar-wrapper button.rdp-nav_button_next:hover svg,
+.calendar-wrapper .rdp-button_reset.rdp-nav_button:hover svg,
+.calendar-wrapper .rdp-nav:hover svg {
   color: white !important;
   stroke: white !important;
   fill: none !important;
+  stroke-width: 2 !important;
 }
 
 .calendar-wrapper .rdp-day_disabled {
