@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { doc, getDoc, setDoc, deleteDoc, onSnapshot } from 'firebase/firestore';
+import { onAuthStateChanged } from 'firebase/auth';
 import { auth, db } from '../lib/firebase';
 import { GOOGLE_CLIENT_ID, CALENDAR_SCOPES, GOOGLE_API_KEY } from '../lib/googleConfig';
 import { formatHoursMinutes } from '../lib/utils';
@@ -11,6 +12,18 @@ export function useGoogleCalendar() {
   const [gisInited, setGisInited] = useState(false);
   const [tokenClient, setTokenClient] = useState(null);
   const [accessToken, setAccessToken] = useState(null);
+  const [currentUser, setCurrentUser] = useState(null);
+
+  // Listen for auth state changes
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setCurrentUser(user);
+      if (!user) {
+        setAccessToken(null);
+      }
+    });
+    return () => unsubscribe();
+  }, []);
 
   useEffect(() => {
     // Load the Google API library
@@ -39,22 +52,26 @@ export function useGoogleCalendar() {
 
   // Set up real-time listener for token changes (syncs across devices)
   useEffect(() => {
-    if (!gapiInited || !gisInited) return;
+    if (!gapiInited || !gisInited || !currentUser) return;
 
-    const user = auth.currentUser;
-    if (!user) return;
-
-    const tokenRef = doc(db, 'calendarTokens', user.uid);
+    const tokenRef = doc(db, 'calendarTokens', currentUser.uid);
     
     // Real-time listener for token changes
     const unsubscribe = onSnapshot(tokenRef, (docSnap) => {
       if (docSnap.exists()) {
         const storedToken = docSnap.data().accessToken;
         setAccessToken(storedToken);
+        // Also set the token on gapi client immediately
+        if (window.gapi?.client) {
+          window.gapi.client.setToken({ access_token: storedToken });
+        }
         console.log('Token synced from Firestore (real-time)');
       } else {
         // Token was deleted (user disconnected on another device)
         setAccessToken(null);
+        if (window.gapi?.client) {
+          window.gapi.client.setToken(null);
+        }
         console.log('Token removed (disconnected on another device)');
       }
     }, (error) => {
@@ -62,7 +79,7 @@ export function useGoogleCalendar() {
     });
 
     return () => unsubscribe();
-  }, [gapiInited, gisInited]);
+  }, [gapiInited, gisInited, currentUser]);
 
   const initializeGapiClient = async () => {
     try {
@@ -94,6 +111,11 @@ export function useGoogleCalendar() {
           if (response.access_token) {
             setAccessToken(response.access_token);
             
+            // Set the token on gapi client immediately
+            if (window.gapi?.client) {
+              window.gapi.client.setToken({ access_token: response.access_token });
+            }
+            
             // Store token in Firestore for cross-device sync
             const user = auth.currentUser;
             if (user) {
@@ -108,7 +130,7 @@ export function useGoogleCalendar() {
                 console.error('Error saving token to Firestore:', error);
               }
             }
-            console.log('Access token received');
+            console.log('Access token received and set on gapi client');
           }
         },
       });
@@ -146,13 +168,19 @@ export function useGoogleCalendar() {
   };
 
   const createCalendarEvent = async (eventDetails) => {
-    if (!gapiInited || !accessToken) {
-      throw new Error('Calendar API not initialized or not authorized');
+    console.log('createCalendarEvent called:', { gapiInited, hasToken: !!accessToken });
+    
+    if (!gapiInited) {
+      throw new Error('Calendar API not initialized');
+    }
+    if (!accessToken) {
+      throw new Error('Not authorized - please enable Google Calendar sync in Settings');
     }
 
     try {
       // Set the access token for this request
       window.gapi.client.setToken({ access_token: accessToken });
+      console.log('Token set on gapi client, creating event...');
       
       const { clockIn, clockOut, regularHours, unpaidHours, paidHours, notes, isPlaceholder } = eventDetails;
 
@@ -188,13 +216,19 @@ Paid Overtime: ${formatHoursMinutes(paidHours)}${notes ? '\n\nNotes: ' + notes :
   };
 
   const updateCalendarEvent = async (eventId, eventDetails) => {
-    if (!gapiInited || !accessToken) {
-      throw new Error('Calendar API not initialized or not authorized');
+    console.log('updateCalendarEvent called:', { gapiInited, hasToken: !!accessToken, eventId });
+    
+    if (!gapiInited) {
+      throw new Error('Calendar API not initialized');
+    }
+    if (!accessToken) {
+      throw new Error('Not authorized - please enable Google Calendar sync in Settings');
     }
 
     try {
       // Set the access token for this request
       window.gapi.client.setToken({ access_token: accessToken });
+      console.log('Token set on gapi client, updating event...');
       
       const { clockIn, clockOut, regularHours, unpaidHours, paidHours, notes } = eventDetails;
 

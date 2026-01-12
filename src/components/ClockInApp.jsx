@@ -284,6 +284,10 @@ export function ClockInApp({ user }) {
     if (!isClockedIn) {
       const now = Date.now();
       console.log('Clocking in at:', new Date(now));
+      console.log('Google Calendar status:', { 
+        isReady: googleCalendar.isReady, 
+        isAuthorized: googleCalendar.isAuthorized 
+      });
 
       try {
         let calendarEventId = null;
@@ -395,6 +399,12 @@ export function ClockInApp({ user }) {
         const activeClockInRef = doc(db, 'activeClockIns', user.uid);
         const activeClockInSnap = await getDoc(activeClockInRef);
         const storedCalendarEventId = activeClockInSnap.exists() ? activeClockInSnap.data().calendarEventId : null;
+        
+        console.log('Clock-out Google Calendar status:', { 
+          isReady: googleCalendar.isReady, 
+          isAuthorized: googleCalendar.isAuthorized,
+          storedCalendarEventId 
+        });
 
         // Update or create calendar event if authorized
         if (googleCalendar.isAuthorized) {
