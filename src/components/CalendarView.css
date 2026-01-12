@@ -41,13 +41,13 @@
   padding: 1rem;
 }
 
-/* Calendar modifiers for imported sessions */
-:global(.has-imported-sessions) {
+/* Calendar modifiers for imported sessions - use deep selector to target react-day-picker */
+.calendar-wrapper :deep(.has-imported-sessions) {
   background-color: rgba(139, 92, 246, 0.2) !important;
   border-radius: 6px;
 }
 
-:global(.has-imported-sessions:hover) {
+.calendar-wrapper :deep(.has-imported-sessions:hover) {
   background-color: rgba(139, 92, 246, 0.3) !important;
 }
 
