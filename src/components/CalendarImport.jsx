@@ -4,7 +4,7 @@ import { db } from '../lib/firebase';
 import { useGoogleCalendar } from '../hooks/useGoogleCalendar';
 import { ImportEventCard } from './ImportEventCard';
 import { Calendar, RefreshCw, Download, AlertCircle, CheckCircle, ChevronDown, ChevronUp } from 'lucide-react';
-import { format, subDays } from 'date-fns';
+import { format, subDays, addDays } from 'date-fns';
 import './CalendarImport.css';
 
 export function CalendarImport({ user }) {

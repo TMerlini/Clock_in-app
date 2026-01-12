@@ -59,6 +59,12 @@
   color: var(--foreground);
 }
 
+.date-range-inputs {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
 .date-range-selector select {
   padding: 0.5rem 1rem;
   background: var(--secondary);
@@ -67,11 +73,18 @@
   color: var(--foreground);
   font-size: 0.9rem;
   cursor: pointer;
+  min-width: 130px;
 }
 
 .date-range-selector select:focus {
   outline: none;
   border-color: var(--primary);
+}
+
+.date-range-separator {
+  color: var(--muted-foreground);
+  font-size: 0.9rem;
+  font-weight: 500;
 }
 
 .calendar-selector-wrapper {
