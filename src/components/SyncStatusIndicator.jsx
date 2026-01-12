@@ -4,16 +4,21 @@ import './SyncStatusIndicator.css';
 
 // Google Calendar Icon Component
 const GoogleCalendarIcon = ({ size = 20 }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width={size} height={size}>
-    <path fill="#fff" d="M152.637 47.363H47.363v105.273h105.273z"/>
-    <path fill="#1a73e8" d="M121.491 94.49l-8.073-6.36-10.29 10.29-10.29-10.29-8.073 6.36 10.29 10.29-10.29 10.29 8.073 6.36 10.29-10.29 10.29 10.29 8.073-6.36-10.29-10.29z"/>
-    <path fill="#ea4335" d="M152.637 47.363H47.363L18.182 76.545v79.091c0 9 7.364 16.364 16.364 16.364h12.727V98.182h38.182V47.363z"/>
-    <path fill="#34a853" d="M47.363 172l35.455-35.455H47.363z"/>
-    <path fill="#4285f4" d="M152.637 47.363v54.546h-54.546v70.091h73.637c9 0 16.364-7.364 16.364-16.364V76.545z"/>
-    <path fill="#188038" d="M171.727 172H98.09V98.182h54.546v54.545h19.09z"/>
-    <path fill="#fbbc04" d="M171.727 76.545h-35.454V47.363l35.454 29.182z"/>
-    <path fill="#1967d2" d="M171.727 76.545l-35.454-29.182v29.182z"/>
-    <rect fill="none" width="200" height="200"/>
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width={size} height={size}>
+    <rect x="0" y="0" width="24" height="24" rx="2.5" fill="#fff"/>
+    {/* Top-left blue section */}
+    <rect x="0" y="0" width="10" height="10" fill="#4285f4"/>
+    {/* Top-right yellow section */}
+    <rect x="10" y="0" width="14" height="10" fill="#fbbc04"/>
+    {/* Bottom-left green section */}
+    <rect x="0" y="10" width="10" height="14" fill="#34a853"/>
+    {/* Bottom-right red section */}
+    <rect x="10" y="10" width="14" height="14" fill="#ea4335"/>
+    {/* Curled corner effect on red section */}
+    <path d="M22 24 L24 22 L24 24 Z" fill="#ea4335" opacity="0.6"/>
+    {/* White center square with "12" */}
+    <rect x="2.5" y="2.5" width="19" height="19" rx="1.5" fill="#fff"/>
+    <text x="12" y="15.5" fontFamily="-apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif" fontSize="10" fontWeight="700" fill="#4285f4" textAnchor="middle" dominantBaseline="middle">12</text>
   </svg>
 );
 
