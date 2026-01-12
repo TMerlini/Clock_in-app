@@ -28,7 +28,8 @@ export function CalendarView({ user }) {
       snapshot.forEach((doc) => {
         const session = { id: doc.id, ...doc.data() };
         // Only include sessions that were imported from Google Calendar
-        if (session.calendarEventId) {
+        // Check for calendarEventId OR calendarSyncStatus === 'synced' (to catch all imported events)
+        if (session.calendarEventId || session.calendarSyncStatus === 'synced') {
           allSessions.push(session);
           const sessionDate = new Date(session.clockIn);
           const dateStr = format(sessionDate, 'yyyy-MM-dd');
