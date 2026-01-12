@@ -68,6 +68,17 @@ This document outlines planned features, improvements, and ideas for future deve
 ### 7. Two-Way Calendar Sync ⭐ (Most Valuable)
 **Priority:** High | **Difficulty:** 7/10 | **Time:** 8-12 hours
 
+**Status:** ✅ Export sync implemented - Import sync pending
+
+**Implemented:**
+- ✅ Automatic event creation on clock-in (placeholder events)
+- ✅ Automatic event updates on clock-out
+- ✅ Manual sync functionality
+- ✅ Batch sync option
+- ✅ Sync status indicator
+- ✅ Token expiration management
+
+**Pending:**
 - **Import from Google Calendar** - Read work events and create sessions
 - **Voice assistant compatibility** - "Hey Google, create work session tomorrow 9am to 5pm"
 - **Update detection** - Sync changes made in Google Calendar back to app
@@ -78,16 +89,29 @@ This document outlines planned features, improvements, and ideas for future deve
 ### 8. Auto-Sync Toggle
 **Priority:** Medium | **Difficulty:** 4/10 | **Time:** 3-5 hours
 
-- **Automatic event creation** - Create calendar event on clock-in
-- **Real-time updates** - Update event when clocking out
-- **Background sync** - Sync without user intervention
-- **Sync status indicator** - Show last sync time
-- **Batch sync option** - Sync multiple sessions at once
+**Status:** ✅ Auto-sync implemented - Toggle UI pending
+
+**Implemented:**
+- ✅ Automatic event creation on clock-in
+- ✅ Real-time updates on clock-out
+- ✅ Background sync (automatic, no user intervention needed)
+- ✅ Sync status indicator in header
+- ✅ Batch sync option in Settings
+
+**Pending:**
+- **Toggle UI** - User preference to enable/disable auto-sync in Settings
 
 ### 9. Smart Event Coloring & Categorization
 **Priority:** Low | **Difficulty:** 2/10 | **Time:** 2-3 hours
 
-- **Color-coded events:**
+**Status:** ✅ Basic coloring implemented (red/blue) - Full system pending
+
+**Implemented:**
+- ✅ Red: In-progress placeholder events
+- ✅ Blue: Completed work events
+
+**Pending:**
+- **Full color-coded events:**
   - 🟦 Blue: Normal day (≤8 hours)
   - 🟧 Orange: Isenção day (8-10 hours)
   - 🟥 Red: Overtime day (>10 hours)
@@ -98,6 +122,14 @@ This document outlines planned features, improvements, and ideas for future deve
 ### 10. Enhanced Calendar Event Details
 **Priority:** Low | **Difficulty:** 2/10 | **Time:** 1-2 hours
 
+**Status:** ✅ Basic details implemented - Enhanced formatting pending
+
+**Implemented:**
+- ✅ Clock in/out times
+- ✅ Hours breakdown (regular, unpaid, paid)
+- ✅ Session notes
+
+**Pending:**
 - **Rich event descriptions:**
   - Lunch/dinner expenses breakdown
   - Location worked from
@@ -356,11 +388,17 @@ This document outlines planned features, improvements, and ideas for future deve
 ### 35. Time Zone Support
 **Priority:** Medium | **Difficulty:** 6/10 | **Time:** 5-7 hours
 
-- **Automatic timezone detection** - Use browser timezone
+**Status:** ✅ Browser timezone detection implemented - Multi-timezone display pending
+
+**Implemented:**
+- ✅ Automatic timezone detection (uses browser timezone)
+- ✅ Calendar events use browser's local timezone for accurate display
+
+**Pending:**
 - **Multi-timezone display** - Show times in different zones
 - **Travel mode** - Switch timezones when traveling
 - **Timezone history** - Track timezone changes
-- **Consistent calculations** - Handle DST transitions
+- **Consistent calculations** - Enhanced DST transition handling
 
 ### 36. Browser Extension
 **Priority:** Low | **Difficulty:** 8/10 | **Time:** 12-16 hours
@@ -385,12 +423,28 @@ This document outlines planned features, improvements, and ideas for future deve
 
 ## 🎯 Implementation Priority Ranking
 
+### ✅ Recently Implemented (2026)
+
+The following features have been successfully implemented:
+
+- **Active Session Card** - Real-time session tracking during clock-in with editable details (lunch, dinner, location, notes) that auto-save to Firestore
+- **Google Calendar Export Sync** - Automatic sync of work sessions to Google Calendar:
+  - Placeholder events created on clock-in (red/in-progress status)
+  - Events auto-updated on clock-out with final session details
+  - Sync status indicator in header showing connection status
+  - Manual sync functionality (click cloud icon to sync pending/failed sessions)
+  - Batch sync in Settings for multiple sessions
+  - Token expiration management with automatic refresh warnings
+- **Username/Alias System** - Custom display names with @ prefix shown in header instead of email
+- **Cross-Device Real-Time Sync** - Sessions and Google Calendar authorization sync in real-time across all devices via Firestore
+- **Compact UI Improvements** - Inline form fields for lunch/dinner in session modals, mobile-responsive improvements
+
 ### Phase 1 (Q1 2026) - Critical & High Value
-1. ✅ Data Backup & Export (Critical)
-2. ✅ Session Validation & Error Prevention (Critical)
-3. ✅ Two-Way Calendar Sync (High value)
-4. ✅ Email Report Sharing (High value)
-5. ✅ Mobile PWA (High value)
+1. Data Backup & Export (Critical)
+2. Session Validation & Error Prevention (Critical)
+3. Two-Way Calendar Sync (High value) - ✅ Export sync implemented, Import sync pending
+4. Email Report Sharing (High value)
+5. Mobile PWA (High value)
 
 ### Phase 2 (Q2 2026) - User Experience
 6. Dashboard Customization
@@ -457,7 +511,7 @@ Each feature should be evaluated against:
 
 ---
 
-**Last Updated:** January 2026
+**Last Updated:** January 12, 2026
 **Version:** 1.0
 
 For implementation discussions, see GitHub Issues or contact the development team.
