@@ -156,6 +156,27 @@
   gap: 0.75rem;
 }
 
+.username-input-group {
+  position: relative;
+}
+
+.username-prefix {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--muted-foreground);
+  background: var(--secondary);
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--border);
+  border-right: none;
+  border-radius: 8px 0 0 8px;
+}
+
+.username-input {
+  border-radius: 0 8px 8px 0 !important;
+  width: 150px !important;
+  font-weight: 500;
+}
+
 .time-input-wrapper {
   display: flex;
   align-items: center;

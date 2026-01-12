@@ -2,11 +2,12 @@ import { useState, useEffect } from 'react';
 import { doc, getDoc, setDoc, collection, query, where, getDocs, updateDoc } from 'firebase/firestore';
 import { db, auth } from '../lib/firebase';
 import { CalendarAuthButton } from './CalendarAuthButton';
-import { Settings as SettingsIcon, Save, RotateCcw, Clock, Coffee, AlertTriangle, DollarSign, Calendar, CheckCircle, XCircle, AlertCircle, RefreshCw } from 'lucide-react';
+import { Settings as SettingsIcon, Save, RotateCcw, Clock, Coffee, AlertTriangle, DollarSign, Calendar, CheckCircle, XCircle, AlertCircle, RefreshCw, User, AtSign } from 'lucide-react';
 import { format } from 'date-fns';
 import './Settings.css';
 
-export function Settings({ googleCalendar }) {
+export function Settings({ googleCalendar, onUsernameChange }) {
+  const [username, setUsername] = useState('');
   const [regularHoursThreshold, setRegularHoursThreshold] = useState(8);
   const [enableUnpaidExtra, setEnableUnpaidExtra] = useState(true);
   const [unpaidExtraThreshold, setUnpaidExtraThreshold] = useState(10);
@@ -46,6 +47,7 @@ export function Settings({ googleCalendar }) {
 
       if (settingsDoc.exists()) {
         const settings = settingsDoc.data();
+        setUsername(settings.username || '');
         setRegularHoursThreshold(settings.regularHoursThreshold || 8);
         setEnableUnpaidExtra(settings.enableUnpaidExtra !== undefined ? settings.enableUnpaidExtra : true);
         setUnpaidExtraThreshold(settings.unpaidExtraThreshold || 10);
@@ -58,6 +60,11 @@ export function Settings({ googleCalendar }) {
         setWeekStartDay(settings.weekStartDay || 'monday');
         setWeekendDaysOff(settings.weekendDaysOff || 1);
         setWeekendBonus(settings.weekendBonus || 100);
+        
+        // Notify parent of username
+        if (settings.username && onUsernameChange) {
+          onUsernameChange(settings.username);
+        }
       }
     } catch (error) {
       console.error('Error loading settings:', error);
@@ -203,8 +210,12 @@ export function Settings({ googleCalendar }) {
 
       // Convert hours and minutes to decimal hours
       const lunchDurationDecimal = lunchHours + (lunchMinutes / 60);
+      
+      // Clean username - remove @ if user typed it, then we'll add it back for display
+      const cleanUsername = username.replace(/^@/, '').trim();
 
       const settings = {
+        username: cleanUsername,
         regularHoursThreshold,
         enableUnpaidExtra,
         unpaidExtraThreshold,
@@ -218,6 +229,11 @@ export function Settings({ googleCalendar }) {
 
       const settingsRef = doc(db, 'userSettings', user.uid);
       await setDoc(settingsRef, settings);
+      
+      // Notify parent of username change
+      if (onUsernameChange) {
+        onUsernameChange(cleanUsername);
+      }
 
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
@@ -228,6 +244,7 @@ export function Settings({ googleCalendar }) {
   };
 
   const handleReset = () => {
+    setUsername('');
     setRegularHoursThreshold(8);
     setEnableUnpaidExtra(true);
     setUnpaidExtraThreshold(10);
@@ -261,6 +278,38 @@ export function Settings({ googleCalendar }) {
       </div>
 
       <div className="settings-content">
+        <section className="settings-section">
+          <div className="section-title">
+            <User />
+            <h2>Profile</h2>
+          </div>
+          <p className="section-description">
+            Set your display name. This will be shown in the header instead of your email.
+          </p>
+
+          <div className="setting-item">
+            <div className="setting-header">
+              <AtSign className="setting-icon" />
+              <div>
+                <label htmlFor="username">Username / Alias</label>
+                <p className="setting-description">Your display name (will be shown with @ prefix)</p>
+              </div>
+            </div>
+            <div className="setting-input-group username-input-group">
+              <span className="username-prefix">@</span>
+              <input
+                id="username"
+                type="text"
+                value={username}
+                onChange={(e) => setUsername(e.target.value.replace(/^@/, ''))}
+                className="setting-input username-input"
+                placeholder="yourname"
+                maxLength={20}
+              />
+            </div>
+          </div>
+        </section>
+
         <section className="settings-section">
           <div className="section-title">
             <Clock />

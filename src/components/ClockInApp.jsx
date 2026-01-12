@@ -48,6 +48,7 @@ export function ClockInApp({ user }) {
   const [deletingSession, setDeletingSession] = useState(null);
   const [syncingSession, setSyncingSession] = useState(null);
   const [activeSessionDetails, setActiveSessionDetails] = useState(null);
+  const [displayName, setDisplayName] = useState(null);
 
   // Google Calendar integration
   const googleCalendar = useGoogleCalendar();
@@ -134,6 +135,25 @@ export function ClockInApp({ user }) {
 
   useEffect(() => {
     loadSessionDates();
+  }, [user]);
+
+  // Load user display name from settings
+  useEffect(() => {
+    if (!user) return;
+
+    const settingsRef = doc(db, 'userSettings', user.uid);
+    const unsubscribe = onSnapshot(settingsRef, (docSnap) => {
+      if (docSnap.exists()) {
+        const settings = docSnap.data();
+        if (settings.username) {
+          setDisplayName(settings.username);
+        } else {
+          setDisplayName(null);
+        }
+      }
+    });
+
+    return () => unsubscribe();
   }, [user]);
 
   useEffect(() => {
@@ -562,7 +582,7 @@ export function ClockInApp({ user }) {
       case 'faq':
         return <FAQ />;
       case 'settings':
-        return <Settings googleCalendar={googleCalendar} />;
+        return <Settings googleCalendar={googleCalendar} onUsernameChange={setDisplayName} />;
       case 'about':
         return <About />;
       case 'calendar':
@@ -901,9 +921,9 @@ export function ClockInApp({ user }) {
           </div>
           <div className="header-right">
             <SyncStatusIndicator googleCalendar={googleCalendar} />
-            <div className="user-info">
+            <div className="user-info" title={user.email}>
               <User />
-              <span>{user.email}</span>
+              <span>{displayName ? `@${displayName}` : user.email}</span>
             </div>
             <button onClick={handleSignOut} className="sign-out-button">
               <LogOut />
