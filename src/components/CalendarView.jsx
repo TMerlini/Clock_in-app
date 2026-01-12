@@ -264,7 +264,9 @@ export function CalendarView({ user }) {
                         )}
                         {(parsedNotes || event.description) && (
                           <div className="calendar-event-notes">
-                            {parsedNotes || event.description}
+                            <div className="notes-content">
+                              {parsedNotes || event.description}
+                            </div>
                           </div>
                         )}
                         <div className="calendar-event-sync-badge">
