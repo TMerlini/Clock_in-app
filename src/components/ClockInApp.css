@@ -553,7 +553,7 @@
 .time-category.paid {
   background: rgba(59, 130, 246, 0.1);
   border: 1px solid rgba(59, 130, 246, 0.2);
-  color: #3b82f6;
+  color: #3e88ff;
 }
 
 .time-category-label {
@@ -749,7 +749,7 @@
 
 .daily-summary.short {
   background: rgba(59, 130, 246, 0.1);
-  border-color: #3b82f6;
+  border-color: #3b82f6
 }
 
 .daily-summary.unpaid {

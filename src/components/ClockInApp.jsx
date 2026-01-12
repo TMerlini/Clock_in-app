@@ -13,6 +13,7 @@ import { SessionEditor } from './SessionEditor';
 import { SessionCreator } from './SessionCreator';
 import { DeleteConfirmation } from './DeleteConfirmation';
 import { GoogleCalendarSync } from './GoogleCalendarSync';
+import { ActiveSessionCard } from './ActiveSessionCard';
 import { Clock, LogOut, User, Calendar as CalendarIcon, Edit2, AlertTriangle, CheckCircle, Info, Plus, Trash2, TrendingUp, DollarSign, Coffee, UtensilsCrossed } from 'lucide-react';
 import { format, startOfDay, endOfDay } from 'date-fns';
 import { formatHoursMinutes } from '../lib/utils';
@@ -45,6 +46,7 @@ export function ClockInApp({ user }) {
   const [creatingSession, setCreatingSession] = useState(false);
   const [deletingSession, setDeletingSession] = useState(null);
   const [syncingSession, setSyncingSession] = useState(null);
+  const [activeSessionDetails, setActiveSessionDetails] = useState(null);
 
   // Google Calendar integration
   const googleCalendar = useGoogleCalendar();
@@ -82,12 +84,17 @@ export function ClockInApp({ user }) {
           console.log('Syncing clock-in state from Firestore');
           setClockInTime(clockInTimestamp);
           setIsClockedIn(true);
+          // Load session details if they exist
+          if (data.sessionDetails) {
+            setActiveSessionDetails(data.sessionDetails);
+          }
         }
       } else {
         // No active clock-in in Firestore
         console.log('No active clock-in found in Firestore');
         setIsClockedIn(false);
         setClockInTime(null);
+        setActiveSessionDetails(null);
       }
     }, (error) => {
       console.error('Error listening to active clock-in:', error);
@@ -349,6 +356,15 @@ export function ClockInApp({ user }) {
         console.error('Error loading weekend settings:', error);
       }
 
+      // Get session details from active session card (if any were set)
+      const details = activeSessionDetails || {};
+      const lunchDuration = details.includeLunchTime 
+        ? (details.lunchHours || 0) + (details.lunchMinutes || 0) / 60 
+        : 0;
+      
+      // Apply weekend settings from active session if set there
+      const useWeekendFromDetails = details.isWeekend !== undefined ? details.isWeekend : isWeekend;
+
       const newSession = {
         userId: user.uid,
         userEmail: user.email,
@@ -358,9 +374,17 @@ export function ClockInApp({ user }) {
         regularHours: Math.min(totalHours, 8),
         unpaidExtraHours: totalHours > 8 ? Math.min(totalHours - 8, 2) : 0,
         paidExtraHours: totalHours > 10 ? totalHours - 10 : 0,
-        isWeekend: isWeekend,
-        weekendDaysOff: isWeekend ? weekendDaysOff : 0,
-        weekendBonus: isWeekend ? weekendBonus : 0,
+        isWeekend: useWeekendFromDetails,
+        weekendDaysOff: useWeekendFromDetails ? weekendDaysOff : 0,
+        weekendBonus: useWeekendFromDetails ? weekendBonus : 0,
+        // Session details from ActiveSessionCard
+        includeLunchTime: details.includeLunchTime || false,
+        lunchDuration: lunchDuration,
+        lunchAmount: details.lunchAmount || 0,
+        hadDinner: details.hadDinner || false,
+        dinnerAmount: details.dinnerAmount || 0,
+        location: details.location || '',
+        notes: details.notes || '',
         calendarEventId: null,
         calendarSyncStatus: 'not_synced',
         lastSyncAt: null
@@ -767,7 +791,17 @@ export function ClockInApp({ user }) {
                   })()}
 
                   <div className="sessions-container">
-                    {sessionsForDate.length === 0 ? (
+                    {/* Show ActiveSessionCard when clocked in and viewing today */}
+                    {isClockedIn && clockInTime && 
+                      selectedDate.toDateString() === new Date().toDateString() && (
+                        <ActiveSessionCard
+                          clockInTime={clockInTime}
+                          sessionDetails={activeSessionDetails}
+                          onDetailsChange={setActiveSessionDetails}
+                        />
+                      )}
+                    
+                    {sessionsForDate.length === 0 && !(isClockedIn && selectedDate.toDateString() === new Date().toDateString()) ? (
                       <p className="empty-sessions">
                         No sessions recorded for this date
                       </p>
