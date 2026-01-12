@@ -744,7 +744,8 @@
 .calendar-wrapper button.rdp-nav_button_previous svg,
 .calendar-wrapper button.rdp-nav_button_next svg,
 .calendar-wrapper .rdp-button_reset.rdp-nav_button svg,
-.calendar-wrapper .rdp-nav svg {
+.calendar-wrapper .rdp-nav svg,
+.calendar-wrapper svg[class*="lucide"] {
   color: #8b5cf6 !important;
   stroke: #8b5cf6 !important;
   fill: none !important;
