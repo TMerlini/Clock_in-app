@@ -6,7 +6,7 @@ import { Settings as SettingsIcon, Save, RotateCcw, Clock, Coffee, AlertTriangle
 import { format } from 'date-fns';
 import './Settings.css';
 
-export function Settings({ googleCalendar, onUsernameChange }) {
+export function Settings({ googleCalendar, onUsernameChange, onNavigate }) {
   const [username, setUsername] = useState('');
   const [regularHoursThreshold, setRegularHoursThreshold] = useState(8);
   const [enableUnpaidExtra, setEnableUnpaidExtra] = useState(true);
@@ -601,6 +601,16 @@ export function Settings({ googleCalendar, onUsernameChange }) {
                   >
                     <RefreshCw className={syncing ? 'spinning' : ''} />
                     {syncing ? 'Syncing...' : `Sync ${syncStats.unsyncedSessions + syncStats.failedSessions} Session(s)`}
+                  </button>
+                )}
+                
+                {googleCalendar.isAuthorized && (
+                  <button
+                    className="import-calendar-button"
+                    onClick={() => onNavigate && onNavigate('calendar-import')}
+                  >
+                    <Download />
+                    Import from Calendar
                   </button>
                 )}
               </div>

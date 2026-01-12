@@ -8,6 +8,7 @@ import { Analytics } from './Analytics';
 import { Settings } from './Settings';
 import { About } from './About';
 import { FAQ } from './FAQ';
+import { CalendarImport } from './CalendarImport';
 import { Calendar } from './ui/calendar';
 import { SessionEditor } from './SessionEditor';
 import { SessionCreator } from './SessionCreator';
@@ -582,7 +583,9 @@ export function ClockInApp({ user }) {
       case 'faq':
         return <FAQ />;
       case 'settings':
-        return <Settings googleCalendar={googleCalendar} onUsernameChange={setDisplayName} />;
+        return <Settings googleCalendar={googleCalendar} onUsernameChange={setDisplayName} onNavigate={setCurrentPage} />;
+      case 'calendar-import':
+        return <CalendarImport user={user} />;
       case 'about':
         return <About />;
       case 'calendar':

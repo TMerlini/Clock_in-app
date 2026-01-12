@@ -285,6 +285,59 @@ Paid Overtime: ${formatHoursMinutes(paidHours)}${notes ? '\n\nNotes: ' + notes :
     }
   };
 
+  const listCalendarEvents = async (timeMin, timeMax, maxResults = 250) => {
+    if (!gapiInited) {
+      throw new Error('Calendar API not initialized');
+    }
+    if (!accessToken) {
+      throw new Error('Not authorized - please enable Google Calendar sync in Settings');
+    }
+
+    try {
+      window.gapi.client.setToken({ access_token: accessToken });
+      
+      const response = await window.gapi.client.calendar.events.list({
+        calendarId: 'primary',
+        timeMin: timeMin,
+        timeMax: timeMax,
+        maxResults: maxResults,
+        singleEvents: true,
+        orderBy: 'startTime',
+        timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+      });
+
+      console.log('Calendar events listed:', response.result.items?.length || 0);
+      return response.result.items || [];
+    } catch (error) {
+      console.error('Error listing calendar events:', error);
+      throw error;
+    }
+  };
+
+  const getCalendarEvent = async (eventId) => {
+    if (!gapiInited) {
+      throw new Error('Calendar API not initialized');
+    }
+    if (!accessToken) {
+      throw new Error('Not authorized - please enable Google Calendar sync in Settings');
+    }
+
+    try {
+      window.gapi.client.setToken({ access_token: accessToken });
+      
+      const response = await window.gapi.client.calendar.events.get({
+        calendarId: 'primary',
+        eventId: eventId,
+      });
+
+      console.log('Calendar event retrieved:', response.result);
+      return response.result;
+    } catch (error) {
+      console.error('Error getting calendar event:', error);
+      throw error;
+    }
+  };
+
   const isTokenExpired = () => {
     if (!tokenExpiry) return false;
     // Consider token expired 5 minutes before actual expiry for safety
@@ -321,5 +374,7 @@ Paid Overtime: ${formatHoursMinutes(paidHours)}${notes ? '\n\nNotes: ' + notes :
     refreshToken,
     createCalendarEvent,
     updateCalendarEvent,
+    listCalendarEvents,
+    getCalendarEvent,
   };
 }
