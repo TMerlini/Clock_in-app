@@ -3,7 +3,7 @@ import { format } from 'date-fns';
 import { formatHoursMinutes } from '../lib/utils';
 import './ImportEventCard.css';
 
-export function ImportEventCard({ event, conflict, isSelected, onSelect, onImport, loading }) {
+export function ImportEventCard({ event, conflict, isSelected, onSelect, onImport, loading, calendarName }) {
   const eventStart = new Date(event.start.dateTime || event.start.date);
   const eventEnd = new Date(event.end.dateTime || event.end.date);
   const durationMs = eventEnd.getTime() - eventStart.getTime();

@@ -285,7 +285,7 @@ Paid Overtime: ${formatHoursMinutes(paidHours)}${notes ? '\n\nNotes: ' + notes :
     }
   };
 
-  const listCalendarEvents = async (timeMin, timeMax, maxResults = 250) => {
+  const listCalendarEvents = async (timeMin, timeMax, maxResults = 250, calendarIds = ['primary']) => {
     if (!gapiInited) {
       throw new Error('Calendar API not initialized');
     }
@@ -296,25 +296,71 @@ Paid Overtime: ${formatHoursMinutes(paidHours)}${notes ? '\n\nNotes: ' + notes :
     try {
       window.gapi.client.setToken({ access_token: accessToken });
       
-      const response = await window.gapi.client.calendar.events.list({
-        calendarId: 'primary',
-        timeMin: timeMin,
-        timeMax: timeMax,
-        maxResults: maxResults,
-        singleEvents: true,
-        orderBy: 'startTime',
-        timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-      });
+      // If multiple calendarIds, fetch from all and merge
+      if (calendarIds.length > 1) {
+        const eventPromises = calendarIds.map(calendarId =>
+          window.gapi.client.calendar.events.list({
+            calendarId: calendarId,
+            timeMin: timeMin,
+            timeMax: timeMax,
+            maxResults: maxResults,
+            singleEvents: true,
+            orderBy: 'startTime',
+            timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+          }).then(response => ({
+            calendarId,
+            events: response.result.items || []
+          })).catch(error => {
+            console.warn(`Error fetching events from calendar ${calendarId}:`, error);
+            return { calendarId, events: [] };
+          })
+        );
+        
+        const results = await Promise.all(eventPromises);
+        const allEvents = [];
+        results.forEach(({ calendarId, events }) => {
+          events.forEach(event => {
+            allEvents.push({ ...event, sourceCalendarId: calendarId });
+          });
+        });
+        
+        // Sort by start time
+        allEvents.sort((a, b) => {
+          const timeA = new Date(a.start?.dateTime || a.start?.date || 0).getTime();
+          const timeB = new Date(b.start?.dateTime || b.start?.date || 0).getTime();
+          return timeA - timeB;
+        });
+        
+        console.log(`Calendar events listed from ${calendarIds.length} calendar(s):`, allEvents.length);
+        return allEvents;
+      } else {
+        // Single calendar (backward compatible)
+        const calendarId = calendarIds[0] || 'primary';
+        const response = await window.gapi.client.calendar.events.list({
+          calendarId: calendarId,
+          timeMin: timeMin,
+          timeMax: timeMax,
+          maxResults: maxResults,
+          singleEvents: true,
+          orderBy: 'startTime',
+          timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        });
 
-      console.log('Calendar events listed:', response.result.items?.length || 0);
-      return response.result.items || [];
+        const events = response.result.items || [];
+        events.forEach(event => {
+          event.sourceCalendarId = calendarId;
+        });
+
+        console.log('Calendar events listed:', events.length);
+        return events;
+      }
     } catch (error) {
       console.error('Error listing calendar events:', error);
       throw error;
     }
   };
 
-  const getCalendarEvent = async (eventId) => {
+  const getCalendarEvent = async (eventId, calendarId = 'primary') => {
     if (!gapiInited) {
       throw new Error('Calendar API not initialized');
     }
@@ -326,7 +372,7 @@ Paid Overtime: ${formatHoursMinutes(paidHours)}${notes ? '\n\nNotes: ' + notes :
       window.gapi.client.setToken({ access_token: accessToken });
       
       const response = await window.gapi.client.calendar.events.get({
-        calendarId: 'primary',
+        calendarId: calendarId,
         eventId: eventId,
       });
 
@@ -334,6 +380,29 @@ Paid Overtime: ${formatHoursMinutes(paidHours)}${notes ? '\n\nNotes: ' + notes :
       return response.result;
     } catch (error) {
       console.error('Error getting calendar event:', error);
+      throw error;
+    }
+  };
+
+  const listCalendars = async () => {
+    if (!gapiInited) {
+      throw new Error('Calendar API not initialized');
+    }
+    if (!accessToken) {
+      throw new Error('Not authorized - please enable Google Calendar sync in Settings');
+    }
+
+    try {
+      window.gapi.client.setToken({ access_token: accessToken });
+      
+      const response = await window.gapi.client.calendar.calendarList.list({
+        minAccessRole: 'reader',
+      });
+
+      console.log('Calendars listed:', response.result.items?.length || 0);
+      return response.result.items || [];
+    } catch (error) {
+      console.error('Error listing calendars:', error);
       throw error;
     }
   };
@@ -376,5 +445,6 @@ Paid Overtime: ${formatHoursMinutes(paidHours)}${notes ? '\n\nNotes: ' + notes :
     updateCalendarEvent,
     listCalendarEvents,
     getCalendarEvent,
+    listCalendars,
   };
 }

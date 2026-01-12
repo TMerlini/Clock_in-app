@@ -17,14 +17,41 @@ export function CalendarImport({ user }) {
   const [selectedEvents, setSelectedEvents] = useState(new Set());
   const [existingSessions, setExistingSessions] = useState([]);
   const [importResults, setImportResults] = useState(null);
+  const [calendars, setCalendars] = useState([]);
+  const [selectedCalendars, setSelectedCalendars] = useState(new Set(['primary'])); // Default: primary calendar
+  const [showCalendarSelector, setShowCalendarSelector] = useState(false);
 
   useEffect(() => {
     if (googleCalendar.isAuthorized) {
+      loadCalendars();
       loadExistingSessions();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [googleCalendar.isAuthorized]);
+
+  useEffect(() => {
+    if (googleCalendar.isAuthorized && calendars.length > 0) {
       loadCalendarEvents();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [googleCalendar.isAuthorized, dateRange, filterMode]);
+  }, [dateRange, filterMode, selectedCalendars, calendars.length]);
+
+  const loadCalendars = async () => {
+    if (!googleCalendar.isAuthorized) return;
+
+    try {
+      const calendarList = await googleCalendar.listCalendars();
+      setCalendars(calendarList);
+      
+      // Select all calendars by default
+      const allCalendarIds = calendarList.map(cal => cal.id);
+      setSelectedCalendars(new Set(allCalendarIds));
+    } catch (error) {
+      console.error('Error loading calendars:', error);
+      // Fallback to primary calendar only
+      setSelectedCalendars(new Set(['primary']));
+    }
+  };
 
   const loadExistingSessions = async () => {
     try {
@@ -44,7 +71,7 @@ export function CalendarImport({ user }) {
   };
 
   const loadCalendarEvents = async () => {
-    if (!googleCalendar.isAuthorized) return;
+    if (!googleCalendar.isAuthorized || selectedCalendars.size === 0) return;
 
     setLoading(true);
     try {
@@ -52,9 +79,12 @@ export function CalendarImport({ user }) {
       const timeMin = subDays(now, dateRange);
       const timeMax = now;
 
+      const calendarIds = Array.from(selectedCalendars);
       const calendarEvents = await googleCalendar.listCalendarEvents(
         timeMin.toISOString(),
-        timeMax.toISOString()
+        timeMax.toISOString(),
+        250,
+        calendarIds
       );
 
       // Filter events based on filter mode
@@ -383,20 +413,22 @@ export function CalendarImport({ user }) {
                   )}
                 </div>
                 <div className="import-events-list">
-                {filteredEvents.map((event) => {
-                  const conflict = checkConflict(event);
-                  return (
-                    <ImportEventCard
-                      key={event.id}
-                      event={event}
-                      conflict={conflict}
-                      isSelected={selectedEvents.has(event.id)}
-                      onSelect={() => handleSelectEvent(event.id)}
-                      onImport={() => handleImport(event)}
-                      loading={loading}
-                    />
-                  );
-                })}
+                  {filteredEvents.map((event) => {
+                    const conflict = checkConflict(event);
+                    const sourceCalendar = calendars.find(cal => cal.id === event.sourceCalendarId);
+                    return (
+                      <ImportEventCard
+                        key={event.id}
+                        event={event}
+                        conflict={conflict}
+                        isSelected={selectedEvents.has(event.id)}
+                        onSelect={() => handleSelectEvent(event.id)}
+                        onImport={() => handleImport(event)}
+                        loading={loading}
+                        calendarName={sourceCalendar?.summary || event.sourceCalendarId || 'Unknown Calendar'}
+                      />
+                    );
+                  })}
                 </div>
               </>
             )}
