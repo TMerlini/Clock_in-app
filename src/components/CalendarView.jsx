@@ -243,12 +243,9 @@ export function CalendarView({ user }) {
                     return (
                       <div key={event.id} className="calendar-event-card">
                         <div className="calendar-event-header">
-                          <div>
-                            <span className="event-number">Event {eventsForDate.length - index}</span>
-                            {event.summary && (
-                              <div className="event-title">{event.summary}</div>
-                            )}
-                          </div>
+                          {event.summary && (
+                            <div className="event-title">{event.summary}</div>
+                          )}
                         </div>
                         {sourceCalendar && (
                           <div className="calendar-source-badge-inline">
