@@ -711,20 +711,23 @@
 
 .calendar-wrapper .rdp-nav_button,
 .calendar-wrapper .rdp-nav button {
-  color: white;
-  background: #404040;
-  border: 1px solid #2a2a2a;
+  color: #8b5cf6;
+  background: rgba(139, 92, 246, 0.1);
+  border: 1px solid rgba(139, 92, 246, 0.3);
   border-radius: 6px;
   width: 32px;
   height: 32px;
   transition: all 0.2s ease;
+  opacity: 1;
 }
 
 .calendar-wrapper .rdp-nav_button:hover,
 .calendar-wrapper .rdp-nav button:hover {
   background: #8b5cf6;
   color: white;
+  border-color: #8b5cf6;
   transform: scale(1.1);
+  opacity: 1;
 }
 
 .calendar-wrapper .rdp-day_disabled {
