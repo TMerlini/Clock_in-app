@@ -181,6 +181,24 @@
   overflow-y: auto;
 }
 
+.calendar-event-notes .notes-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.calendar-event-notes .notes-content::-webkit-scrollbar-track {
+  background: var(--card);
+  border-radius: 4px;
+}
+
+.calendar-event-notes .notes-content::-webkit-scrollbar-thumb {
+  background: var(--muted);
+  border-radius: 4px;
+}
+
+.calendar-event-notes .notes-content::-webkit-scrollbar-thumb:hover {
+  background: var(--border);
+}
+
 .calendar-event-sync-badge {
   display: flex;
   align-items: center;
