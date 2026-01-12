@@ -14,6 +14,7 @@ import { SessionCreator } from './SessionCreator';
 import { DeleteConfirmation } from './DeleteConfirmation';
 import { GoogleCalendarSync } from './GoogleCalendarSync';
 import { ActiveSessionCard } from './ActiveSessionCard';
+import { SyncStatusIndicator } from './SyncStatusIndicator';
 import { Clock, LogOut, User, Calendar as CalendarIcon, Edit2, AlertTriangle, CheckCircle, Info, Plus, Trash2, TrendingUp, DollarSign, Coffee, UtensilsCrossed } from 'lucide-react';
 import { format, startOfDay, endOfDay } from 'date-fns';
 import { formatHoursMinutes } from '../lib/utils';
@@ -899,6 +900,7 @@ export function ClockInApp({ user }) {
             </div>
           </div>
           <div className="header-right">
+            <SyncStatusIndicator googleCalendar={googleCalendar} />
             <div className="user-info">
               <User />
               <span>{user.email}</span>

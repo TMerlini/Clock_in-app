@@ -12,6 +12,7 @@ export function useGoogleCalendar() {
   const [gisInited, setGisInited] = useState(false);
   const [tokenClient, setTokenClient] = useState(null);
   const [accessToken, setAccessToken] = useState(null);
+  const [tokenExpiry, setTokenExpiry] = useState(null);
   const [currentUser, setCurrentUser] = useState(null);
 
   // Listen for auth state changes
@@ -59,16 +60,32 @@ export function useGoogleCalendar() {
     // Real-time listener for token changes
     const unsubscribe = onSnapshot(tokenRef, (docSnap) => {
       if (docSnap.exists()) {
-        const storedToken = docSnap.data().accessToken;
+        const data = docSnap.data();
+        const storedToken = data.accessToken;
+        const expiry = data.expiresAt;
+        
+        // Check if token is expired
+        if (expiry && Date.now() > expiry) {
+          console.log('Token expired, clearing...');
+          setAccessToken(null);
+          setTokenExpiry(null);
+          if (window.gapi?.client) {
+            window.gapi.client.setToken(null);
+          }
+          return;
+        }
+        
         setAccessToken(storedToken);
+        setTokenExpiry(expiry);
         // Also set the token on gapi client immediately
         if (window.gapi?.client) {
           window.gapi.client.setToken({ access_token: storedToken });
         }
-        console.log('Token synced from Firestore (real-time)');
+        console.log('Token synced from Firestore (real-time), expires:', expiry ? new Date(expiry).toLocaleTimeString() : 'unknown');
       } else {
         // Token was deleted (user disconnected on another device)
         setAccessToken(null);
+        setTokenExpiry(null);
         if (window.gapi?.client) {
           window.gapi.client.setToken(null);
         }
@@ -109,7 +126,12 @@ export function useGoogleCalendar() {
         scope: CALENDAR_SCOPES,
         callback: async (response) => {
           if (response.access_token) {
+            // Calculate expiry time (Google tokens expire in 3600 seconds = 1 hour)
+            const expiresIn = response.expires_in || 3600;
+            const expiresAt = Date.now() + (expiresIn * 1000);
+            
             setAccessToken(response.access_token);
+            setTokenExpiry(expiresAt);
             
             // Set the token on gapi client immediately
             if (window.gapi?.client) {
@@ -123,9 +145,10 @@ export function useGoogleCalendar() {
                 const tokenRef = doc(db, 'calendarTokens', user.uid);
                 await setDoc(tokenRef, {
                   accessToken: response.access_token,
+                  expiresAt: expiresAt,
                   updatedAt: Date.now()
                 });
-                console.log('Access token saved to Firestore');
+                console.log('Access token saved to Firestore, expires at:', new Date(expiresAt).toLocaleTimeString());
               } catch (error) {
                 console.error('Error saving token to Firestore:', error);
               }
@@ -262,15 +285,40 @@ Paid Overtime: ${formatHoursMinutes(paidHours)}${notes ? '\n\nNotes: ' + notes :
     }
   };
 
+  const isTokenExpired = () => {
+    if (!tokenExpiry) return false;
+    // Consider token expired 5 minutes before actual expiry for safety
+    return Date.now() > (tokenExpiry - 5 * 60 * 1000);
+  };
+
   const isAuthorized = () => {
-    return gapiInited && gisInited && accessToken !== null;
+    return gapiInited && gisInited && accessToken !== null && !isTokenExpired();
+  };
+
+  const refreshToken = () => {
+    // For implicit grant flow, we need to re-request authorization
+    // Using prompt: '' for silent refresh if possible
+    if (tokenClient) {
+      tokenClient.requestAccessToken({ prompt: '' });
+    }
+  };
+
+  // Get time until token expires (in minutes)
+  const getTokenExpiryMinutes = () => {
+    if (!tokenExpiry) return null;
+    const remaining = tokenExpiry - Date.now();
+    if (remaining <= 0) return 0;
+    return Math.round(remaining / (60 * 1000));
   };
 
   return {
     isReady: gapiInited && gisInited,
     isAuthorized: isAuthorized(),
+    isTokenExpired: isTokenExpired(),
+    tokenExpiryMinutes: getTokenExpiryMinutes(),
     requestAuthorization,
     revokeAuthorization,
+    refreshToken,
     createCalendarEvent,
     updateCalendarEvent,
   };
