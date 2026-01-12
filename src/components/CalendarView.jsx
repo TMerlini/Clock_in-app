@@ -261,25 +261,6 @@ export function CalendarView({ user }) {
                           <div>Start: {format(eventStart, 'HH:mm:ss')}</div>
                           <div>End: {format(eventEnd, 'HH:mm:ss')}</div>
                         </div>
-                        {(regularHours > 0 || unpaidExtraHours > 0 || paidExtraHours > 0) && (
-                          <div className="calendar-event-breakdown">
-                            {regularHours > 0 && (
-                              <span className="breakdown-badge regular">
-                                Regular: {formatHoursMinutes(regularHours)}
-                              </span>
-                            )}
-                            {unpaidExtraHours > 0 && (
-                              <span className="breakdown-badge unpaid">
-                                Unpaid: {formatHoursMinutes(unpaidExtraHours)}
-                              </span>
-                            )}
-                            {paidExtraHours > 0 && (
-                              <span className="breakdown-badge paid">
-                                Paid: {formatHoursMinutes(paidExtraHours)}
-                              </span>
-                            )}
-                          </div>
-                        )}
                         {event.location && (
                           <div className="calendar-event-location">
                             <strong>Location:</strong> {event.location}
