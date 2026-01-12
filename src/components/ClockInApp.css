@@ -711,23 +711,35 @@
 
 .calendar-wrapper .rdp-nav_button,
 .calendar-wrapper .rdp-nav button {
-  color: #8b5cf6;
-  background: rgba(139, 92, 246, 0.1);
-  border: 1px solid rgba(139, 92, 246, 0.3);
+  color: #8b5cf6 !important;
+  background: rgba(139, 92, 246, 0.1) !important;
+  border: 1px solid rgba(139, 92, 246, 0.3) !important;
   border-radius: 6px;
   width: 32px;
   height: 32px;
   transition: all 0.2s ease;
-  opacity: 1;
+  opacity: 1 !important;
 }
 
 .calendar-wrapper .rdp-nav_button:hover,
 .calendar-wrapper .rdp-nav button:hover {
-  background: #8b5cf6;
-  color: white;
-  border-color: #8b5cf6;
+  background: #8b5cf6 !important;
+  color: white !important;
+  border-color: #8b5cf6 !important;
   transform: scale(1.1);
-  opacity: 1;
+  opacity: 1 !important;
+}
+
+.calendar-wrapper .rdp-nav_button svg,
+.calendar-wrapper .rdp-nav button svg {
+  color: #8b5cf6 !important;
+  stroke: #8b5cf6 !important;
+}
+
+.calendar-wrapper .rdp-nav_button:hover svg,
+.calendar-wrapper .rdp-nav button:hover svg {
+  color: white !important;
+  stroke: white !important;
 }
 
 .calendar-wrapper .rdp-day_disabled {
