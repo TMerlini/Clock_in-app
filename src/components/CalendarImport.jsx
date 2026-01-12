@@ -12,7 +12,7 @@ export function CalendarImport({ user }) {
   const [events, setEvents] = useState([]);
   const [filteredEvents, setFilteredEvents] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [dateRange, setDateRange] = useState(30); // Default: last 30 days
+  const [dateRange, setDateRange] = useState({ daysBack: 30, daysForward: 0 }); // Default: last 30 days
   const [filterMode, setFilterMode] = useState('work-session-only'); // 'work-session-only' | 'all-events'
   const [selectedEvents, setSelectedEvents] = useState(new Set());
   const [existingSessions, setExistingSessions] = useState([]);
@@ -76,8 +76,8 @@ export function CalendarImport({ user }) {
     setLoading(true);
     try {
       const now = new Date();
-      const timeMin = subDays(now, dateRange);
-      const timeMax = now;
+      const timeMin = subDays(now, dateRange.daysBack);
+      const timeMax = addDays(now, dateRange.daysForward);
 
       const calendarIds = Array.from(selectedCalendars);
       const calendarEvents = await googleCalendar.listCalendarEvents(
