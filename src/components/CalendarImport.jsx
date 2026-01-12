@@ -13,6 +13,7 @@ export function CalendarImport({ user }) {
   const [filteredEvents, setFilteredEvents] = useState([]);
   const [loading, setLoading] = useState(false);
   const [dateRange, setDateRange] = useState(30); // Default: last 30 days
+  const [filterMode, setFilterMode] = useState('work-session-only'); // 'work-session-only' | 'all-events'
   const [selectedEvents, setSelectedEvents] = useState(new Set());
   const [existingSessions, setExistingSessions] = useState([]);
   const [importResults, setImportResults] = useState(null);
@@ -23,7 +24,7 @@ export function CalendarImport({ user }) {
       loadCalendarEvents();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [googleCalendar.isAuthorized, dateRange]);
+  }, [googleCalendar.isAuthorized, dateRange, filterMode]);
 
   const loadExistingSessions = async () => {
     try {
@@ -56,14 +57,21 @@ export function CalendarImport({ user }) {
         timeMax.toISOString()
       );
 
-      // Filter for "Work Session" events
-      const workEvents = calendarEvents.filter(event => {
-        const title = event.summary || '';
-        return title.toLowerCase().includes('work session');
-      });
+      // Filter events based on filter mode
+      let filtered;
+      if (filterMode === 'work-session-only') {
+        // Filter for "Work Session" events only
+        filtered = calendarEvents.filter(event => {
+          const title = event.summary || '';
+          return title.toLowerCase().includes('work session');
+        });
+      } else {
+        // Show all events
+        filtered = calendarEvents;
+      }
 
-      setEvents(workEvents);
-      setFilteredEvents(workEvents);
+      setEvents(filtered);
+      setFilteredEvents(filtered);
       setSelectedEvents(new Set());
     } catch (error) {
       console.error('Error loading calendar events:', error);
