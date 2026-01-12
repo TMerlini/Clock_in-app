@@ -315,16 +315,34 @@ export function CalendarImport({ user }) {
             <div className="import-controls">
               <div className="date-range-selector">
                 <label>Date Range:</label>
-                <select
-                  value={dateRange}
-                  onChange={(e) => setDateRange(parseInt(e.target.value))}
-                  disabled={loading}
-                >
-                  <option value={7}>Last 7 days</option>
-                  <option value={30}>Last 30 days</option>
-                  <option value={60}>Last 60 days</option>
-                  <option value={90}>Last 90 days</option>
-                </select>
+                <div className="date-range-inputs">
+                  <select
+                    value={dateRange.daysBack}
+                    onChange={(e) => setDateRange({ ...dateRange, daysBack: parseInt(e.target.value) })}
+                    disabled={loading}
+                  >
+                    <option value={7}>7 days back</option>
+                    <option value={30}>30 days back</option>
+                    <option value={60}>60 days back</option>
+                    <option value={90}>90 days back</option>
+                    <option value={180}>180 days back</option>
+                    <option value={365}>1 year back</option>
+                  </select>
+                  <span className="date-range-separator">to</span>
+                  <select
+                    value={dateRange.daysForward}
+                    onChange={(e) => setDateRange({ ...dateRange, daysForward: parseInt(e.target.value) })}
+                    disabled={loading}
+                  >
+                    <option value={0}>Today</option>
+                    <option value={7}>7 days forward</option>
+                    <option value={30}>30 days forward</option>
+                    <option value={60}>60 days forward</option>
+                    <option value={90}>90 days forward</option>
+                    <option value={180}>180 days forward</option>
+                    <option value={365}>1 year forward</option>
+                  </select>
+                </div>
               </div>
 
               <div className="filter-mode-selector">
