@@ -13,6 +13,7 @@ export function CalendarView({ user }) {
   const [events, setEvents] = useState([]);
   const [eventsForDate, setEventsForDate] = useState([]);
   const [datesWithEvents, setDatesWithEvents] = useState(new Set());
+  const [datesWithCalendarEvents, setDatesWithCalendarEvents] = useState(new Map()); // date -> calendarId
   const [loading, setLoading] = useState(false);
   const [dateRange, setDateRange] = useState({ daysBack: 90, daysForward: 30 }); // Wider range by default
   const [calendars, setCalendars] = useState([]);
@@ -122,7 +123,24 @@ export function CalendarView({ user }) {
     }
   };
 
-  // Create modifiers for calendar highlighting
+  // Color mapping for different calendars
+  const getCalendarColor = (calendarName) => {
+    if (!calendarName) return { bg: 'rgba(139, 92, 246, 0.1)', border: 'rgba(139, 92, 246, 0.2)', color: '#8b5cf6', dot: '#8b5cf6' };
+    
+    const name = calendarName.toLowerCase();
+    // Default purple
+    if (name.includes('eventos') || name.includes('event')) {
+      return { bg: 'rgba(59, 130, 246, 0.1)', border: 'rgba(59, 130, 246, 0.2)', color: '#3b82f6', dot: '#3b82f6' }; // Blue
+    } else if (name.includes('merloproductions') || name.includes('merlo')) {
+      return { bg: 'rgba(236, 72, 153, 0.1)', border: 'rgba(236, 72, 153, 0.2)', color: '#ec4899', dot: '#ec4899' }; // Pink
+    } else if (name.includes('primary')) {
+      return { bg: 'rgba(34, 197, 94, 0.1)', border: 'rgba(34, 197, 94, 0.2)', color: '#22c55e', dot: '#22c55e' }; // Green
+    }
+    // Default purple for other calendars
+    return { bg: 'rgba(139, 92, 246, 0.1)', border: 'rgba(139, 92, 246, 0.2)', color: '#8b5cf6', dot: '#8b5cf6' };
+  };
+
+  // Create modifiers for calendar highlighting with colors
   const modifiers = {
     hasEvents: (date) => {
       const dateStr = format(date, 'yyyy-MM-dd');
@@ -247,12 +265,22 @@ export function CalendarView({ user }) {
                             <div className="event-title">{event.summary}</div>
                           )}
                         </div>
-                        {sourceCalendar && (
-                          <div className="calendar-source-badge-inline">
-                            <CalendarIcon size={12} />
-                            <span>{sourceCalendar.summary}</span>
-                          </div>
-                        )}
+                        {sourceCalendar && (() => {
+                          const calendarColor = getCalendarColor(sourceCalendar.summary);
+                          return (
+                            <div 
+                              className="calendar-source-badge-inline"
+                              style={{
+                                background: calendarColor.bg,
+                                borderColor: calendarColor.border,
+                                color: calendarColor.color
+                              }}
+                            >
+                              <CalendarIcon size={12} />
+                              <span>{sourceCalendar.summary}</span>
+                            </div>
+                          );
+                        })()}
                         {event.location && (
                           <div className="calendar-event-location">
                             <strong>Location:</strong> {event.location}
@@ -260,9 +288,17 @@ export function CalendarView({ user }) {
                         )}
                         {(parsedNotes || event.description) && (
                           <div className="calendar-event-notes">
-                            <div className="notes-content">
-                              {parsedNotes || event.description}
-                            </div>
+                            <div 
+                              className="notes-content"
+                              dangerouslySetInnerHTML={{ 
+                                __html: (() => {
+                                  const content = parsedNotes || event.description || '';
+                                  // Convert newlines to <br> tags
+                                  // This works for both plain text and HTML content
+                                  return content.replace(/\r\n/g, '\n').replace(/\n/g, '<br>');
+                                })()
+                              }}
+                            />
                           </div>
                         )}
                         <div className="calendar-event-sync-badge">

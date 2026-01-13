@@ -196,10 +196,15 @@
 }
 
 .calendar-event-notes .notes-content {
-  white-space: pre-wrap;
   word-wrap: break-word;
   max-height: 300px;
   overflow-y: auto;
+  line-height: 1.8;
+}
+
+.calendar-event-notes .notes-content b,
+.calendar-event-notes .notes-content strong {
+  font-weight: 600;
 }
 
 .calendar-event-notes .notes-content::-webkit-scrollbar {
@@ -259,6 +264,8 @@
   font-weight: 500;
   margin-bottom: 0.75rem;
   width: fit-content;
+  border-width: 1px;
+  border-style: solid;
 }
 
 .calendar-source-badge-inline svg {
