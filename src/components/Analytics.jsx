@@ -279,11 +279,18 @@ export function Analytics({ user }) {
     const overworkStats = calculateOverworkStats();
     
     // Calculate how much to deduct from each pool
-    // Priority: Use days off earned first, then overwork hours
-    const totalDaysNeeded = days + (hours / 8); // Total days needed (including partial days from hours)
-    const daysOffToUse = Math.min(totalDaysNeeded, overworkStats.remainingDaysOff);
-    const remainingDaysNeeded = totalDaysNeeded - daysOffToUse;
-    const overworkHoursToUse = Math.round(remainingDaysNeeded * 8 * 10000) / 10000;
+    // Strategy: 
+    // - Full days (from days input) should come from days off earned first
+    // - Partial hours (from hours input) should come from overwork hours
+    // - If not enough days off, use overwork hours for remaining days
+    
+    // Use full days from days off earned (only the days input, not converted hours)
+    const daysOffToUse = Math.min(days, overworkStats.remainingDaysOff);
+    const remainingDaysNeeded = days - daysOffToUse;
+    
+    // Convert remaining days to hours and add to the hours input
+    // All hours (from hours input + remaining days converted to hours) come from overwork
+    const overworkHoursToUse = Math.round(((remainingDaysNeeded * 8) + hours) * 10000) / 10000;
     
     // Verify we have enough in both pools combined
     const totalAvailable = (overworkStats.remainingDaysOff * 8) + overworkStats.remainingOverworkHours;
