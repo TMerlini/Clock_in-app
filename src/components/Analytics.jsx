@@ -189,13 +189,16 @@ export function Analytics({ user }) {
 
   const calculateOverworkStats = () => {
     // Calculate total overwork hours from ALL sessions
-    const totalOverworkHours = sessions.reduce((sum, s) => sum + s.paidExtraHours, 0);
+    // Round to 4 decimal places to avoid floating point precision issues
+    const totalOverworkHours = Math.round(sessions.reduce((sum, s) => sum + (s.paidExtraHours || 0), 0) * 10000) / 10000;
 
     // Calculate total deducted hours
-    const totalDeductedHours = overworkDeductions.reduce((sum, d) => sum + d.hours, 0);
+    // Round to 4 decimal places to avoid floating point precision issues
+    const totalDeductedHours = Math.round(overworkDeductions.reduce((sum, d) => sum + (d.hours || 0), 0) * 10000) / 10000;
 
     // Calculate remaining overwork
-    const remainingOverworkHours = totalOverworkHours - totalDeductedHours;
+    // Round to 4 decimal places to avoid floating point precision issues
+    const remainingOverworkHours = Math.round((totalOverworkHours - totalDeductedHours) * 10000) / 10000;
 
     // Calculate work days (8 hours = 1 day)
     const totalOverworkDays = totalOverworkHours / 8;
@@ -222,11 +225,16 @@ export function Analytics({ user }) {
     }
 
     // Convert days to hours (1 day = 8 hours) and add to hours
-    const totalHours = (days * 8) + hours;
+    // Round to 4 decimal places to avoid floating point precision issues
+    const totalHours = Math.round(((days * 8) + hours) * 10000) / 10000;
     const overworkStats = calculateOverworkStats();
+    
+    // Use a larger epsilon (0.1 hours = 6 minutes) to handle floating point precision issues
+    // This accounts for accumulated rounding errors in session calculations
+    const epsilon = 0.1;
 
-    if (totalHours > overworkStats.remainingOverworkHours) {
-      alert(`You cannot deduct more hours than available. Remaining: ${formatHoursMinutes(overworkStats.remainingOverworkHours)}`);
+    if (totalHours > (overworkStats.remainingOverworkHours + epsilon)) {
+      alert(`You cannot deduct more hours than available.\n\nRemaining: ${formatHoursMinutes(overworkStats.remainingOverworkHours)} (${overworkStats.remainingDays.toFixed(2)} days)\nTrying to deduct: ${formatHoursMinutes(totalHours)} (${(totalHours / 8).toFixed(2)} days)`);
       return;
     }
 
