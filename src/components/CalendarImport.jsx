@@ -187,11 +187,16 @@ export function CalendarImport({ user }) {
           const durationMs = eventEnd.getTime() - eventStart.getTime();
           const totalHours = durationMs / (1000 * 60 * 60);
 
-          // Parse description for hours breakdown
-          let regularHours = Math.min(totalHours, 8);
-          let unpaidExtraHours = totalHours > 8 ? Math.min(totalHours - 8, 2) : 0;
-          let paidExtraHours = totalHours > 10 ? totalHours - 10 : 0;
+          // Check if weekend
+          const dayOfWeek = eventStart.getDay();
+          const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+          const isBankHoliday = false; // Bank holidays can't be auto-detected from calendar, user can edit later
+
+          // Parse description for hours breakdown (if available)
           let notes = '';
+          let parsedRegularHours = null;
+          let parsedUnpaidHours = null;
+          let parsedPaidHours = null;
 
           if (event.description) {
             // Try to parse description
@@ -202,22 +207,41 @@ export function CalendarImport({ user }) {
             const notesMatch = desc.match(/Notes:\s*(.+)/);
 
             if (regularMatch) {
-              regularHours = parseInt(regularMatch[1]) + parseInt(regularMatch[2]) / 60;
+              parsedRegularHours = parseInt(regularMatch[1]) + parseInt(regularMatch[2]) / 60;
             }
             if (unpaidMatch) {
-              unpaidExtraHours = parseInt(unpaidMatch[1]) + parseInt(unpaidMatch[2]) / 60;
+              parsedUnpaidHours = parseInt(unpaidMatch[1]) + parseInt(unpaidMatch[2]) / 60;
             }
             if (paidMatch) {
-              paidExtraHours = parseInt(paidMatch[1]) + parseInt(paidMatch[2]) / 60;
+              parsedPaidHours = parseInt(paidMatch[1]) + parseInt(paidMatch[2]) / 60;
             }
             if (notesMatch) {
               notes = notesMatch[1].trim();
             }
           }
 
-          // Check if weekend
-          const dayOfWeek = eventStart.getDay();
-          const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+          // Calculate hours based on whether it's a special day (weekend or bank holiday)
+          // If parsed from description, use those values; otherwise calculate
+          let regularHours, unpaidExtraHours, paidExtraHours;
+          
+          if (parsedRegularHours !== null && parsedUnpaidHours !== null && parsedPaidHours !== null) {
+            // Use parsed values from description
+            regularHours = parsedRegularHours;
+            unpaidExtraHours = parsedUnpaidHours;
+            paidExtraHours = parsedPaidHours;
+          } else {
+            // Calculate based on special day logic
+            const isSpecialDay = isWeekend || isBankHoliday;
+            if (isSpecialDay) {
+              regularHours = Math.min(totalHours, 8);
+              unpaidExtraHours = 0; // No Isenção on weekends/bank holidays
+              paidExtraHours = totalHours > 8 ? totalHours - 8 : 0; // Overwork starts at 8h
+            } else {
+              regularHours = Math.min(totalHours, 8);
+              unpaidExtraHours = totalHours > 8 ? Math.min(totalHours - 8, 2) : 0;
+              paidExtraHours = totalHours > 10 ? totalHours - 10 : 0;
+            }
+          }
 
           // Load weekend settings
           let weekendDaysOff = 1;
@@ -245,6 +269,7 @@ export function CalendarImport({ user }) {
             unpaidExtraHours: unpaidExtraHours,
             paidExtraHours: paidExtraHours,
             isWeekend: isWeekend,
+            isBankHoliday: isBankHoliday,
             weekendDaysOff: isWeekend ? weekendDaysOff : 0,
             weekendBonus: isWeekend ? weekendBonus : 0,
             location: event.location || '',

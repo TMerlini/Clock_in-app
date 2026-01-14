@@ -25,6 +25,7 @@ export function SessionCreator({ user, selectedDate, onClose, onUpdate }) {
   const [weekendDaysOff, setWeekendDaysOff] = useState(1);
   const [weekendBonus, setWeekendBonus] = useState(100);
   const [isWeekend, setIsWeekend] = useState(false);
+  const [isBankHoliday, setIsBankHoliday] = useState(false);
 
   useEffect(() => {
     loadSettings();
@@ -78,6 +79,22 @@ export function SessionCreator({ user, selectedDate, onClose, onUpdate }) {
     const actualLunchDuration = includeLunchTime ? (lunchHours + (lunchMinutes / 60)) : 0;
     const workingHours = includeLunchTime ? totalHours - actualLunchDuration : totalHours;
 
+    // Calculate hours based on whether it's a special day (weekend or bank holiday)
+    // On special days: no Isenção, overwork starts at 8 hours
+    // On normal days: Isenção 8-10h, overwork >10h
+    const isSpecialDay = isWeekend || isBankHoliday;
+    let regularHours, unpaidExtraHours, paidExtraHours;
+    
+    if (isSpecialDay) {
+      regularHours = Math.min(workingHours, 8);
+      unpaidExtraHours = 0; // No Isenção on weekends/bank holidays
+      paidExtraHours = workingHours > 8 ? workingHours - 8 : 0; // Overwork starts at 8h
+    } else {
+      regularHours = Math.min(workingHours, 8);
+      unpaidExtraHours = workingHours > 8 ? Math.min(workingHours - 8, 2) : 0;
+      paidExtraHours = workingHours > 10 ? workingHours - 10 : 0;
+    }
+
     const newSession = {
       userId: user.uid,
       userEmail: user.email,
@@ -90,13 +107,14 @@ export function SessionCreator({ user, selectedDate, onClose, onUpdate }) {
       hadDinner: hadDinner,
       dinnerAmount: hadDinner && dinnerAmount ? parseFloat(dinnerAmount) : 0,
       isWeekend: isWeekend,
+      isBankHoliday: isBankHoliday,
       weekendDaysOff: isWeekend ? weekendDaysOff : 0,
       weekendBonus: isWeekend ? weekendBonus : 0,
       location: location,
       notes: notes,
-      regularHours: Math.min(workingHours, 8),
-      unpaidExtraHours: workingHours > 8 ? Math.min(workingHours - 8, 2) : 0,
-      paidExtraHours: workingHours > 10 ? workingHours - 10 : 0,
+      regularHours: regularHours,
+      unpaidExtraHours: unpaidExtraHours,
+      paidExtraHours: paidExtraHours,
     };
 
     setSaving(true);
@@ -260,6 +278,39 @@ export function SessionCreator({ user, selectedDate, onClose, onUpdate }) {
               placeholder="Add location (e.g., Office, Home, Client site, etc.)"
             />
           </div>
+
+          <div className="form-group form-group-inline">
+            <div className="inline-field checkbox-group">
+              <label className="checkbox-label">
+                <input
+                  type="checkbox"
+                  checked={isWeekend}
+                  onChange={(e) => setIsWeekend(e.target.checked)}
+                  className="checkbox-input"
+                />
+                <span>Weekend</span>
+              </label>
+            </div>
+
+            <div className="inline-field checkbox-group">
+              <label className="checkbox-label">
+                <input
+                  type="checkbox"
+                  checked={isBankHoliday}
+                  onChange={(e) => setIsBankHoliday(e.target.checked)}
+                  className="checkbox-input"
+                />
+                <span>Bank Holiday</span>
+              </label>
+            </div>
+          </div>
+
+          {(isWeekend || isBankHoliday) && (
+            <div className="info-message" style={{ marginBottom: '1rem' }}>
+              <AlertCircle />
+              <span>Isenção does not apply on weekends/bank holidays. Only overwork hours will be counted.</span>
+            </div>
+          )}
 
           <div className="form-group">
             <label>Notes (optional)</label>

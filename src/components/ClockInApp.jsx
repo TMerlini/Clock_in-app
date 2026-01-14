@@ -391,6 +391,26 @@ export function ClockInApp({ user }) {
       
       // Apply weekend settings from active session if set there
       const useWeekendFromDetails = details.isWeekend !== undefined ? details.isWeekend : isWeekend;
+      const isBankHoliday = details.isBankHoliday || false;
+      
+      // Calculate working hours (excluding lunch)
+      const workingHours = lunchDuration > 0 ? totalHours - lunchDuration : totalHours;
+      
+      // Calculate hours based on whether it's a special day (weekend or bank holiday)
+      // On special days: no Isenção, overwork starts at 8 hours
+      // On normal days: Isenção 8-10h, overwork >10h
+      const isSpecialDay = useWeekendFromDetails || isBankHoliday;
+      let regularHours, unpaidExtraHours, paidExtraHours;
+      
+      if (isSpecialDay) {
+        regularHours = Math.min(workingHours, 8);
+        unpaidExtraHours = 0; // No Isenção on weekends/bank holidays
+        paidExtraHours = workingHours > 8 ? workingHours - 8 : 0; // Overwork starts at 8h
+      } else {
+        regularHours = Math.min(workingHours, 8);
+        unpaidExtraHours = workingHours > 8 ? Math.min(workingHours - 8, 2) : 0;
+        paidExtraHours = workingHours > 10 ? workingHours - 10 : 0;
+      }
 
       const newSession = {
         userId: user.uid,
@@ -398,10 +418,11 @@ export function ClockInApp({ user }) {
         clockIn: clockInTime,
         clockOut: clockOutTime,
         totalHours: totalHours,
-        regularHours: Math.min(totalHours, 8),
-        unpaidExtraHours: totalHours > 8 ? Math.min(totalHours - 8, 2) : 0,
-        paidExtraHours: totalHours > 10 ? totalHours - 10 : 0,
+        regularHours: regularHours,
+        unpaidExtraHours: unpaidExtraHours,
+        paidExtraHours: paidExtraHours,
         isWeekend: useWeekendFromDetails,
+        isBankHoliday: isBankHoliday,
         weekendDaysOff: useWeekendFromDetails ? weekendDaysOff : 0,
         weekendBonus: useWeekendFromDetails ? weekendBonus : 0,
         // Session details from ActiveSessionCard

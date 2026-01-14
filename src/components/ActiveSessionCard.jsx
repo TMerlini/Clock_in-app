@@ -17,6 +17,7 @@ export function ActiveSessionCard({ clockInTime, sessionDetails, onDetailsChange
   const [location, setLocation] = useState(sessionDetails?.location || '');
   const [notes, setNotes] = useState(sessionDetails?.notes || '');
   const [isWeekend, setIsWeekend] = useState(sessionDetails?.isWeekend || false);
+  const [isBankHoliday, setIsBankHoliday] = useState(sessionDetails?.isBankHoliday || false);
   const [saving, setSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState(null);
 
@@ -64,7 +65,8 @@ export function ActiveSessionCard({ clockInTime, sessionDetails, onDetailsChange
           dinnerAmount: dinnerAmount ? parseFloat(dinnerAmount) : 0,
           location,
           notes,
-          isWeekend
+          isWeekend,
+          isBankHoliday
         }
       });
       setLastSaved(new Date());
@@ -80,7 +82,8 @@ export function ActiveSessionCard({ clockInTime, sessionDetails, onDetailsChange
           dinnerAmount: dinnerAmount ? parseFloat(dinnerAmount) : 0,
           location,
           notes,
-          isWeekend
+          isWeekend,
+          isBankHoliday
         });
       }
     } catch (error) {
@@ -97,7 +100,7 @@ export function ActiveSessionCard({ clockInTime, sessionDetails, onDetailsChange
     }, 1000);
 
     return () => clearTimeout(timer);
-  }, [includeLunchTime, lunchHours, lunchMinutes, lunchAmount, hadDinner, dinnerAmount, location, notes, isWeekend]);
+  }, [includeLunchTime, lunchHours, lunchMinutes, lunchAmount, hadDinner, dinnerAmount, location, notes, isWeekend, isBankHoliday]);
 
   return (
     <div className="active-session-card">
@@ -216,12 +219,39 @@ export function ActiveSessionCard({ clockInTime, sessionDetails, onDetailsChange
           </div>
         </div>
 
-        {isWeekend && (
-          <div className="detail-section weekend-notice">
-            <Calendar size={16} />
-            <span>Weekend Work - Days off and bonus will be applied automatically</span>
+        <div className="detail-section">
+          <div className="detail-row">
+            <label className="checkbox-label">
+              <input
+                type="checkbox"
+                checked={isWeekend}
+                onChange={(e) => setIsWeekend(e.target.checked)}
+                className="checkbox-input"
+              />
+              <Calendar size={16} />
+              <span>Weekend</span>
+            </label>
           </div>
-        )}
+          
+          <div className="detail-row">
+            <label className="checkbox-label">
+              <input
+                type="checkbox"
+                checked={isBankHoliday}
+                onChange={(e) => setIsBankHoliday(e.target.checked)}
+                className="checkbox-input"
+              />
+              <Calendar size={16} />
+              <span>Bank Holiday</span>
+            </label>
+          </div>
+          
+          {(isWeekend || isBankHoliday) && (
+            <div className="weekend-notice" style={{ marginTop: '0.5rem', padding: '0.5rem', background: 'rgba(139, 92, 246, 0.1)', borderRadius: '4px', fontSize: '0.85rem', color: '#8b5cf6' }}>
+              <span>⚠️ Isenção does not apply on weekends/bank holidays. Only overwork hours will be counted.</span>
+            </div>
+          )}
+        </div>
 
         <div className="detail-section">
           <div className="input-row">
