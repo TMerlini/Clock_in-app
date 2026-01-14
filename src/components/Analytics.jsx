@@ -196,26 +196,47 @@ export function Analytics({ user }) {
     // Round to 4 decimal places to avoid floating point precision issues
     const totalWeekendDaysOff = Math.round(sessions.reduce((sum, s) => sum + (s.weekendDaysOff || 0), 0) * 10000) / 10000;
     
-    // Convert days off to hours (1 day = 8 hours) and add to overwork pool
+    // Convert days off to hours (1 day = 8 hours)
     const totalDaysOffHours = totalWeekendDaysOff * 8;
     
     // Combined pool: overwork hours + days off earned (converted to hours)
     const totalAvailableHours = totalOverworkHours + totalDaysOffHours;
 
-    // Calculate total deducted hours
+    // Calculate total deducted from each pool separately
+    // For backward compatibility: if old deductions don't have daysOffUsed/overworkHoursUsed,
+    // assume they were deducted from overwork hours only
+    let totalDeductedDaysOff = 0;
+    let totalDeductedOverworkHours = 0;
+    
+    overworkDeductions.forEach((d) => {
+      if (d.daysOffUsed !== undefined && d.overworkHoursUsed !== undefined) {
+        // New format: has separate tracking
+        totalDeductedDaysOff += d.daysOffUsed || 0;
+        totalDeductedOverworkHours += d.overworkHoursUsed || 0;
+      } else {
+        // Old format: assume all from overwork hours
+        totalDeductedOverworkHours += d.hours || 0;
+      }
+    });
+    
     // Round to 4 decimal places to avoid floating point precision issues
-    const totalDeductedHours = Math.round(overworkDeductions.reduce((sum, d) => sum + (d.hours || 0), 0) * 10000) / 10000;
+    totalDeductedDaysOff = Math.round(totalDeductedDaysOff * 10000) / 10000;
+    totalDeductedOverworkHours = Math.round(totalDeductedOverworkHours * 10000) / 10000;
+    const totalDeductedHours = totalDeductedDaysOff * 8 + totalDeductedOverworkHours;
 
-    // Calculate remaining available hours (from both pools)
-    // Round to 4 decimal places to avoid floating point precision issues
-    const remainingOverworkHours = Math.round((totalAvailableHours - totalDeductedHours) * 10000) / 10000;
+    // Calculate remaining from each pool separately
+    const remainingDaysOff = Math.round((totalWeekendDaysOff - totalDeductedDaysOff) * 10000) / 10000;
+    const remainingOverworkHours = Math.round((totalOverworkHours - totalDeductedOverworkHours) * 10000) / 10000;
+    
+    // Combined remaining hours
+    const remainingAvailableHours = Math.round((remainingDaysOff * 8 + remainingOverworkHours) * 10000) / 10000;
 
     // Calculate work days (8 hours = 1 day)
     const totalOverworkDays = totalOverworkHours / 8;
     const totalDaysOffDays = totalWeekendDaysOff;
     const totalAvailableDays = (totalAvailableHours / 8);
     const deductedDays = totalDeductedHours / 8;
-    const remainingDays = remainingOverworkHours / 8;
+    const remainingDays = remainingAvailableHours / 8;
 
     return {
       totalOverworkHours,
@@ -223,7 +244,11 @@ export function Analytics({ user }) {
       totalDaysOffHours,
       totalAvailableHours,
       totalDeductedHours,
+      totalDeductedDaysOff,
+      totalDeductedOverworkHours,
       remainingOverworkHours,
+      remainingDaysOff,
+      remainingAvailableHours,
       totalOverworkDays,
       totalDaysOffDays,
       totalAvailableDays,
@@ -253,35 +278,39 @@ export function Analytics({ user }) {
     const totalHours = Math.round(((days * 8) + hours) * 10000) / 10000;
     const overworkStats = calculateOverworkStats();
     
-    // Debug logging
-    console.log('Deduction attempt:', {
-      deductionDaysInput: deductionDays,
-      deductionHoursInput: deductionHours,
-      daysParsed: days,
-      hoursParsed: hours,
-      totalHoursCalculated: totalHours,
-      remainingOverworkHours: overworkStats.remainingOverworkHours,
-      remainingDays: overworkStats.remainingDays,
-      totalAvailableHours: overworkStats.totalAvailableHours,
-      totalOverworkHours: overworkStats.totalOverworkHours,
-      totalDaysOffHours: overworkStats.totalDaysOffHours,
-      totalDeductedHours: overworkStats.totalDeductedHours
-    });
+    // Calculate how much to deduct from each pool
+    // Priority: Use days off earned first, then overwork hours
+    const totalDaysNeeded = days + (hours / 8); // Total days needed (including partial days from hours)
+    const daysOffToUse = Math.min(totalDaysNeeded, overworkStats.remainingDaysOff);
+    const remainingDaysNeeded = totalDaysNeeded - daysOffToUse;
+    const overworkHoursToUse = Math.round(remainingDaysNeeded * 8 * 10000) / 10000;
     
-    // Use a larger epsilon (0.1 hours = 6 minutes) to handle floating point precision issues
-    // This accounts for accumulated rounding errors in session calculations
+    // Verify we have enough in both pools combined
+    const totalAvailable = (overworkStats.remainingDaysOff * 8) + overworkStats.remainingOverworkHours;
     const epsilon = 0.1;
-
-    if (totalHours > (overworkStats.remainingOverworkHours + epsilon)) {
-      alert(`You cannot deduct more hours than available.\n\nRemaining: ${formatHoursMinutes(overworkStats.remainingOverworkHours)} (${overworkStats.remainingDays.toFixed(2)} days)\nTrying to deduct: ${formatHoursMinutes(totalHours)} (${(totalHours / 8).toFixed(2)} days)\n\nDays entered: ${days}\nHours entered: ${hours}`);
+    
+    if (totalHours > (totalAvailable + epsilon)) {
+      alert(`You cannot deduct more hours than available.\n\nRemaining: ${formatHoursMinutes(totalAvailable)} (${overworkStats.remainingDays.toFixed(2)} days)\n  - Days Off: ${overworkStats.remainingDaysOff.toFixed(2)} days\n  - Overwork: ${formatHoursMinutes(overworkStats.remainingOverworkHours)}\nTrying to deduct: ${formatHoursMinutes(totalHours)} (${(totalHours / 8).toFixed(2)} days)`);
       return;
     }
+    
+    // Debug logging
+    console.log('Deduction calculation:', {
+      totalHoursNeeded: totalHours,
+      totalDaysNeeded: totalDaysNeeded,
+      daysOffToUse: daysOffToUse,
+      overworkHoursToUse: overworkHoursToUse,
+      remainingDaysOff: overworkStats.remainingDaysOff,
+      remainingOverworkHours: overworkStats.remainingOverworkHours
+    });
 
     try {
       const deductionsRef = collection(db, 'overworkDeductions');
       await addDoc(deductionsRef, {
         userId: user.uid,
         hours: totalHours,
+        daysOffUsed: daysOffToUse,
+        overworkHoursUsed: overworkHoursToUse,
         reason: deductionReason || 'No reason provided',
         timestamp: Date.now(),
         createdAt: new Date().toISOString()
@@ -572,20 +601,28 @@ export function Analytics({ user }) {
                     <CalendarDays className="overwork-stat-icon" />
                     <span className="overwork-stat-label">Days Off Earned</span>
                   </div>
-                  <div className="overwork-stat-value">{stats.totalWeekendDaysOff.toFixed(1)}</div>
+                  <div className="overwork-stat-value">{overworkStats.remainingDaysOff.toFixed(1)}</div>
                   <div className="overwork-stat-sublabel">
-                    {stats.weekendSessions} weekend sessions
+                    {overworkStats.totalWeekendDaysOff.toFixed(1)} total - {overworkStats.totalDeductedDaysOff.toFixed(1)} used
+                    <br />
+                    <span style={{ fontSize: '0.75rem', opacity: 0.8 }}>
+                      {stats.weekendSessions} weekend sessions
+                    </span>
                   </div>
                 </div>
 
                 <div className="overwork-stat-card remaining">
                   <div className="overwork-stat-header">
                     <DollarSign className="overwork-stat-icon" />
-                    <span className="overwork-stat-label">Overwork Hours</span>
+                    <span className="overwork-stat-label">Remaining Available</span>
                   </div>
-                  <div className="overwork-stat-value highlight">{formatHoursMinutes(overworkStats.remainingOverworkHours)}</div>
+                  <div className="overwork-stat-value highlight">{formatHoursMinutes(overworkStats.remainingAvailableHours)}</div>
                   <div className="overwork-stat-sublabel">
                     {overworkStats.remainingDays.toFixed(1)} days available
+                    <br />
+                    <span style={{ fontSize: '0.75rem', opacity: 0.8 }}>
+                      ({overworkStats.remainingDaysOff.toFixed(1)} days off + {formatHoursMinutes(overworkStats.remainingOverworkHours)} overwork)
+                    </span>
                   </div>
                 </div>
               </>
