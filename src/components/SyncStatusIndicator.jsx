@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Cloud, CloudOff, AlertTriangle, RefreshCw } from 'lucide-react';
 import { collection, query, where, getDocs, updateDoc, doc } from 'firebase/firestore';
 import { auth, db } from '../lib/firebase';
@@ -28,6 +28,18 @@ export function SyncStatusIndicator({ googleCalendar }) {
   const [showTooltip, setShowTooltip] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
+  const hasAutoRefreshed = useRef(false);
+
+  // Automatically refresh token when it becomes expired
+  useEffect(() => {
+    if (googleCalendar.isTokenExpired && !hasAutoRefreshed.current && !isRefreshing) {
+      hasAutoRefreshed.current = true;
+      googleCalendar.refreshToken();
+    } else if (!googleCalendar.isTokenExpired) {
+      // Reset the ref when token becomes valid again
+      hasAutoRefreshed.current = false;
+    }
+  }, [googleCalendar.isTokenExpired, isRefreshing]);
 
   const handleRefresh = async () => {
     if (isRefreshing) return;
