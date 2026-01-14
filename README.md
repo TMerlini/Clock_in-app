@@ -20,7 +20,7 @@ A comprehensive time tracking application for managing work hours, overtime, mea
 - **Detailed Statistics Cards**:
   - Total working hours
   - Regular hours (up to 8h)
-  - Unpaid overtime (8-10h range, "Isenção")
+  - Unpaid overtime (8-10h range, "Isenção") with annual limit tracking
   - Paid overtime (10h+)
   - Lunch hours breakdown
   - Meal expenses (lunch + dinner)
@@ -65,6 +65,10 @@ A comprehensive time tracking application for managing work hours, overtime, mea
   - Unpaid Extra (Isenção) toggle - enable/disable unpaid overtime tracking
   - Unpaid Extra threshold (default: 10h, configurable when enabled)
   - Paid overtime starts after unpaid extra threshold (or regular hours if disabled)
+- **Isenção Configuration**:
+  - Annual Isenção limit (default: 200 hours/year, configurable)
+  - Once annual limit is reached, additional hours are classified as paid overwork
+  - Limit applies per calendar year (Jan 1 - Dec 31)
 - **Break Settings**:
   - Default lunch duration (hours and minutes)
 - **Calendar Settings**:
@@ -238,6 +242,13 @@ A comprehensive time tracking application for managing work hours, overtime, mea
    - Hours beyond unpaid extra threshold count as paid overtime
 5. If disabled, paid overtime starts immediately after regular hours
 
+#### Set Annual Isenção Limit
+1. In "Isenção Configuration" section
+2. Set "Annual Isenção Limit" (default: 200 hours/year)
+3. This limit applies per calendar year (January 1 - December 31)
+4. Once the annual limit is reached, additional hours beyond 8 per day are automatically classified as paid overwork instead of Isenção
+5. View annual usage in Analytics page (shown in Isenção card: "X / Y hours (Z remaining)")
+
 #### Set Default Lunch Duration
 1. In "Break Settings" section
 2. Enter hours (0-3)
@@ -391,6 +402,7 @@ The app is configured for automatic deployment to Vercel:
 - `enableUnpaidExtra`: boolean (default: true)
 - `unpaidExtraThreshold`: number
 - `overtimeThreshold`: number (calculated based on enableUnpaidExtra)
+- `annualIsencaoLimit`: number (default: 200, annual Isenção hours limit per calendar year)
 - `lunchDuration`: number (decimal hours)
 - `weekStartDay`: string ('monday' | 'sunday')
 - `weekendDaysOff`: number

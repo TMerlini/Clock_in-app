@@ -80,7 +80,7 @@ export function About() {
               </div>
               <div className="category-content">
                 <h3>Isenção - Unpaid Extra (Optional)</h3>
-                <p>Configure unpaid overtime tracking for hours beyond regular time. Can be enabled/disabled in Settings with custom thresholds to match your work agreement.</p>
+                <p>Configure unpaid overtime tracking for hours beyond regular time. Can be enabled/disabled in Settings with custom thresholds. Annual limit (default: 200 hours/year) ensures compliance - once reached, additional hours are classified as paid overwork.</p>
               </div>
             </div>
 

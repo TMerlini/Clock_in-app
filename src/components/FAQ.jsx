@@ -44,7 +44,11 @@ export function FAQ() {
         },
         {
           question: "What does 'Isenção' (Unpaid Extra Hours) mean in this app?",
-          answer: "In this app, 'Isenção' refers to hours worked between 8-10 hours per day that may not receive overtime compensation if you have a Working Time Exemption agreement (Isenção de Horário). Hours beyond 10 per day are tracked as 'Paid Overtime' as they typically require additional compensation."
+          answer: "In this app, 'Isenção' refers to hours worked between 8-10 hours per day that may not receive overtime compensation if you have a Working Time Exemption agreement (Isenção de Horário). Hours beyond 10 per day are tracked as 'Paid Overtime' as they typically require additional compensation. The app includes an annual Isenção limit (default: 200 hours/year) - once reached, additional hours are automatically classified as paid overwork to ensure compliance."
+        },
+        {
+          question: "How does the annual Isenção limit work?",
+          answer: "The app tracks Isenção hours per calendar year (January 1 - December 31). You can configure the annual limit in Settings (default: 200 hours/year). Once the annual limit is reached, any additional hours beyond 8 per day are automatically classified as paid overwork instead of Isenção. The Analytics page shows your annual usage (e.g., '150 / 200 hours (50 remaining)') to help you monitor your limit throughout the year."
         }
       ]
     },

@@ -30,16 +30,21 @@ export function SyncStatusIndicator({ googleCalendar }) {
   const [isSyncing, setIsSyncing] = useState(false);
   const hasAutoRefreshed = useRef(false);
 
-  // Automatically refresh token when it becomes expired
+  // Automatically refresh token when 8 minutes before expiry or when expired
   useEffect(() => {
-    if (googleCalendar.isTokenExpired && !hasAutoRefreshed.current && !isRefreshing) {
+    const minutes = googleCalendar.tokenExpiryMinutes;
+    const shouldRefresh = googleCalendar.isAuthorized && 
+      ((minutes !== null && minutes <= 8) || googleCalendar.isTokenExpired);
+    
+    if (shouldRefresh && !hasAutoRefreshed.current && !isRefreshing) {
+      console.log('Token warning/expiry detected, attempting automatic refresh...');
       hasAutoRefreshed.current = true;
       googleCalendar.refreshToken();
-    } else if (!googleCalendar.isTokenExpired) {
-      // Reset the ref when token becomes valid again
+    } else if (minutes !== null && minutes > 8 && !googleCalendar.isTokenExpired) {
+      // Reset the ref when token becomes valid again (more than 8 minutes remaining)
       hasAutoRefreshed.current = false;
     }
-  }, [googleCalendar.isTokenExpired, isRefreshing]);
+  }, [googleCalendar.isTokenExpired, googleCalendar.tokenExpiryMinutes, googleCalendar.isAuthorized, isRefreshing, googleCalendar]);
 
   const handleRefresh = async () => {
     if (isRefreshing) return;
