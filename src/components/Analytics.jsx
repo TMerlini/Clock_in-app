@@ -885,6 +885,7 @@ export function Analytics({ user }) {
               </tbody>
             </table>
           </div>
+          </>
         )}
         <div className="table-footer">
           <button className="export-button" onClick={exportToCSV}>
