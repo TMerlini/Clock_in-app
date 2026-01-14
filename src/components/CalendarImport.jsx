@@ -5,6 +5,7 @@ import { useGoogleCalendar } from '../hooks/useGoogleCalendar';
 import { ImportEventCard } from './ImportEventCard';
 import { Calendar, RefreshCw, Download, AlertCircle, CheckCircle, ChevronDown, ChevronUp } from 'lucide-react';
 import { format, subDays, addDays } from 'date-fns';
+import { calculateUsedIsencaoHours } from '../lib/utils';
 import './CalendarImport.css';
 
 export function CalendarImport({ user }) {
@@ -220,6 +221,38 @@ export function CalendarImport({ user }) {
             }
           }
 
+          // Load settings for annual Isenção limit and weekend settings
+          let weekendDaysOff = 1;
+          let weekendBonus = 100;
+          let annualIsencaoLimit = 200;
+          try {
+            const settingsRef = doc(db, 'userSettings', user.uid);
+            const settingsDoc = await getDoc(settingsRef);
+            if (settingsDoc.exists()) {
+              const settings = settingsDoc.data();
+              weekendDaysOff = settings.weekendDaysOff || 1;
+              weekendBonus = settings.weekendBonus || 100;
+              annualIsencaoLimit = settings.annualIsencaoLimit || 200;
+            }
+          } catch (error) {
+            console.error('Error loading settings:', error);
+          }
+
+          // Load sessions for the calendar year to calculate used Isenção hours
+          let usedIsencaoHours = 0;
+          try {
+            const sessionsRef = collection(db, 'sessions');
+            const sessionsQuery = query(sessionsRef, where('userId', '==', user.uid));
+            const sessionsSnapshot = await getDocs(sessionsQuery);
+            const allSessions = [];
+            sessionsSnapshot.forEach((docSnap) => {
+              allSessions.push({ id: docSnap.id, ...docSnap.data() });
+            });
+            usedIsencaoHours = calculateUsedIsencaoHours(allSessions, eventStart.getTime());
+          } catch (error) {
+            console.error('Error loading sessions for Isenção calculation:', error);
+          }
+
           // Calculate hours based on whether it's a special day (weekend or bank holiday)
           // If parsed from description, use those values; otherwise calculate
           let regularHours, unpaidExtraHours, paidExtraHours;
@@ -230,7 +263,7 @@ export function CalendarImport({ user }) {
             unpaidExtraHours = parsedUnpaidHours;
             paidExtraHours = parsedPaidHours;
           } else {
-            // Calculate based on special day logic
+            // Calculate based on special day logic with annual limit
             const isSpecialDay = isWeekend || isBankHoliday;
             if (isSpecialDay) {
               regularHours = Math.min(totalHours, 8);
@@ -238,24 +271,19 @@ export function CalendarImport({ user }) {
               paidExtraHours = totalHours > 8 ? totalHours - 8 : 0; // Overwork starts at 8h
             } else {
               regularHours = Math.min(totalHours, 8);
-              unpaidExtraHours = totalHours > 8 ? Math.min(totalHours - 8, 2) : 0;
-              paidExtraHours = totalHours > 10 ? totalHours - 10 : 0;
+              const potentialIsencaoHours = totalHours > 8 ? Math.min(totalHours - 8, 2) : 0;
+              const remainingIsencaoLimit = Math.max(0, annualIsencaoLimit - usedIsencaoHours);
+              
+              if (potentialIsencaoHours <= remainingIsencaoLimit) {
+                // Within the limit, use all potential Isenção hours
+                unpaidExtraHours = potentialIsencaoHours;
+                paidExtraHours = totalHours > 10 ? totalHours - 10 : 0;
+              } else {
+                // Exceeded the limit, only use remaining limit
+                unpaidExtraHours = remainingIsencaoLimit;
+                paidExtraHours = totalHours > 8 ? totalHours - 8 - unpaidExtraHours : 0;
+              }
             }
-          }
-
-          // Load weekend settings
-          let weekendDaysOff = 1;
-          let weekendBonus = 100;
-          try {
-            const settingsRef = doc(db, 'userSettings', user.uid);
-            const settingsDoc = await getDoc(settingsRef);
-            if (settingsDoc.exists()) {
-              const settings = settingsDoc.data();
-              weekendDaysOff = settings.weekendDaysOff || 1;
-              weekendBonus = settings.weekendBonus || 100;
-            }
-          } catch (error) {
-            console.error('Error loading weekend settings:', error);
           }
 
           // Create session

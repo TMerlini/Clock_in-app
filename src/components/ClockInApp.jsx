@@ -19,7 +19,7 @@ import { ActiveSessionCard } from './ActiveSessionCard';
 import { SyncStatusIndicator } from './SyncStatusIndicator';
 import { Clock, LogOut, User, Calendar as CalendarIcon, Edit2, AlertTriangle, CheckCircle, Info, Plus, Trash2, TrendingUp, DollarSign, Coffee, UtensilsCrossed } from 'lucide-react';
 import { format, startOfDay, endOfDay } from 'date-fns';
-import { formatHoursMinutes } from '../lib/utils';
+import { formatHoursMinutes, calculateUsedIsencaoHours } from '../lib/utils';
 import 'react-day-picker/style.css';
 import './ClockInApp.css';
 
@@ -368,9 +368,10 @@ export function ClockInApp({ user }) {
       const dayOfWeek = clockInDate.getDay();
       const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
 
-      // Load weekend settings
+      // Load settings
       let weekendDaysOff = 1;
       let weekendBonus = 100;
+      let annualIsencaoLimit = 200;
       try {
         const settingsRef = doc(db, 'userSettings', user.uid);
         const settingsDoc = await getDoc(settingsRef);
@@ -378,9 +379,25 @@ export function ClockInApp({ user }) {
           const settings = settingsDoc.data();
           weekendDaysOff = settings.weekendDaysOff || 1;
           weekendBonus = settings.weekendBonus || 100;
+          annualIsencaoLimit = settings.annualIsencaoLimit || 200;
         }
       } catch (error) {
-        console.error('Error loading weekend settings:', error);
+        console.error('Error loading settings:', error);
+      }
+
+      // Load sessions for the calendar year to calculate used Isenção hours
+      let usedIsencaoHours = 0;
+      try {
+        const sessionsRef = collection(db, 'sessions');
+        const sessionsQuery = query(sessionsRef, where('userId', '==', user.uid));
+        const sessionsSnapshot = await getDocs(sessionsQuery);
+        const allSessions = [];
+        sessionsSnapshot.forEach((docSnap) => {
+          allSessions.push({ id: docSnap.id, ...docSnap.data() });
+        });
+        usedIsencaoHours = calculateUsedIsencaoHours(allSessions, clockInTime);
+      } catch (error) {
+        console.error('Error loading sessions for Isenção calculation:', error);
       }
 
       // Get session details from active session card (if any were set)
@@ -408,8 +425,18 @@ export function ClockInApp({ user }) {
         paidExtraHours = workingHours > 8 ? workingHours - 8 : 0; // Overwork starts at 8h
       } else {
         regularHours = Math.min(workingHours, 8);
-        unpaidExtraHours = workingHours > 8 ? Math.min(workingHours - 8, 2) : 0;
-        paidExtraHours = workingHours > 10 ? workingHours - 10 : 0;
+        const potentialIsencaoHours = workingHours > 8 ? Math.min(workingHours - 8, 2) : 0;
+        const remainingIsencaoLimit = Math.max(0, annualIsencaoLimit - usedIsencaoHours);
+        
+        if (potentialIsencaoHours <= remainingIsencaoLimit) {
+          // Within the limit, use all potential Isenção hours
+          unpaidExtraHours = potentialIsencaoHours;
+          paidExtraHours = workingHours > 10 ? workingHours - 10 : 0;
+        } else {
+          // Exceeded the limit, only use remaining limit
+          unpaidExtraHours = remainingIsencaoLimit;
+          paidExtraHours = workingHours > 8 ? workingHours - 8 - unpaidExtraHours : 0;
+        }
       }
 
       const newSession = {

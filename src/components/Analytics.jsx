@@ -3,7 +3,7 @@ import { collection, query, where, getDocs, addDoc, doc, getDoc, deleteDoc } fro
 import { db } from '../lib/firebase';
 import { Download, TrendingUp, Clock, AlertTriangle, DollarSign, Coffee, Calendar as CalendarIcon, MinusCircle, UtensilsCrossed, CalendarDays, Trash2, Search, Filter, ArrowUp, ArrowDown } from 'lucide-react';
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfYear, endOfYear, eachDayOfInterval } from 'date-fns';
-import { formatHoursMinutes } from '../lib/utils';
+import { formatHoursMinutes, calculateUsedIsencaoHours } from '../lib/utils';
 import './Analytics.css';
 
 export function Analytics({ user }) {
@@ -21,6 +21,7 @@ export function Analytics({ user }) {
   const [filterType, setFilterType] = useState('all');
   const [dateSortOrder, setDateSortOrder] = useState('desc'); // 'asc' or 'desc'
   const [sessionLimit, setSessionLimit] = useState(30); // Number of sessions to display, or null for all
+  const [annualIsencaoLimit, setAnnualIsencaoLimit] = useState(200);
 
   useEffect(() => {
     loadAllSessions();
@@ -36,6 +37,7 @@ export function Analytics({ user }) {
       if (settingsDoc.exists()) {
         const settings = settingsDoc.data();
         setLunchDuration(settings.lunchDuration || 1);
+        setAnnualIsencaoLimit(settings.annualIsencaoLimit || 200);
       }
     } catch (error) {
       console.error('Error loading settings:', error);
@@ -202,6 +204,26 @@ export function Analytics({ user }) {
       weekendSessions,
       totalDays,
       avgHoursPerDay: totalDays > 0 ? totalHours / totalDays : 0
+    };
+  };
+
+  const calculateAnnualIsencaoUsage = () => {
+    const currentYear = new Date().getFullYear();
+    const yearStart = startOfYear(new Date(currentYear, 0, 1)).getTime();
+    const yearEnd = endOfYear(new Date(currentYear, 11, 31)).getTime();
+    
+    const yearSessions = sessions.filter(s => 
+      s.clockIn >= yearStart && s.clockIn <= yearEnd
+    );
+    
+    const usedHours = yearSessions.reduce((sum, s) => sum + (s.unpaidExtraHours || 0), 0);
+    const remainingHours = Math.max(0, annualIsencaoLimit - usedHours);
+    
+    return {
+      used: usedHours,
+      limit: annualIsencaoLimit,
+      remaining: remainingHours,
+      percentage: annualIsencaoLimit > 0 ? (usedHours / annualIsencaoLimit) * 100 : 0
     };
   };
 
@@ -516,7 +538,12 @@ export function Analytics({ user }) {
           <div className="stat-content">
             <div className="stat-label">Isenção (Unpaid)</div>
             <div className="stat-value">{formatHoursMinutes(stats.unpaidHours)}</div>
-            <div className="stat-sublabel">8-10 hour range</div>
+            <div className="stat-sublabel">
+              {(() => {
+                const annualUsage = calculateAnnualIsencaoUsage();
+                return `${formatHoursMinutes(annualUsage.used)} / ${annualUsage.limit}h (${formatHoursMinutes(annualUsage.remaining)} remaining)`;
+              })()}
+            </div>
           </div>
         </div>
 

@@ -18,6 +18,7 @@ export function Settings({ googleCalendar, onUsernameChange, onNavigate }) {
   const [weekStartDay, setWeekStartDay] = useState('monday');
   const [weekendDaysOff, setWeekendDaysOff] = useState(1);
   const [weekendBonus, setWeekendBonus] = useState(100);
+  const [annualIsencaoLimit, setAnnualIsencaoLimit] = useState(200);
   const [saved, setSaved] = useState(false);
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
@@ -60,6 +61,7 @@ export function Settings({ googleCalendar, onUsernameChange, onNavigate }) {
         setWeekStartDay(settings.weekStartDay || 'monday');
         setWeekendDaysOff(settings.weekendDaysOff || 1);
         setWeekendBonus(settings.weekendBonus || 100);
+        setAnnualIsencaoLimit(settings.annualIsencaoLimit || 200);
         
         // Notify parent of username
         if (settings.username && onUsernameChange) {
@@ -224,6 +226,7 @@ export function Settings({ googleCalendar, onUsernameChange, onNavigate }) {
         weekStartDay,
         weekendDaysOff,
         weekendBonus,
+        annualIsencaoLimit,
         updatedAt: Date.now()
       };
 
@@ -255,6 +258,7 @@ export function Settings({ googleCalendar, onUsernameChange, onNavigate }) {
     setWeekStartDay('monday');
     setWeekendDaysOff(1);
     setWeekendBonus(100);
+    setAnnualIsencaoLimit(200);
   };
 
   if (loading) {
@@ -407,6 +411,38 @@ export function Settings({ googleCalendar, onUsernameChange, onNavigate }) {
                   </p>
                 </>
               )}
+            </div>
+          </div>
+        </section>
+
+        <section className="settings-section">
+          <div className="section-title">
+            <AlertTriangle className="unpaid" />
+            <h2>Isenção Configuration</h2>
+          </div>
+          <p className="section-description">
+            Set the annual limit for Isenção (unpaid extra hours). Once the limit is reached, additional hours will be classified as paid overwork.
+          </p>
+
+          <div className="setting-item">
+            <div className="setting-header">
+              <AlertTriangle className="setting-icon unpaid" />
+              <div>
+                <label htmlFor="annualIsencaoLimit">Annual Isenção Limit</label>
+                <p className="setting-description">Maximum Isenção hours allowed per calendar year (default: 200 hours)</p>
+              </div>
+            </div>
+            <div className="setting-input-group">
+              <input
+                id="annualIsencaoLimit"
+                type="number"
+                min="0"
+                step="1"
+                value={annualIsencaoLimit}
+                onChange={(e) => setAnnualIsencaoLimit(parseInt(e.target.value) || 0)}
+                className="setting-input"
+              />
+              <span className="input-suffix">hours/year</span>
             </div>
           </div>
         </section>

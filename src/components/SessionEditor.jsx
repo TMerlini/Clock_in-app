@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
-import { doc, updateDoc, getDoc } from 'firebase/firestore';
+import { doc, updateDoc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
 import { db, auth } from '../lib/firebase';
 import { X, Save, AlertCircle, MapPin } from 'lucide-react';
 import { format } from 'date-fns';
-import { formatHoursMinutes } from '../lib/utils';
+import { formatHoursMinutes, calculateUsedIsencaoHours } from '../lib/utils';
 import './SessionEditor.css';
 
 export function SessionEditor({ session, onClose, onUpdate }) {
@@ -88,6 +88,40 @@ export function SessionEditor({ session, onClose, onUpdate }) {
     const actualLunchDuration = includeLunchTime ? (lunchHours + (lunchMinutes / 60)) : 0;
     const workingHours = includeLunchTime ? totalHours - actualLunchDuration : totalHours;
 
+    // Load settings for annual Isenção limit
+    let annualIsencaoLimit = 200;
+    try {
+      const user = auth.currentUser;
+      if (user) {
+        const settingsRef = doc(db, 'userSettings', user.uid);
+        const settingsDoc = await getDoc(settingsRef);
+        if (settingsDoc.exists()) {
+          const settings = settingsDoc.data();
+          annualIsencaoLimit = settings.annualIsencaoLimit || 200;
+        }
+      }
+    } catch (error) {
+      console.error('Error loading settings:', error);
+    }
+
+    // Load sessions for the calendar year to calculate used Isenção hours (excluding current session)
+    let usedIsencaoHours = 0;
+    try {
+      const user = auth.currentUser;
+      if (user) {
+        const sessionsRef = collection(db, 'sessions');
+        const sessionsQuery = query(sessionsRef, where('userId', '==', user.uid));
+        const sessionsSnapshot = await getDocs(sessionsQuery);
+        const allSessions = [];
+        sessionsSnapshot.forEach((docSnap) => {
+          allSessions.push({ id: docSnap.id, ...docSnap.data() });
+        });
+        usedIsencaoHours = calculateUsedIsencaoHours(allSessions, newClockIn, session.id);
+      }
+    } catch (error) {
+      console.error('Error loading sessions for Isenção calculation:', error);
+    }
+
     // Calculate hours based on whether it's a special day (weekend or bank holiday)
     // On special days: no Isenção, overwork starts at 8 hours
     // On normal days: Isenção 8-10h, overwork >10h
@@ -100,8 +134,18 @@ export function SessionEditor({ session, onClose, onUpdate }) {
       paidExtraHours = workingHours > 8 ? workingHours - 8 : 0; // Overwork starts at 8h
     } else {
       regularHours = Math.min(workingHours, 8);
-      unpaidExtraHours = workingHours > 8 ? Math.min(workingHours - 8, 2) : 0;
-      paidExtraHours = workingHours > 10 ? workingHours - 10 : 0;
+      const potentialIsencaoHours = workingHours > 8 ? Math.min(workingHours - 8, 2) : 0;
+      const remainingIsencaoLimit = Math.max(0, annualIsencaoLimit - usedIsencaoHours);
+      
+      if (potentialIsencaoHours <= remainingIsencaoLimit) {
+        // Within the limit, use all potential Isenção hours
+        unpaidExtraHours = potentialIsencaoHours;
+        paidExtraHours = workingHours > 10 ? workingHours - 10 : 0;
+      } else {
+        // Exceeded the limit, only use remaining limit
+        unpaidExtraHours = remainingIsencaoLimit;
+        paidExtraHours = workingHours > 8 ? workingHours - 8 - unpaidExtraHours : 0;
+      }
     }
 
     const updatedSession = {
