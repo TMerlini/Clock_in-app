@@ -303,8 +303,9 @@ export function Analytics({ user }) {
     
     // Debug logging
     console.log('Deduction calculation:', {
+      daysEntered: days,
+      hoursEntered: hours,
       totalHoursNeeded: totalHours,
-      totalDaysNeeded: totalDaysNeeded,
       daysOffToUse: daysOffToUse,
       overworkHoursToUse: overworkHoursToUse,
       remainingDaysOff: overworkStats.remainingDaysOff,
