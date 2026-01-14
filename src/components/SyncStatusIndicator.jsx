@@ -127,7 +127,7 @@ export function SyncStatusIndicator({ googleCalendar }) {
       if (googleCalendar.isTokenExpired) {
         return { icon: AlertTriangle, color: 'warning', text: 'Token expired - click to refresh', clickable: true };
       }
-      return { icon: CloudOff, color: 'disconnected', text: 'Calendar not connected', clickable: false };
+      return { icon: CloudOff, color: 'disconnected', text: 'Calendar not connected - click to authorize', clickable: true };
     }
     
     const minutes = googleCalendar.tokenExpiryMinutes;
@@ -157,6 +157,8 @@ export function SyncStatusIndicator({ googleCalendar }) {
     
     if (status.color === 'warning' || googleCalendar.isTokenExpired) {
       handleRefresh();
+    } else if (status.color === 'disconnected' && !googleCalendar.isAuthorized) {
+      googleCalendar.requestAuthorization();
     } else if (status.color === 'connected' && googleCalendar.isAuthorized) {
       handleSync();
     }
