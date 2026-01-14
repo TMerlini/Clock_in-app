@@ -348,6 +348,15 @@ th {
   letter-spacing: 0.5px;
 }
 
+th.sortable-header {
+  transition: all 0.2s ease;
+}
+
+th.sortable-header:hover {
+  background: var(--muted);
+  color: var(--primary);
+}
+
 td {
   padding: 1rem;
   border-bottom: 1px solid var(--border);

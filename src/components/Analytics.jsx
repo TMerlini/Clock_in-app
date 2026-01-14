@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { collection, query, where, getDocs, addDoc, doc, getDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
-import { Download, TrendingUp, Clock, AlertTriangle, DollarSign, Coffee, Calendar as CalendarIcon, MinusCircle, UtensilsCrossed, CalendarDays, Trash2, Search, Filter } from 'lucide-react';
+import { Download, TrendingUp, Clock, AlertTriangle, DollarSign, Coffee, Calendar as CalendarIcon, MinusCircle, UtensilsCrossed, CalendarDays, Trash2, Search, Filter, ArrowUp, ArrowDown } from 'lucide-react';
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfYear, endOfYear, eachDayOfInterval } from 'date-fns';
 import { formatHoursMinutes } from '../lib/utils';
 import './Analytics.css';
@@ -19,6 +19,8 @@ export function Analytics({ user }) {
   const [lunchDuration, setLunchDuration] = useState(1);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState('all');
+  const [dateSortOrder, setDateSortOrder] = useState('desc'); // 'asc' or 'desc'
+  const [sessionLimit, setSessionLimit] = useState(30); // Number of sessions to display, or null for all
 
   useEffect(() => {
     loadAllSessions();
@@ -145,6 +147,22 @@ export function Analytics({ user }) {
       default:
         // No additional filtering
         break;
+    }
+
+    // Sort by date
+    filtered.sort((a, b) => {
+      const dateA = a.clockIn;
+      const dateB = b.clockIn;
+      if (dateSortOrder === 'asc') {
+        return dateA - dateB;
+      } else {
+        return dateB - dateA;
+      }
+    });
+
+    // Apply session limit if set
+    if (sessionLimit && sessionLimit > 0) {
+      return filtered.slice(0, sessionLimit);
     }
 
     return filtered;
@@ -762,16 +780,84 @@ export function Analytics({ user }) {
                 <option value="overtime">Paid Overtime</option>
               </select>
             </div>
+            <div className="filter-dropdown">
+              <select
+                value={sessionLimit || 'all'}
+                onChange={(e) => setSessionLimit(e.target.value === 'all' ? null : parseInt(e.target.value))}
+                className="filter-select"
+                title="Limit number of sessions displayed"
+              >
+                <option value="10">Last 10</option>
+                <option value="30">Last 30</option>
+                <option value="60">Last 60</option>
+                <option value="all">All</option>
+              </select>
+            </div>
           </div>
         </div>
         {getSearchAndFilteredSessions().length === 0 ? (
           <p className="no-data">No sessions found matching your search and filters</p>
         ) : (
-          <div className="table-wrapper">
+          <>
+            {(() => {
+              // Calculate total count before limit is applied
+              let filtered = getFilteredSessions();
+
+              // Apply search filter
+              if (searchTerm) {
+                const search = searchTerm.toLowerCase();
+                filtered = filtered.filter(s => {
+                  const date = format(new Date(s.clockIn), 'MMM dd, yyyy').toLowerCase();
+                  const notes = (s.notes || '').toLowerCase();
+                  return date.includes(search) || notes.includes(search);
+                });
+              }
+
+              // Apply dropdown filter
+              switch (filterType) {
+                case 'weekend':
+                  filtered = filtered.filter(s => s.isWeekend);
+                  break;
+                case 'lunch':
+                  filtered = filtered.filter(s => s.lunchDuration && s.lunchDuration > 0);
+                  break;
+                case 'meals':
+                  filtered = filtered.filter(s =>
+                    (s.lunchAmount && s.lunchAmount > 0) || (s.dinnerAmount && s.dinnerAmount > 0)
+                  );
+                  break;
+                case 'overtime':
+                  filtered = filtered.filter(s => s.paidExtraHours > 0);
+                  break;
+              }
+
+              const totalCount = filtered.length;
+              const displayedCount = getSearchAndFilteredSessions().length;
+              
+              return totalCount > displayedCount && (
+                <p className="sessions-count-info" style={{ marginBottom: '1rem', fontSize: '0.9rem', color: 'var(--muted-foreground)' }}>
+                  Showing {displayedCount} of {totalCount} sessions
+                </p>
+              );
+            })()}
+            <div className="table-wrapper">
             <table>
               <thead>
                 <tr>
-                  <th>Date</th>
+                  <th 
+                    className="sortable-header"
+                    onClick={() => setDateSortOrder(dateSortOrder === 'asc' ? 'desc' : 'asc')}
+                    style={{ cursor: 'pointer', userSelect: 'none' }}
+                  >
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      Date
+                      {dateSortOrder === 'asc' ? (
+                        <ArrowUp size={14} />
+                      ) : (
+                        <ArrowDown size={14} />
+                      )}
+                    </span>
+                  </th>
                   <th>Clock In</th>
                   <th>Clock Out</th>
                   <th>Total</th>
