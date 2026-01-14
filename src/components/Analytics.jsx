@@ -188,36 +188,60 @@ export function Analytics({ user }) {
   };
 
   const calculateOverworkStats = () => {
-    // Calculate total overwork hours from ALL sessions
+    // Calculate total overwork hours from ALL sessions (from paidExtraHours)
     // Round to 4 decimal places to avoid floating point precision issues
     const totalOverworkHours = Math.round(sessions.reduce((sum, s) => sum + (s.paidExtraHours || 0), 0) * 10000) / 10000;
+
+    // Calculate total days off earned from weekend sessions
+    // Round to 4 decimal places to avoid floating point precision issues
+    const totalWeekendDaysOff = Math.round(sessions.reduce((sum, s) => sum + (s.weekendDaysOff || 0), 0) * 10000) / 10000;
+    
+    // Convert days off to hours (1 day = 8 hours) and add to overwork pool
+    const totalDaysOffHours = totalWeekendDaysOff * 8;
+    
+    // Combined pool: overwork hours + days off earned (converted to hours)
+    const totalAvailableHours = totalOverworkHours + totalDaysOffHours;
 
     // Calculate total deducted hours
     // Round to 4 decimal places to avoid floating point precision issues
     const totalDeductedHours = Math.round(overworkDeductions.reduce((sum, d) => sum + (d.hours || 0), 0) * 10000) / 10000;
 
-    // Calculate remaining overwork
+    // Calculate remaining available hours (from both pools)
     // Round to 4 decimal places to avoid floating point precision issues
-    const remainingOverworkHours = Math.round((totalOverworkHours - totalDeductedHours) * 10000) / 10000;
+    const remainingOverworkHours = Math.round((totalAvailableHours - totalDeductedHours) * 10000) / 10000;
 
     // Calculate work days (8 hours = 1 day)
     const totalOverworkDays = totalOverworkHours / 8;
+    const totalDaysOffDays = totalWeekendDaysOff;
+    const totalAvailableDays = (totalAvailableHours / 8);
     const deductedDays = totalDeductedHours / 8;
     const remainingDays = remainingOverworkHours / 8;
 
     return {
       totalOverworkHours,
+      totalWeekendDaysOff,
+      totalDaysOffHours,
+      totalAvailableHours,
       totalDeductedHours,
       remainingOverworkHours,
       totalOverworkDays,
+      totalDaysOffDays,
+      totalAvailableDays,
       deductedDays,
       remainingDays
     };
   };
 
   const handleAddDeduction = async () => {
-    const days = parseFloat(deductionDays) || 0;
-    const hours = parseFloat(deductionHours) || 0;
+    // Parse days and hours, handling empty strings and invalid values
+    const daysStr = String(deductionDays || '').trim();
+    const hoursStr = String(deductionHours || '').trim();
+    
+    const daysValue = daysStr === '' ? 0 : parseFloat(daysStr);
+    const hoursValue = hoursStr === '' ? 0 : parseFloat(hoursStr);
+    
+    const days = isNaN(daysValue) || daysValue < 0 ? 0 : daysValue;
+    const hours = isNaN(hoursValue) || hoursValue < 0 ? 0 : hoursValue;
 
     if (days <= 0 && hours <= 0) {
       alert('Please enter valid days or hours');
@@ -229,12 +253,27 @@ export function Analytics({ user }) {
     const totalHours = Math.round(((days * 8) + hours) * 10000) / 10000;
     const overworkStats = calculateOverworkStats();
     
+    // Debug logging
+    console.log('Deduction attempt:', {
+      deductionDaysInput: deductionDays,
+      deductionHoursInput: deductionHours,
+      daysParsed: days,
+      hoursParsed: hours,
+      totalHoursCalculated: totalHours,
+      remainingOverworkHours: overworkStats.remainingOverworkHours,
+      remainingDays: overworkStats.remainingDays,
+      totalAvailableHours: overworkStats.totalAvailableHours,
+      totalOverworkHours: overworkStats.totalOverworkHours,
+      totalDaysOffHours: overworkStats.totalDaysOffHours,
+      totalDeductedHours: overworkStats.totalDeductedHours
+    });
+    
     // Use a larger epsilon (0.1 hours = 6 minutes) to handle floating point precision issues
     // This accounts for accumulated rounding errors in session calculations
     const epsilon = 0.1;
 
     if (totalHours > (overworkStats.remainingOverworkHours + epsilon)) {
-      alert(`You cannot deduct more hours than available.\n\nRemaining: ${formatHoursMinutes(overworkStats.remainingOverworkHours)} (${overworkStats.remainingDays.toFixed(2)} days)\nTrying to deduct: ${formatHoursMinutes(totalHours)} (${(totalHours / 8).toFixed(2)} days)`);
+      alert(`You cannot deduct more hours than available.\n\nRemaining: ${formatHoursMinutes(overworkStats.remainingOverworkHours)} (${overworkStats.remainingDays.toFixed(2)} days)\nTrying to deduct: ${formatHoursMinutes(totalHours)} (${(totalHours / 8).toFixed(2)} days)\n\nDays entered: ${days}\nHours entered: ${hours}`);
       return;
     }
 
@@ -506,10 +545,14 @@ export function Analytics({ user }) {
                     <span className="overwork-stat-label">Total Accumulated</span>
                   </div>
                   <div className="overwork-stat-value">
-                    {overworkStats.totalOverworkDays.toFixed(1)} days
+                    {overworkStats.totalAvailableDays.toFixed(1)} days
                   </div>
                   <div className="overwork-stat-sublabel">
-                    {formatHoursMinutes(overworkStats.totalOverworkHours)}
+                    {formatHoursMinutes(overworkStats.totalAvailableHours)}
+                    <br />
+                    <span style={{ fontSize: '0.75rem', opacity: 0.8 }}>
+                      ({overworkStats.totalOverworkDays.toFixed(1)} overwork + {overworkStats.totalDaysOffDays.toFixed(1)} days off)
+                    </span>
                   </div>
                 </div>
 
