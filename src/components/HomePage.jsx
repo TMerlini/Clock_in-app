@@ -1,7 +1,10 @@
-import { memo } from 'react';
+import { memo, useState, useEffect } from 'react';
 import { Clock, AlertTriangle, TrendingUp, Coffee, UtensilsCrossed } from 'lucide-react';
 import { format } from 'date-fns';
 import { formatHoursMinutes } from '../lib/utils';
+import { doc, getDoc } from 'firebase/firestore';
+import { db, auth } from '../lib/firebase';
+import { PremiumPromoBar } from './PremiumPromoBar';
 import './ClockInApp.css';
 
 export const HomePage = memo(function HomePage({
@@ -13,8 +16,40 @@ export const HomePage = memo(function HomePage({
   sessionsForDate,
   onClockInOut,
   formatTime,
-  getWorkingMessage
+  getWorkingMessage,
+  onNavigate
 }) {
+  const [isPremium, setIsPremium] = useState(false);
+
+  // Check subscription status
+  useEffect(() => {
+    const checkSubscription = async () => {
+      try {
+        const user = auth.currentUser;
+        if (!user) {
+          setIsPremium(false);
+          return;
+        }
+
+        const settingsRef = doc(db, 'userSettings', user.uid);
+        const settingsDoc = await getDoc(settingsRef);
+        
+        if (settingsDoc.exists()) {
+          const settings = settingsDoc.data();
+          const subscriptionPlan = settings.subscriptionPlan || settings.plan || null;
+          // Check if user has premium (any plan that's not 'free' or null)
+          setIsPremium(subscriptionPlan && subscriptionPlan !== 'free');
+        } else {
+          setIsPremium(false);
+        }
+      } catch (error) {
+        console.error('Error checking subscription:', error);
+        setIsPremium(false);
+      }
+    };
+
+    checkSubscription();
+  }, []);
   const totalDayHours = sessionsForDate.reduce((sum, s) => sum + s.totalHours, 0);
   const totalUnpaid = sessionsForDate.reduce((sum, s) => sum + s.unpaidExtraHours, 0);
   const totalPaid = sessionsForDate.reduce((sum, s) => sum + s.paidExtraHours, 0);
@@ -25,7 +60,7 @@ export const HomePage = memo(function HomePage({
 
   return (
     <div className="main-content">
-      <div>
+      <div className="homepage-left">
         <div className="card">
           <div className="card-header">
             <h2 className="card-title">Time Tracker</h2>
@@ -73,7 +108,9 @@ export const HomePage = memo(function HomePage({
             )}
           </div>
         </div>
+      </div>
 
+      <div className="homepage-right">
         {/* Daily Stats Cards */}
         <div className="daily-stats-grid">
           <div className="daily-stat-card">
@@ -146,6 +183,11 @@ export const HomePage = memo(function HomePage({
             </div>
           </div>
         </div>
+
+        {/* Premium Promotion Bar - Only show for non-premium users */}
+        {!isPremium && (
+          <PremiumPromoBar onNavigate={onNavigate} />
+        )}
       </div>
     </div>
   );

@@ -741,6 +741,7 @@ export function ClockInApp({ user }) {
               onClockInOut={handleClockInOut}
               formatTime={formatTime}
               getWorkingMessage={getWorkingMessage}
+              onNavigate={handlePageChange}
             />
             <div>
               <DatePickerSection
