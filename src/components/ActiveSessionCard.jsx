@@ -8,18 +8,34 @@ import './ActiveSessionCard.css';
 
 export const ActiveSessionCard = memo(function ActiveSessionCard({ clockInTime, sessionDetails, onDetailsChange }) {
   const [elapsedTime, setElapsedTime] = useState('00:00:00');
-  const [includeLunchTime, setIncludeLunchTime] = useState(sessionDetails?.includeLunchTime || false);
-  const [lunchHours, setLunchHours] = useState(sessionDetails?.lunchHours || 1);
-  const [lunchMinutes, setLunchMinutes] = useState(sessionDetails?.lunchMinutes || 0);
-  const [lunchAmount, setLunchAmount] = useState(sessionDetails?.lunchAmount || '');
-  const [hadDinner, setHadDinner] = useState(sessionDetails?.hadDinner || false);
-  const [dinnerAmount, setDinnerAmount] = useState(sessionDetails?.dinnerAmount || '');
-  const [location, setLocation] = useState(sessionDetails?.location || '');
-  const [notes, setNotes] = useState(sessionDetails?.notes || '');
-  const [isWeekend, setIsWeekend] = useState(sessionDetails?.isWeekend || false);
-  const [isBankHoliday, setIsBankHoliday] = useState(sessionDetails?.isBankHoliday || false);
+  const [includeLunchTime, setIncludeLunchTime] = useState(sessionDetails?.includeLunchTime ?? false);
+  const [lunchHours, setLunchHours] = useState(sessionDetails?.lunchHours ?? 1);
+  const [lunchMinutes, setLunchMinutes] = useState(sessionDetails?.lunchMinutes ?? 0);
+  const [lunchAmount, setLunchAmount] = useState(sessionDetails?.lunchAmount ?? '');
+  const [hadDinner, setHadDinner] = useState(sessionDetails?.hadDinner ?? false);
+  const [dinnerAmount, setDinnerAmount] = useState(sessionDetails?.dinnerAmount ?? '');
+  const [location, setLocation] = useState(sessionDetails?.location ?? '');
+  const [notes, setNotes] = useState(sessionDetails?.notes ?? '');
+  const [isWeekend, setIsWeekend] = useState(sessionDetails?.isWeekend ?? false);
+  const [isBankHoliday, setIsBankHoliday] = useState(sessionDetails?.isBankHoliday ?? false);
   const [saving, setSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState(null);
+
+  // Sync sessionDetails prop changes to state (e.g., when returning from another tab)
+  useEffect(() => {
+    if (sessionDetails) {
+      if (sessionDetails.includeLunchTime !== undefined) setIncludeLunchTime(sessionDetails.includeLunchTime);
+      if (sessionDetails.lunchHours !== undefined) setLunchHours(sessionDetails.lunchHours);
+      if (sessionDetails.lunchMinutes !== undefined) setLunchMinutes(sessionDetails.lunchMinutes);
+      if (sessionDetails.lunchAmount !== undefined) setLunchAmount(sessionDetails.lunchAmount);
+      if (sessionDetails.hadDinner !== undefined) setHadDinner(sessionDetails.hadDinner);
+      if (sessionDetails.dinnerAmount !== undefined) setDinnerAmount(sessionDetails.dinnerAmount);
+      if (sessionDetails.location !== undefined) setLocation(sessionDetails.location);
+      if (sessionDetails.notes !== undefined) setNotes(sessionDetails.notes);
+      if (sessionDetails.isWeekend !== undefined) setIsWeekend(sessionDetails.isWeekend);
+      if (sessionDetails.isBankHoliday !== undefined) setIsBankHoliday(sessionDetails.isBankHoliday);
+    }
+  }, [sessionDetails]);
 
   // Update elapsed time every second
   useEffect(() => {
