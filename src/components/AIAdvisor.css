@@ -69,6 +69,98 @@
   to { transform: rotate(360deg); }
 }
 
+.suggestion-cards-container {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.suggestion-card {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+  position: relative;
+  overflow: hidden;
+}
+
+.suggestion-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--primary), var(--accent));
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.3s ease;
+}
+
+.suggestion-card:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(139, 92, 246, 0.12);
+  border-color: var(--primary);
+}
+
+.suggestion-card:hover::before {
+  transform: scaleX(1);
+}
+
+.suggestion-card:active {
+  transform: translateY(0);
+}
+
+.suggestion-card:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.suggestion-card-icon {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(109, 40, 217, 0.1));
+  border-radius: 6px;
+  color: var(--primary);
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+}
+
+.suggestion-card:hover .suggestion-card-icon {
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(109, 40, 217, 0.2));
+}
+
+.suggestion-card-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.suggestion-card-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--foreground);
+  margin: 0 0 0.25rem 0;
+}
+
+.suggestion-card-description {
+  font-size: 0.75rem;
+  color: var(--muted-foreground);
+  margin: 0;
+  line-height: 1.3;
+}
+
 .premium-gate {
   max-width: 600px;
   margin: 4rem auto;
@@ -389,6 +481,34 @@
 
   .premium-gate h2 {
     font-size: 1.5rem;
+  }
+
+  .suggestion-cards-container {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .suggestion-card {
+    padding: 0.625rem 0.75rem;
+  }
+
+  .suggestion-card-icon {
+    width: 28px;
+    height: 28px;
+  }
+
+  .suggestion-card-icon svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .suggestion-card-title {
+    font-size: 0.85rem;
+  }
+
+  .suggestion-card-description {
+    font-size: 0.7rem;
   }
 
   .chat-container {

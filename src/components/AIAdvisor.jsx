@@ -4,7 +4,7 @@ import { db, auth } from '../lib/firebase';
 import { useOpenRouter } from '../hooks/useOpenRouter';
 import { getUserContext } from '../lib/userContextHelper';
 import { OPENROUTER_DEFAULT_MODEL } from '../lib/openRouterConfig';
-import { Bot, Crown, Send, AlertCircle, Settings, Loader } from 'lucide-react';
+import { Bot, Crown, Send, AlertCircle, Settings, Loader, BarChart3, TrendingUp, Clock } from 'lucide-react';
 import './AIAdvisor.css';
 
 export function AIAdvisor({ user, onNavigate }) {
@@ -135,6 +135,96 @@ export function AIAdvisor({ user, onNavigate }) {
     }
   };
 
+  // Suggestion cards data
+  const suggestionCards = [
+    {
+      id: 'analytics',
+      icon: BarChart3,
+      title: 'Analytics Insights',
+      description: 'Get insights on your work patterns',
+      prompt: 'Analyze my work patterns and provide insights on how I can improve my time management'
+    },
+    {
+      id: 'patterns',
+      icon: TrendingUp,
+      title: 'Work Patterns',
+      description: 'Discover your productivity trends',
+      prompt: 'What are my work patterns and trends? Show me my most productive times and days'
+    },
+    {
+      id: 'isenção',
+      icon: Clock,
+      title: 'Isenção & Overtime',
+      description: 'Optimize your hours usage',
+      prompt: 'How can I optimize my Isenção usage and overtime hours? Am I close to my annual limit?'
+    },
+    {
+      id: 'settings',
+      icon: Settings,
+      title: 'Settings Review',
+      description: 'Get recommendations for your settings',
+      prompt: 'Review my current settings and suggest optimal thresholds for regular hours, Isenção, and other configurations'
+    }
+  ];
+
+  const handleSuggestionClick = async (prompt) => {
+    if (isLoading || contextLoading || !prompt.trim()) return;
+    
+    const userMessage = prompt.trim();
+    setInputValue('');
+
+    // Add user message to messages
+    const newMessages = [...messages, { role: 'user', content: userMessage }];
+    setMessages(newMessages);
+
+    try {
+      // Prepare messages for API (include system context if available)
+      const apiMessages = [];
+      
+      if (userContext) {
+        apiMessages.push({
+          role: 'system',
+          content: userContext
+        });
+      }
+
+      // Add conversation history (last 10 messages to avoid token limits)
+      const recentMessages = newMessages.slice(-10);
+      apiMessages.push(...recentMessages.map(m => ({
+        role: m.role,
+        content: m.content
+      })));
+
+      // Send to OpenRouter with default model (mistralai/mistral-large)
+      const response = await sendMessage(apiMessages);
+
+      // Add AI response
+      setMessages([...newMessages, { role: 'assistant', content: response }]);
+    } catch (error) {
+      console.error('Error sending message:', error);
+      
+      // Provide more helpful error messages
+      let errorMessage = error.message;
+      if (errorMessage.includes('No allowed providers')) {
+        errorMessage = `OpenRouter Routing Issue: No providers are enabled for your default model in your routing settings.\n\n` +
+          `To fix this:\n` +
+          `1. Go to https://openrouter.ai/settings/routing\n` +
+          `2. Configure your default model (or enable Auto Router)\n` +
+          `3. Ensure at least one provider is enabled/allowed for your default model\n` +
+          `4. The app uses your OpenRouter default model (omitting the model parameter per API docs)\n\n` +
+          `See: https://openrouter.ai/docs/api-reference/overview for details on using your default model.`;
+      }
+      
+      setMessages([...newMessages, {
+        role: 'assistant',
+        content: `Sorry, I encountered an error:\n\n${errorMessage}\n\nPlease check your OpenRouter routing settings and try again.`
+      }]);
+    }
+  };
+
+  // Show cards only when conversation is empty (only welcome message)
+  const showSuggestions = isPremium && !loading && !contextLoading && messages.length <= 1;
+
   if (loading) {
     return (
       <div className="ai-advisor-container">
@@ -190,6 +280,31 @@ export function AIAdvisor({ user, onNavigate }) {
           </div>
         )}
       </div>
+
+      {/* Suggestion Cards */}
+      {showSuggestions && (
+        <div className="suggestion-cards-container">
+          {suggestionCards.map((card) => {
+            const IconComponent = card.icon;
+            return (
+              <button
+                key={card.id}
+                className="suggestion-card"
+                onClick={() => handleSuggestionClick(card.prompt)}
+                disabled={isLoading || contextLoading}
+              >
+                <div className="suggestion-card-icon">
+                  <IconComponent size={24} />
+                </div>
+                <div className="suggestion-card-content">
+                  <h3 className="suggestion-card-title">{card.title}</h3>
+                  <p className="suggestion-card-description">{card.description}</p>
+                </div>
+              </button>
+            );
+          })}
+        </div>
+      )}
 
       <div className="chat-container">
         <div className="messages-container">
