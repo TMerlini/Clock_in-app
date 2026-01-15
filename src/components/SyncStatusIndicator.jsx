@@ -92,41 +92,59 @@ export function SyncStatusIndicator({ googleCalendar }) {
         return;
       }
 
+      // Process sync operations in parallel with concurrency limit
+      const CONCURRENCY_LIMIT = 5;
       let successCount = 0;
       let failCount = 0;
 
-      for (const session of unsyncedSessions) {
-        try {
-          // Create calendar event
-          const calendarEvent = await googleCalendar.createCalendarEvent({
-            clockIn: session.clockIn,
-            clockOut: session.clockOut,
-            regularHours: session.regularHours,
-            unpaidHours: session.unpaidExtraHours,
-            paidHours: session.paidExtraHours,
-            notes: session.notes || ''
-          });
+      // Process sessions in batches to avoid rate limits
+      for (let i = 0; i < unsyncedSessions.length; i += CONCURRENCY_LIMIT) {
+        const batch = unsyncedSessions.slice(i, i + CONCURRENCY_LIMIT);
+        
+        const results = await Promise.allSettled(
+          batch.map(async (session) => {
+            try {
+              // Create calendar event
+              const calendarEvent = await googleCalendar.createCalendarEvent({
+                clockIn: session.clockIn,
+                clockOut: session.clockOut,
+                regularHours: session.regularHours,
+                unpaidHours: session.unpaidExtraHours,
+                paidHours: session.paidExtraHours,
+                notes: session.notes || ''
+              });
 
-          // Update session with sync info
-          const sessionRef = doc(db, 'sessions', session.id);
-          await updateDoc(sessionRef, {
-            calendarEventId: calendarEvent.id,
-            calendarSyncStatus: 'synced',
-            lastSyncAt: Date.now()
-          });
+              // Update session with sync info
+              const sessionRef = doc(db, 'sessions', session.id);
+              await updateDoc(sessionRef, {
+                calendarEventId: calendarEvent.id,
+                calendarSyncStatus: 'synced',
+                lastSyncAt: Date.now()
+              });
 
-          successCount++;
-        } catch (error) {
-          console.error(`Failed to sync session ${session.id}:`, error);
-          
-          // Mark as failed
-          const sessionRef = doc(db, 'sessions', session.id);
-          await updateDoc(sessionRef, {
-            calendarSyncStatus: 'failed'
-          });
-          
-          failCount++;
-        }
+              return { success: true, sessionId: session.id };
+            } catch (error) {
+              console.error(`Failed to sync session ${session.id}:`, error);
+              
+              // Mark as failed
+              const sessionRef = doc(db, 'sessions', session.id);
+              await updateDoc(sessionRef, {
+                calendarSyncStatus: 'failed'
+              });
+              
+              return { success: false, sessionId: session.id, error };
+            }
+          })
+        );
+
+        // Count successes and failures
+        results.forEach((result) => {
+          if (result.status === 'fulfilled' && result.value.success) {
+            successCount++;
+          } else {
+            failCount++;
+          }
+        });
       }
 
       setIsSyncing(false);

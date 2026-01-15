@@ -1,8 +1,8 @@
-import { useState, useEffect, useRef } from 'react';
-import { Menu, X, Home, Calendar, BarChart3, Info, Settings, HelpCircle } from 'lucide-react';
+import { useState, useEffect, useRef, memo } from 'react';
+import { Menu, X, Home, Calendar, BarChart3, Info, Settings, HelpCircle, Bot } from 'lucide-react';
 import './Navigation.css';
 
-export function Navigation({ currentPage, onPageChange }) {
+export const Navigation = memo(function Navigation({ currentPage, onPageChange }) {
   const [isOpen, setIsOpen] = useState(false);
   const [buttonPosition, setButtonPosition] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
@@ -14,6 +14,7 @@ export function Navigation({ currentPage, onPageChange }) {
     { id: 'home', label: 'Home', icon: Home },
     { id: 'calendar', label: 'Calendar', icon: Calendar },
     { id: 'analytics', label: 'Analytics', icon: BarChart3 },
+    { id: 'ai-advisor', label: 'AI Advisor', icon: Bot },
     { id: 'settings', label: 'Settings', icon: Settings },
     { id: 'faq', label: 'Frequent Questions', icon: HelpCircle },
     { id: 'about', label: 'About', icon: Info }
@@ -148,4 +149,4 @@ export function Navigation({ currentPage, onPageChange }) {
       </nav>
     </>
   );
-}
+});

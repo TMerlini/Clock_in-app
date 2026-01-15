@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, memo } from 'react';
 import { doc, updateDoc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
 import { db, auth } from '../lib/firebase';
 import { X, Save, AlertCircle, MapPin } from 'lucide-react';
@@ -6,7 +6,7 @@ import { format } from 'date-fns';
 import { formatHoursMinutes, calculateUsedIsencaoHours } from '../lib/utils';
 import './SessionEditor.css';
 
-export function SessionEditor({ session, onClose, onUpdate }) {
+export const SessionEditor = memo(function SessionEditor({ session, onClose, onUpdate }) {
   const [clockInTime, setClockInTime] = useState(
     format(new Date(session.clockIn), "yyyy-MM-dd'T'HH:mm")
   );
@@ -387,4 +387,4 @@ export function SessionEditor({ session, onClose, onUpdate }) {
       </div>
     </div>
   );
-}
+});

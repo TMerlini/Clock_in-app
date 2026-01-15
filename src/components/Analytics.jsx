@@ -1,12 +1,13 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, memo, useMemo } from 'react';
 import { collection, query, where, getDocs, addDoc, doc, getDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
+import { getCachedQuery, invalidateCache } from '../lib/queryCache';
 import { Download, TrendingUp, Clock, AlertTriangle, DollarSign, Coffee, Calendar as CalendarIcon, MinusCircle, UtensilsCrossed, CalendarDays, Trash2, Search, Filter, ArrowUp, ArrowDown } from 'lucide-react';
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfYear, endOfYear, eachDayOfInterval } from 'date-fns';
 import { formatHoursMinutes, calculateUsedIsencaoHours } from '../lib/utils';
 import './Analytics.css';
 
-export function Analytics({ user }) {
+export const Analytics = memo(function Analytics({ user }) {
   const [sessions, setSessions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [reportType, setReportType] = useState('monthly');
@@ -24,70 +25,76 @@ export function Analytics({ user }) {
   const [annualIsencaoLimit, setAnnualIsencaoLimit] = useState(200);
 
   useEffect(() => {
-    loadAllSessions();
-    loadOverworkDeductions();
-    loadSettings();
+    if (!user) return;
+
+    // Parallelize all data loading operations
+    const loadAllData = async () => {
+      setLoading(true);
+      try {
+        // Load all data in parallel using Promise.all with caching
+        const [sessionsResult, deductionsResult, settingsResult] = await Promise.all([
+          // Load sessions with caching
+          getCachedQuery('sessions', { userId: user.uid }, async () => {
+            const sessionsRef = collection(db, 'sessions');
+            const q = query(sessionsRef, where('userId', '==', user.uid));
+            const querySnapshot = await getDocs(q);
+            const allSessions = [];
+            querySnapshot.forEach((doc) => {
+              allSessions.push({ id: doc.id, ...doc.data() });
+            });
+            return allSessions;
+          }),
+          // Load overwork deductions with caching
+          getCachedQuery('overworkDeductions', { userId: user.uid }, async () => {
+            const deductionsRef = collection(db, 'overworkDeductions');
+            const q = query(deductionsRef, where('userId', '==', user.uid));
+            const querySnapshot = await getDocs(q);
+            const deductions = [];
+            querySnapshot.forEach((doc) => {
+              deductions.push({ id: doc.id, ...doc.data() });
+            });
+            // Sort by date descending (newest first)
+            deductions.sort((a, b) => b.timestamp - a.timestamp);
+            return deductions;
+          }),
+          // Load settings with caching
+          getCachedQuery('userSettings', { userId: user.uid }, async () => {
+            const settingsRef = doc(db, 'userSettings', user.uid);
+            const settingsDoc = await getDoc(settingsRef);
+            if (settingsDoc.exists()) {
+              return settingsDoc.data();
+            }
+            return {};
+          })
+        ]);
+
+        // Update state with all results
+        setSessions(sessionsResult);
+        setOverworkDeductions(deductionsResult);
+        
+        // Apply settings
+        if (settingsResult) {
+          setLunchDuration(settingsResult.lunchDuration || 1);
+          setAnnualIsencaoLimit(settingsResult.annualIsencaoLimit || 200);
+        }
+      } catch (error) {
+        console.error('Error loading analytics data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadAllData();
   }, [user]);
 
-  const loadSettings = async () => {
-    try {
-      const settingsRef = doc(db, 'userSettings', user.uid);
-      const settingsDoc = await getDoc(settingsRef);
-
-      if (settingsDoc.exists()) {
-        const settings = settingsDoc.data();
-        setLunchDuration(settings.lunchDuration || 1);
-        setAnnualIsencaoLimit(settings.annualIsencaoLimit || 200);
-      }
-    } catch (error) {
-      console.error('Error loading settings:', error);
-    }
-  };
-
-  const loadAllSessions = async () => {
-    try {
-      const sessionsRef = collection(db, 'sessions');
-      const q = query(sessionsRef, where('userId', '==', user.uid));
-      const querySnapshot = await getDocs(q);
-
-      const allSessions = [];
-      querySnapshot.forEach((doc) => {
-        allSessions.push({ id: doc.id, ...doc.data() });
-      });
-
-      setSessions(allSessions);
-      setLoading(false);
-    } catch (error) {
-      console.error('Error loading sessions:', error);
-      setLoading(false);
-    }
-  };
-
-  const loadOverworkDeductions = async () => {
-    try {
-      const deductionsRef = collection(db, 'overworkDeductions');
-      const q = query(deductionsRef, where('userId', '==', user.uid));
-      const querySnapshot = await getDocs(q);
-
-      const deductions = [];
-      querySnapshot.forEach((doc) => {
-        deductions.push({ id: doc.id, ...doc.data() });
-      });
-
-      // Sort by date descending (newest first)
-      deductions.sort((a, b) => b.timestamp - a.timestamp);
-      setOverworkDeductions(deductions);
-    } catch (error) {
-      console.error('Error loading overwork deductions:', error);
-    }
-  };
-
-  const getDateRange = () => {
+  // Memoize date range calculation
+  const dateRange = useMemo(() => {
     switch (reportType) {
       case 'daily':
+        const dailyDate = new Date(selectedDate);
         return {
-          start: new Date(selectedDate.setHours(0, 0, 0, 0)),
-          end: new Date(selectedDate.setHours(23, 59, 59, 999))
+          start: new Date(dailyDate.setHours(0, 0, 0, 0)),
+          end: new Date(new Date(selectedDate).setHours(23, 59, 59, 999))
         };
       case 'weekly':
         return {
@@ -107,17 +114,18 @@ export function Analytics({ user }) {
       default:
         return { start: startOfMonth(selectedDate), end: endOfMonth(selectedDate) };
     }
-  };
+  }, [reportType, selectedDate]);
 
-  const getFilteredSessions = () => {
-    const { start, end } = getDateRange();
+  // Memoize filtered sessions by date range
+  const filteredSessions = useMemo(() => {
     return sessions.filter(s =>
-      s.clockIn >= start.getTime() && s.clockIn <= end.getTime()
+      s.clockIn >= dateRange.start.getTime() && s.clockIn <= dateRange.end.getTime()
     );
-  };
+  }, [sessions, dateRange]);
 
-  const getSearchAndFilteredSessions = () => {
-    let filtered = getFilteredSessions();
+  // Memoize search and filter operations
+  const searchAndFilteredSessions = useMemo(() => {
+    let filtered = filteredSessions;
 
     // Apply search filter
     if (searchTerm) {
@@ -168,10 +176,11 @@ export function Analytics({ user }) {
     }
 
     return filtered;
-  };
+  }, [filteredSessions, searchTerm, filterType, dateSortOrder, sessionLimit]);
 
-  const calculateStats = () => {
-    const filtered = getFilteredSessions();
+  // Memoize stats calculation
+  const stats = useMemo(() => {
+    const filtered = filteredSessions;
 
     const totalHours = filtered.reduce((sum, s) => sum + s.totalHours, 0);
     const regularHours = filtered.reduce((sum, s) => sum + s.regularHours, 0);
@@ -205,9 +214,10 @@ export function Analytics({ user }) {
       totalDays,
       avgHoursPerDay: totalDays > 0 ? totalHours / totalDays : 0
     };
-  };
+  }, [filteredSessions]);
 
-  const calculateAnnualIsencaoUsage = () => {
+  // Memoize annual Isenção usage calculation
+  const annualIsencaoUsage = useMemo(() => {
     const currentYear = new Date().getFullYear();
     const yearStart = startOfYear(new Date(currentYear, 0, 1)).getTime();
     const yearEnd = endOfYear(new Date(currentYear, 11, 31)).getTime();
@@ -225,9 +235,10 @@ export function Analytics({ user }) {
       remaining: remainingHours,
       percentage: annualIsencaoLimit > 0 ? (usedHours / annualIsencaoLimit) * 100 : 0
     };
-  };
+  }, [sessions, annualIsencaoLimit]);
 
-  const calculateOverworkStats = () => {
+  // Memoize overwork stats calculation
+  const overworkStats = useMemo(() => {
     // Calculate total overwork hours from ALL sessions (from paidExtraHours)
     // Round to 4 decimal places to avoid floating point precision issues
     const totalOverworkHours = Math.round(sessions.reduce((sum, s) => sum + (s.paidExtraHours || 0), 0) * 10000) / 10000;
@@ -295,7 +306,7 @@ export function Analytics({ user }) {
       deductedDays,
       remainingDays
     };
-  };
+  }, [sessions, overworkDeductions]);
 
   const handleAddDeduction = async () => {
     // Parse days and hours, handling empty strings and invalid values
@@ -316,7 +327,6 @@ export function Analytics({ user }) {
     // Convert days to hours (1 day = 8 hours) and add to hours
     // Round to 4 decimal places to avoid floating point precision issues
     const totalHours = Math.round(((days * 8) + hours) * 10000) / 10000;
-    const overworkStats = calculateOverworkStats();
     
     // Calculate how much to deduct from each pool
     // Strategy: 
@@ -396,8 +406,8 @@ export function Analytics({ user }) {
   };
 
   const exportToCSV = () => {
-    const filtered = getFilteredSessions();
-    const { start, end } = getDateRange();
+    const filtered = filteredSessions;
+    const { start, end } = dateRange;
 
     const csvContent = [
       ['Clock In App - Time Report'],
@@ -426,17 +436,17 @@ export function Analytics({ user }) {
       ['Summary'],
       ['Total Sessions', filtered.length],
       ['Total Days Worked', new Set(filtered.map(s => format(new Date(s.clockIn), 'yyyy-MM-dd'))).size],
-      ['Weekend Sessions', calculateStats().weekendSessions],
-      ['Total Hours', calculateStats().totalHours.toFixed(2)],
-      ['Lunch Hours', calculateStats().lunchHours.toFixed(2)],
-      ['Total Lunch Expenses', calculateStats().totalLunchExpenses.toFixed(2)],
-      ['Total Dinner Expenses', calculateStats().totalDinnerExpenses.toFixed(2)],
-      ['Total Meal Expenses', calculateStats().totalMealExpenses.toFixed(2)],
-      ['Total Days Off Earned', calculateStats().totalWeekendDaysOff.toFixed(1)],
-      ['Total Weekend Bonus', calculateStats().totalWeekendBonus.toFixed(2)],
-      ['Regular Hours', calculateStats().regularHours.toFixed(2)],
-      ['Isenção Hours (Unpaid)', calculateStats().unpaidHours.toFixed(2)],
-      ['Overwork Hours (Paid)', calculateStats().paidOvertimeHours.toFixed(2)]
+      ['Weekend Sessions', stats.weekendSessions],
+      ['Total Hours', stats.totalHours.toFixed(2)],
+      ['Lunch Hours', stats.lunchHours.toFixed(2)],
+      ['Total Lunch Expenses', stats.totalLunchExpenses.toFixed(2)],
+      ['Total Dinner Expenses', stats.totalDinnerExpenses.toFixed(2)],
+      ['Total Meal Expenses', stats.totalMealExpenses.toFixed(2)],
+      ['Total Days Off Earned', stats.totalWeekendDaysOff.toFixed(1)],
+      ['Total Weekend Bonus', stats.totalWeekendBonus.toFixed(2)],
+      ['Regular Hours', stats.regularHours.toFixed(2)],
+      ['Isenção Hours (Unpaid)', stats.unpaidHours.toFixed(2)],
+      ['Overwork Hours (Paid)', stats.paidOvertimeHours.toFixed(2)]
     ].map(row => row.join(',')).join('\n');
 
     const blob = new Blob([csvContent], { type: 'text/csv' });
@@ -448,8 +458,7 @@ export function Analytics({ user }) {
     URL.revokeObjectURL(url);
   };
 
-  const stats = calculateStats();
-  const { start, end } = getDateRange();
+  const { start, end } = dateRange;
 
   if (loading) {
     return (
@@ -539,10 +548,7 @@ export function Analytics({ user }) {
             <div className="stat-label">Isenção (Unpaid)</div>
             <div className="stat-value">{formatHoursMinutes(stats.unpaidHours)}</div>
             <div className="stat-sublabel">
-              {(() => {
-                const annualUsage = calculateAnnualIsencaoUsage();
-                return `${formatHoursMinutes(annualUsage.used)} / ${annualUsage.limit}h (${formatHoursMinutes(annualUsage.remaining)} remaining)`;
-              })()}
+              {`${formatHoursMinutes(annualIsencaoUsage.used)} / ${annualIsencaoUsage.limit}h (${formatHoursMinutes(annualIsencaoUsage.remaining)} remaining)`}
             </div>
           </div>
         </div>
@@ -616,11 +622,7 @@ export function Analytics({ user }) {
         </div>
 
         <div className="overwork-stats-grid">
-          {(() => {
-            const overworkStats = calculateOverworkStats();
-            const stats = calculateStats();
-            return (
-              <>
+          <>
                 <div className="overwork-stat-card total-accumulated">
                   <div className="overwork-stat-header">
                     <Clock className="overwork-stat-icon" />
@@ -679,8 +681,6 @@ export function Analytics({ user }) {
                   </div>
                 </div>
               </>
-            );
-          })()}
         </div>
 
         {/* Deduction Management Section */}
@@ -822,13 +822,13 @@ export function Analytics({ user }) {
             </div>
           </div>
         </div>
-        {getSearchAndFilteredSessions().length === 0 ? (
+        {searchAndFilteredSessions.length === 0 ? (
           <p className="no-data">No sessions found matching your search and filters</p>
         ) : (
           <>
             {(() => {
               // Calculate total count before limit is applied
-              let filtered = getFilteredSessions();
+              let filtered = filteredSessions;
 
               // Apply search filter
               if (searchTerm) {
@@ -859,7 +859,7 @@ export function Analytics({ user }) {
               }
 
               const totalCount = filtered.length;
-              const displayedCount = getSearchAndFilteredSessions().length;
+              const displayedCount = searchAndFilteredSessions.length;
               
               return totalCount > displayedCount && (
                 <p className="sessions-count-info" style={{ marginBottom: '1rem', fontSize: '0.9rem', color: 'var(--muted-foreground)' }}>
@@ -895,21 +895,31 @@ export function Analytics({ user }) {
                   <th>Overwork</th>
                 </tr>
               </thead>
-              <tbody>
-                {getSearchAndFilteredSessions().map((session) => (
-                  <tr key={session.id}>
-                    <td>{format(new Date(session.clockIn), 'MMM dd, yyyy')}</td>
-                    <td>{format(new Date(session.clockIn), 'HH:mm')}</td>
-                    <td>{format(new Date(session.clockOut), 'HH:mm')}</td>
-                    <td className="bold">{formatHoursMinutes(session.totalHours)}</td>
-                    <td className="lunch-cell">{session.lunchDuration ? formatHoursMinutes(session.lunchDuration) : '-'}</td>
-                    <td className="meals-cell">{((session.lunchAmount || 0) + (session.dinnerAmount || 0)) > 0 ? `€${((session.lunchAmount || 0) + (session.dinnerAmount || 0)).toFixed(2)}` : '-'}</td>
-                    <td className="regular-cell">{formatHoursMinutes(session.regularHours)}</td>
-                    <td className="unpaid-cell">{formatHoursMinutes(session.unpaidExtraHours)}</td>
-                    <td className="overtime-cell">{formatHoursMinutes(session.paidExtraHours)}</td>
+              {searchAndFilteredSessions.length > 0 ? (
+                <tbody>
+                  {searchAndFilteredSessions.map((session) => (
+                    <tr key={session.id}>
+                      <td>{format(new Date(session.clockIn), 'MMM dd, yyyy')}</td>
+                      <td>{format(new Date(session.clockIn), 'HH:mm')}</td>
+                      <td>{format(new Date(session.clockOut), 'HH:mm')}</td>
+                      <td className="bold">{formatHoursMinutes(session.totalHours)}</td>
+                      <td className="lunch-cell">{session.lunchDuration ? formatHoursMinutes(session.lunchDuration) : '-'}</td>
+                      <td className="meals-cell">{((session.lunchAmount || 0) + (session.dinnerAmount || 0)) > 0 ? `€${((session.lunchAmount || 0) + (session.dinnerAmount || 0)).toFixed(2)}` : '-'}</td>
+                      <td className="regular-cell">{formatHoursMinutes(session.regularHours)}</td>
+                      <td className="unpaid-cell">{formatHoursMinutes(session.unpaidExtraHours)}</td>
+                      <td className="overtime-cell">{formatHoursMinutes(session.paidExtraHours)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              ) : (
+                <tbody>
+                  <tr>
+                    <td colSpan="9" style={{ textAlign: 'center', padding: '2rem' }}>
+                      No sessions found
+                    </td>
                   </tr>
-                ))}
-              </tbody>
+                </tbody>
+              )}
             </table>
           </div>
           </>
@@ -923,4 +933,4 @@ export function Analytics({ user }) {
       </div>
     </div>
   );
-}
+});

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, memo } from 'react';
 import { doc, updateDoc } from 'firebase/firestore';
 import { db, auth } from '../lib/firebase';
 import { Clock, MapPin, FileText, Coffee, UtensilsCrossed, Calendar, Save } from 'lucide-react';
@@ -6,7 +6,7 @@ import { format } from 'date-fns';
 import { formatHoursMinutes } from '../lib/utils';
 import './ActiveSessionCard.css';
 
-export function ActiveSessionCard({ clockInTime, sessionDetails, onDetailsChange }) {
+export const ActiveSessionCard = memo(function ActiveSessionCard({ clockInTime, sessionDetails, onDetailsChange }) {
   const [elapsedTime, setElapsedTime] = useState('00:00:00');
   const [includeLunchTime, setIncludeLunchTime] = useState(sessionDetails?.includeLunchTime || false);
   const [lunchHours, setLunchHours] = useState(sessionDetails?.lunchHours || 1);
@@ -285,4 +285,4 @@ export function ActiveSessionCard({ clockInTime, sessionDetails, onDetailsChange
       </div>
     </div>
   );
-}
+});

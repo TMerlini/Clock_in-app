@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, memo } from 'react';
 import { useGoogleCalendar } from '../hooks/useGoogleCalendar';
 import { Calendar } from './ui/calendar';
 import { Calendar as CalendarIcon, RefreshCw, AlertCircle } from 'lucide-react';
@@ -7,7 +7,7 @@ import { formatHoursMinutes } from '../lib/utils';
 import './CalendarView.css';
 import 'react-day-picker/style.css';
 
-export function CalendarView({ user }) {
+export const CalendarView = memo(function CalendarView({ user }) {
   const googleCalendar = useGoogleCalendar();
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [events, setEvents] = useState([]);
@@ -316,4 +316,4 @@ export function CalendarView({ user }) {
       </div>
     </div>
   );
-}
+});

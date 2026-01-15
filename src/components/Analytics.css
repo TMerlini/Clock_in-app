@@ -328,6 +328,36 @@
   overflow-x: auto;
 }
 
+.table-container {
+  position: relative;
+}
+
+.virtualized-table-body {
+  overflow-y: auto;
+  overflow-x: hidden;
+  border: 1px solid var(--border);
+  border-top: none;
+}
+
+.virtualized-row {
+  border-bottom: 1px solid var(--border);
+}
+
+.virtualized-row:hover {
+  background: var(--secondary);
+}
+
+.virtualized-row table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.virtualized-row td {
+  padding: 1rem;
+  color: var(--muted-foreground);
+  font-size: 0.95rem;
+}
+
 table {
   width: 100%;
   border-collapse: collapse;

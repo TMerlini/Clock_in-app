@@ -1,22 +1,32 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense, lazy, useCallback } from 'react';
 import { signOut } from 'firebase/auth';
 import { collection, addDoc, query, where, getDocs, orderBy, doc, setDoc, deleteDoc, onSnapshot, getDoc } from 'firebase/firestore';
 import { auth, db } from '../lib/firebase';
 import { useGoogleCalendar } from '../hooks/useGoogleCalendar';
 import { Navigation } from './Navigation';
-import { Analytics } from './Analytics';
-import { Settings } from './Settings';
 import { About } from './About';
 import { FAQ } from './FAQ';
-import { CalendarImport } from './CalendarImport';
-import { CalendarView } from './CalendarView';
 import { Calendar } from './ui/calendar';
-import { SessionEditor } from './SessionEditor';
-import { SessionCreator } from './SessionCreator';
-import { DeleteConfirmation } from './DeleteConfirmation';
 import { GoogleCalendarSync } from './GoogleCalendarSync';
 import { ActiveSessionCard } from './ActiveSessionCard';
 import { SyncStatusIndicator } from './SyncStatusIndicator';
+import { Loader } from './Loader';
+import { ErrorBoundary } from './ErrorBoundary';
+import { HomePage } from './HomePage';
+import { DatePickerSection } from './DatePickerSection';
+import { SessionList } from './SessionList';
+
+// Lazy load route components for code splitting
+const Analytics = lazy(() => import('./Analytics').then(module => ({ default: module.Analytics })));
+const Settings = lazy(() => import('./Settings').then(module => ({ default: module.Settings })));
+const AIAdvisor = lazy(() => import('./AIAdvisor').then(module => ({ default: module.AIAdvisor })));
+const CalendarImport = lazy(() => import('./CalendarImport').then(module => ({ default: module.CalendarImport })));
+const CalendarView = lazy(() => import('./CalendarView').then(module => ({ default: module.CalendarView })));
+
+// Lazy load modal components (will be loaded when needed)
+const SessionEditor = lazy(() => import('./SessionEditor').then(module => ({ default: module.SessionEditor })));
+const SessionCreator = lazy(() => import('./SessionCreator').then(module => ({ default: module.SessionCreator })));
+const DeleteConfirmation = lazy(() => import('./DeleteConfirmation').then(module => ({ default: module.DeleteConfirmation })));
 import { Clock, LogOut, User, Calendar as CalendarIcon, Edit2, AlertTriangle, CheckCircle, Info, Plus, Trash2, TrendingUp, DollarSign, Coffee, UtensilsCrossed } from 'lucide-react';
 import { format, startOfDay, endOfDay } from 'date-fns';
 import { formatHoursMinutes, calculateUsedIsencaoHours } from '../lib/utils';
@@ -54,6 +64,36 @@ export function ClockInApp({ user }) {
 
   // Google Calendar integration
   const googleCalendar = useGoogleCalendar();
+
+  // Memoize handlers passed to child components
+  const handlePageChange = useCallback((page) => {
+    setCurrentPage(page);
+  }, []);
+
+  const handleDisplayNameChange = useCallback((name) => {
+    setDisplayName(name);
+  }, []);
+
+  const handleSessionUpdate = useCallback(async () => {
+    await loadSessionsForDate(selectedDate);
+    await loadSessionDates();
+  }, [selectedDate]);
+
+  const handleCloseEditor = useCallback(() => {
+    setEditingSession(null);
+  }, []);
+
+  const handleCloseCreator = useCallback(() => {
+    setCreatingSession(false);
+  }, []);
+
+  const handleCloseDeleter = useCallback(() => {
+    setDeletingSession(null);
+  }, []);
+
+  const handleCloseSyncer = useCallback(() => {
+    setSyncingSession(null);
+  }, []);
 
   // Listen for active clock-in state from Firestore (real-time sync across devices)
   useEffect(() => {
@@ -628,329 +668,83 @@ export function ClockInApp({ user }) {
   const renderContent = () => {
     switch (currentPage) {
       case 'analytics':
-        return <Analytics user={user} />;
+        return (
+          <ErrorBoundary>
+            <Suspense fallback={<Loader />}>
+              <Analytics user={user} />
+            </Suspense>
+          </ErrorBoundary>
+        );
+      case 'ai-advisor':
+        return (
+          <ErrorBoundary>
+            <Suspense fallback={<Loader />}>
+              <AIAdvisor user={user} onNavigate={handlePageChange} />
+            </Suspense>
+          </ErrorBoundary>
+        );
       case 'faq':
         return <FAQ />;
       case 'settings':
-        return <Settings googleCalendar={googleCalendar} onUsernameChange={setDisplayName} onNavigate={setCurrentPage} />;
+        return (
+          <ErrorBoundary>
+            <Suspense fallback={<Loader />}>
+              <Settings googleCalendar={googleCalendar} onUsernameChange={handleDisplayNameChange} onNavigate={handlePageChange} />
+            </Suspense>
+          </ErrorBoundary>
+        );
       case 'calendar-import':
-        return <CalendarImport user={user} />;
+        return (
+          <ErrorBoundary>
+            <Suspense fallback={<Loader />}>
+              <CalendarImport user={user} />
+            </Suspense>
+          </ErrorBoundary>
+        );
       case 'calendar':
-        return <CalendarView user={user} />;
+        return (
+          <ErrorBoundary>
+            <Suspense fallback={<Loader />}>
+              <CalendarView user={user} />
+            </Suspense>
+          </ErrorBoundary>
+        );
       case 'about':
         return <About />;
       case 'home':
       default:
         return (
           <>
-            <div className="main-content">
-              <div>
-                <div className="card">
-                  <div className="card-header">
-                    <h2 className="card-title">Time Tracker</h2>
-                  </div>
-                  <div className="card-content">
-                    <button
-                      onClick={handleClockInOut}
-                      className={`clock-button ${isClockedIn ? 'clocked-in' : 'clocked-out'}`}
-                    >
-                      <span>{isClockedIn ? 'Clock Out' : 'Clock In'}</span>
-                    </button>
-
-                    {isClockedIn && (
-                      <div className="timer-section">
-                        <p className="timer-title">Elapsed Time</p>
-                        <div className="elapsed-time">
-                          {formatTime(currentElapsedTime)}
-                        </div>
-
-                        <div className="working-message">
-                          {getWorkingMessage(currentTotalHours)}
-                        </div>
-
-                        <div className="time-breakdown">
-                          <div className="time-category regular">
-                            <span className="time-category-label">Regular Hours (0-8h)</span>
-                            <span className="time-category-value">{formatHoursMinutes(currentBreakdown.regularHours)}</span>
-                          </div>
-
-                          {currentTotalHours > 8 && (
-                            <div className="time-category unpaid">
-                              <span className="time-category-label">Unpaid Extra (8-10h)</span>
-                              <span className="time-category-value">{formatHoursMinutes(currentBreakdown.unpaidExtraHours)}</span>
-                            </div>
-                          )}
-
-                          {currentTotalHours > 10 && (
-                            <div className="time-category paid">
-                              <span className="time-category-label">Paid Extra (10h+)</span>
-                              <span className="time-category-value">{formatHoursMinutes(currentBreakdown.paidExtraHours)}</span>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Daily Stats Cards */}
-                <div className="daily-stats-grid">
-                  {(() => {
-                    const totalDayHours = sessionsForDate.reduce((sum, s) => sum + s.totalHours, 0);
-                    const totalUnpaid = sessionsForDate.reduce((sum, s) => sum + s.unpaidExtraHours, 0);
-                    const totalPaid = sessionsForDate.reduce((sum, s) => sum + s.paidExtraHours, 0);
-                    const totalLunchTime = sessionsForDate.reduce((sum, s) => sum + (s.lunchDuration || 0), 0);
-                    const totalExpenses = sessionsForDate.reduce((sum, s) => sum + (s.lunchAmount || 0) + (s.dinnerAmount || 0), 0);
-                    const firstSession = sessionsForDate.length > 0 ? sessionsForDate[sessionsForDate.length - 1] : null;
-                    const lastSession = sessionsForDate.length > 0 ? sessionsForDate[0] : null;
-
-                    return (
-                      <>
-                        <div className="daily-stat-card">
-                          <div className="daily-stat-icon hours">
-                            <Clock />
-                          </div>
-                          <div className="daily-stat-content">
-                            <div className="daily-stat-label">Hours Day</div>
-                            <div className="daily-stat-value">{formatHoursMinutes(totalDayHours)}</div>
-                          </div>
-                        </div>
-
-                        <div className="daily-stat-card">
-                          <div className="daily-stat-icon isencao">
-                            <AlertTriangle />
-                          </div>
-                          <div className="daily-stat-content">
-                            <div className="daily-stat-label">Isenção</div>
-                            <div className="daily-stat-value">{formatHoursMinutes(totalUnpaid)}</div>
-                          </div>
-                        </div>
-
-                        <div className="daily-stat-card">
-                          <div className="daily-stat-icon overwork">
-                            <TrendingUp />
-                          </div>
-                          <div className="daily-stat-content">
-                            <div className="daily-stat-label">Overwork</div>
-                            <div className="daily-stat-value">{formatHoursMinutes(totalPaid)}</div>
-                          </div>
-                        </div>
-
-                        <div className="daily-stat-card">
-                          <div className="daily-stat-icon lunch">
-                            <Coffee />
-                          </div>
-                          <div className="daily-stat-content">
-                            <div className="daily-stat-label">Lunch Time</div>
-                            <div className="daily-stat-value">{formatHoursMinutes(totalLunchTime)}</div>
-                          </div>
-                        </div>
-
-                        <div className="daily-stat-card">
-                          <div className="daily-stat-icon expenses">
-                            <UtensilsCrossed />
-                          </div>
-                          <div className="daily-stat-content">
-                            <div className="daily-stat-label">Expenses</div>
-                            <div className="daily-stat-value">€{totalExpenses.toFixed(2)}</div>
-                          </div>
-                        </div>
-
-                        <div className="daily-stat-card">
-                          <div className="daily-stat-icon clock-times">
-                            <Clock />
-                          </div>
-                          <div className="daily-stat-content">
-                            <div className="daily-stat-label">Clock In/Out</div>
-                            <div className="daily-stat-value clock-io-times">
-                              {firstSession ? (
-                                <>
-                                  <span className="clock-in-time">{format(new Date(firstSession.clockIn), 'HH:mm')}</span>
-                                  <span className="clock-separator">→</span>
-                                  <span className="clock-out-time">{format(new Date(lastSession.clockOut), 'HH:mm')}</span>
-                                </>
-                              ) : (
-                                <span className="no-data">--:--</span>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      </>
-                    );
-                  })()}
-                </div>
-              </div>
-
-              <div>
-                <div className="card">
-                  <div className="card-header">
-                    <h2 className="card-title">
-                      <CalendarIcon style={{ display: 'inline', width: '20px', height: '20px', marginRight: '8px' }} />
-                      Select Date
-                    </h2>
-                    <p className="card-description">View your sessions for any date</p>
-                  </div>
-                  <div className="calendar-wrapper">
-                    <Calendar
-                      mode="single"
-                      selected={selectedDate}
-                      onSelect={setSelectedDate}
-                      modifiers={modifiers}
-                      modifiersClassNames={modifiersClassNames}
-                    />
-                  </div>
-                </div>
-
-                <div className="card" style={{ marginTop: '2rem' }}>
-                  <div className="card-header">
-                    <div>
-                      <h2 className="card-title">
-                        Sessions for {format(selectedDate, 'MMM dd, yyyy')}
-                      </h2>
-                      <p className="card-description">
-                        {sessionsForDate.length} session{sessionsForDate.length !== 1 ? 's' : ''} found
-                      </p>
-                    </div>
-                    {sessionsForDate.length === 0 ? (
-                      <button
-                        className="add-session-button"
-                        onClick={() => setCreatingSession(true)}
-                        title="Add manual session"
-                      >
-                        <Plus />
-                        Add Session
-                      </button>
-                    ) : (
-                      <button
-                        className="add-session-button"
-                        onClick={() => setEditingSession(sessionsForDate[0])}
-                        title="Edit first session"
-                      >
-                        <Edit2 />
-                        Edit Session
-                      </button>
-                    )}
-                  </div>
-
-                  {sessionsForDate.length > 0 && (() => {
-                    const totalDayHours = sessionsForDate.reduce((sum, s) => sum + s.totalHours, 0);
-                    const totalLunchTime = sessionsForDate.reduce((sum, s) => sum + (s.lunchDuration || 0), 0);
-                    const totalWorkingHours = totalDayHours - totalLunchTime;
-                    const totalRegular = sessionsForDate.reduce((sum, s) => sum + s.regularHours, 0);
-                    const totalUnpaid = sessionsForDate.reduce((sum, s) => sum + s.unpaidExtraHours, 0);
-                    const totalPaid = sessionsForDate.reduce((sum, s) => sum + s.paidExtraHours, 0);
-
-                    let notificationType = 'normal';
-                    let notificationIcon = <CheckCircle />;
-                    let notificationText = 'Regular work day';
-
-                    if (totalWorkingHours > 10) {
-                      notificationType = 'overtime';
-                      notificationIcon = <AlertTriangle />;
-                      notificationText = 'Overtime day - Extra paid hours accumulated';
-                    } else if (totalWorkingHours > 8) {
-                      notificationType = 'unpaid';
-                      notificationIcon = <Info />;
-                      notificationText = 'Extended hours - Unpaid overtime period';
-                    } else if (totalWorkingHours < 8) {
-                      notificationType = 'short';
-                      notificationIcon = <Info />;
-                      notificationText = 'Under 8 hours worked';
-                    }
-
-                    return (
-                      <div className={`daily-summary ${notificationType}`}>
-                        <div className="summary-icon">{notificationIcon}</div>
-                        <div className="summary-content">
-                          <div className="summary-text">{notificationText}</div>
-                          <div className="summary-stats">
-                            <span className="stat-item">Working: <strong>{formatHoursMinutes(totalWorkingHours)}</strong></span>
-                            {totalRegular > 0 && <span className="stat-item regular">Regular: {formatHoursMinutes(totalRegular)}</span>}
-                            {totalUnpaid > 0 && <span className="stat-item unpaid">Unpaid: {formatHoursMinutes(totalUnpaid)}</span>}
-                            {totalPaid > 0 && <span className="stat-item paid">Paid OT: {formatHoursMinutes(totalPaid)}</span>}
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })()}
-
-                  <div className="sessions-container">
-                    {/* Show ActiveSessionCard when clocked in and viewing today */}
-                    {isClockedIn && clockInTime && 
-                      selectedDate.toDateString() === new Date().toDateString() && (
-                        <ActiveSessionCard
-                          clockInTime={clockInTime}
-                          sessionDetails={activeSessionDetails}
-                          onDetailsChange={setActiveSessionDetails}
-                        />
-                      )}
-                    
-                    {sessionsForDate.length === 0 && !(isClockedIn && selectedDate.toDateString() === new Date().toDateString()) ? (
-                      <p className="empty-sessions">
-                        No sessions recorded for this date
-                      </p>
-                    ) : (
-                      <div className="sessions-list">
-                        {sessionsForDate.map((session, index) => (
-                          <div key={session.id} className="session-card">
-                            <div className="session-header">
-                              <span className="session-number">Session {sessionsForDate.length - index}</span>
-                              <div className="session-actions">
-                                <span className="session-total">{formatHoursMinutes(session.totalHours)}</span>
-                                <button
-                                  className="sync-session-button"
-                                  onClick={() => setSyncingSession(session)}
-                                  title="Sync to Google Calendar"
-                                >
-                                  <GoogleCalendarIcon />
-                                </button>
-                                <button
-                                  className="edit-session-button"
-                                  onClick={() => setEditingSession(session)}
-                                  title="Edit session"
-                                >
-                                  <Edit2 />
-                                </button>
-                                <button
-                                  className="delete-session-button"
-                                  onClick={() => setDeletingSession(session)}
-                                  title="Delete session"
-                                >
-                                  <Trash2 />
-                                </button>
-                              </div>
-                            </div>
-                            <div className="session-times">
-                              <div>In: {format(new Date(session.clockIn), 'HH:mm:ss')}</div>
-                              <div>Out: {format(new Date(session.clockOut), 'HH:mm:ss')}</div>
-                            </div>
-                            <div className="session-breakdown">
-                              <span className="breakdown-badge regular">
-                                Regular: {formatHoursMinutes(session.regularHours)}
-                              </span>
-                              {session.unpaidExtraHours > 0 && (
-                                <span className="breakdown-badge unpaid">
-                                  Unpaid: {formatHoursMinutes(session.unpaidExtraHours)}
-                                </span>
-                              )}
-                              {session.paidExtraHours > 0 && (
-                                <span className="breakdown-badge paid">
-                                  Paid: {formatHoursMinutes(session.paidExtraHours)}
-                                </span>
-                              )}
-                            </div>
-                            {session.notes && (
-                              <div className="session-notes">
-                                {session.notes}
-                              </div>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
+            <HomePage
+              isClockedIn={isClockedIn}
+              clockInTime={clockInTime}
+              currentElapsedTime={currentElapsedTime}
+              currentTotalHours={currentTotalHours}
+              currentBreakdown={currentBreakdown}
+              sessionsForDate={sessionsForDate}
+              onClockInOut={handleClockInOut}
+              formatTime={formatTime}
+              getWorkingMessage={getWorkingMessage}
+            />
+            <div>
+              <DatePickerSection
+                selectedDate={selectedDate}
+                onDateSelect={setSelectedDate}
+                modifiers={modifiers}
+                modifiersClassNames={modifiersClassNames}
+              />
+              <SessionList
+                selectedDate={selectedDate}
+                sessionsForDate={sessionsForDate}
+                isClockedIn={isClockedIn}
+                clockInTime={clockInTime}
+                activeSessionDetails={activeSessionDetails}
+                onDetailsChange={setActiveSessionDetails}
+                onEditSession={setEditingSession}
+                onDeleteSession={setDeletingSession}
+                onSyncSession={setSyncingSession}
+                onCreateSession={() => setCreatingSession(true)}
+              />
             </div>
           </>
         );
@@ -959,7 +753,7 @@ export function ClockInApp({ user }) {
 
   return (
     <div className="app-container">
-      <Navigation currentPage={currentPage} onPageChange={setCurrentPage} />
+      <Navigation currentPage={currentPage} onPageChange={handlePageChange} />
 
       <div className="app-header">
         <div className="header-content">
@@ -989,43 +783,40 @@ export function ClockInApp({ user }) {
       {renderContent()}
 
       {editingSession && (
-        <SessionEditor
-          session={editingSession}
-          onClose={() => setEditingSession(null)}
-          onUpdate={async () => {
-            await loadSessionsForDate(selectedDate);
-            await loadSessionDates();
-          }}
-        />
+        <Suspense fallback={<Loader />}>
+          <SessionEditor
+            session={editingSession}
+            onClose={handleCloseEditor}
+            onUpdate={handleSessionUpdate}
+          />
+        </Suspense>
       )}
 
       {creatingSession && (
-        <SessionCreator
-          user={user}
-          selectedDate={selectedDate}
-          onClose={() => setCreatingSession(false)}
-          onUpdate={async () => {
-            await loadSessionsForDate(selectedDate);
-            await loadSessionDates();
-          }}
-        />
+        <Suspense fallback={<Loader />}>
+          <SessionCreator
+            user={user}
+            selectedDate={selectedDate}
+            onClose={handleCloseCreator}
+            onUpdate={handleSessionUpdate}
+          />
+        </Suspense>
       )}
 
       {deletingSession && (
-        <DeleteConfirmation
-          session={deletingSession}
-          onClose={() => setDeletingSession(null)}
-          onUpdate={async () => {
-            await loadSessionsForDate(selectedDate);
-            await loadSessionDates();
-          }}
-        />
+        <Suspense fallback={<Loader />}>
+          <DeleteConfirmation
+            session={deletingSession}
+            onClose={handleCloseDeleter}
+            onUpdate={handleSessionUpdate}
+          />
+        </Suspense>
       )}
 
       {syncingSession && (
         <GoogleCalendarSync
           session={syncingSession}
-          onClose={() => setSyncingSession(null)}
+          onClose={handleCloseSyncer}
         />
       )}
     </div>

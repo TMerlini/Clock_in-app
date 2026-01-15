@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { doc, getDoc, setDoc, collection, query, where, getDocs, updateDoc } from 'firebase/firestore';
 import { db, auth } from '../lib/firebase';
 import { CalendarAuthButton } from './CalendarAuthButton';
-import { Settings as SettingsIcon, Save, RotateCcw, Clock, Coffee, AlertTriangle, DollarSign, Calendar, CheckCircle, XCircle, AlertCircle, RefreshCw, User, AtSign, Download } from 'lucide-react';
+import { Settings as SettingsIcon, Save, RotateCcw, Clock, Coffee, AlertTriangle, DollarSign, Calendar, CheckCircle, XCircle, AlertCircle, RefreshCw, User, AtSign, Download, Crown } from 'lucide-react';
 import { format } from 'date-fns';
 import './Settings.css';
 
@@ -19,6 +19,7 @@ export function Settings({ googleCalendar, onUsernameChange, onNavigate }) {
   const [weekendDaysOff, setWeekendDaysOff] = useState(1);
   const [weekendBonus, setWeekendBonus] = useState(100);
   const [annualIsencaoLimit, setAnnualIsencaoLimit] = useState(200);
+  const [isPremium, setIsPremium] = useState(false);
   const [saved, setSaved] = useState(false);
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
@@ -32,10 +33,15 @@ export function Settings({ googleCalendar, onUsernameChange, onNavigate }) {
   });
 
   useEffect(() => {
-    loadSettings();
-    if (googleCalendar?.isAuthorized) {
-      loadSyncStats();
-    }
+    const loadData = async () => {
+      // Load settings and sync stats in parallel if calendar is authorized
+      if (googleCalendar?.isAuthorized) {
+        await Promise.all([loadSettings(), loadSyncStats()]);
+      } else {
+        await loadSettings();
+      }
+    };
+    loadData();
   }, [googleCalendar?.isAuthorized]);
 
   const loadSettings = async () => {
@@ -62,6 +68,7 @@ export function Settings({ googleCalendar, onUsernameChange, onNavigate }) {
         setWeekendDaysOff(settings.weekendDaysOff || 1);
         setWeekendBonus(settings.weekendBonus || 100);
         setAnnualIsencaoLimit(settings.annualIsencaoLimit || 200);
+        setIsPremium(settings.isPremium || false);
         
         // Notify parent of username
         if (settings.username && onUsernameChange) {
@@ -152,41 +159,59 @@ export function Settings({ googleCalendar, onUsernameChange, onNavigate }) {
         return;
       }
 
+      // Process sync operations in parallel with concurrency limit
+      const CONCURRENCY_LIMIT = 5;
       let successCount = 0;
       let failCount = 0;
 
-      for (const session of unsyncedSessions) {
-        try {
-          // Create calendar event
-          const calendarEvent = await googleCalendar.createCalendarEvent({
-            clockIn: session.clockIn,
-            clockOut: session.clockOut,
-            regularHours: session.regularHours,
-            unpaidHours: session.unpaidExtraHours,
-            paidHours: session.paidExtraHours,
-            notes: session.notes || ''
-          });
+      // Process sessions in batches to avoid rate limits
+      for (let i = 0; i < unsyncedSessions.length; i += CONCURRENCY_LIMIT) {
+        const batch = unsyncedSessions.slice(i, i + CONCURRENCY_LIMIT);
+        
+        const results = await Promise.allSettled(
+          batch.map(async (session) => {
+            try {
+              // Create calendar event
+              const calendarEvent = await googleCalendar.createCalendarEvent({
+                clockIn: session.clockIn,
+                clockOut: session.clockOut,
+                regularHours: session.regularHours,
+                unpaidHours: session.unpaidExtraHours,
+                paidHours: session.paidExtraHours,
+                notes: session.notes || ''
+              });
 
-          // Update session with sync info
-          const sessionRef = doc(db, 'sessions', session.id);
-          await updateDoc(sessionRef, {
-            calendarEventId: calendarEvent.id,
-            calendarSyncStatus: 'synced',
-            lastSyncAt: Date.now()
-          });
+              // Update session with sync info
+              const sessionRef = doc(db, 'sessions', session.id);
+              await updateDoc(sessionRef, {
+                calendarEventId: calendarEvent.id,
+                calendarSyncStatus: 'synced',
+                lastSyncAt: Date.now()
+              });
 
-          successCount++;
-        } catch (error) {
-          console.error(`Failed to sync session ${session.id}:`, error);
-          
-          // Mark as failed
-          const sessionRef = doc(db, 'sessions', session.id);
-          await updateDoc(sessionRef, {
-            calendarSyncStatus: 'failed'
-          });
-          
-          failCount++;
-        }
+              return { success: true, sessionId: session.id };
+            } catch (error) {
+              console.error(`Failed to sync session ${session.id}:`, error);
+              
+              // Mark as failed
+              const sessionRef = doc(db, 'sessions', session.id);
+              await updateDoc(sessionRef, {
+                calendarSyncStatus: 'failed'
+              });
+              
+              return { success: false, sessionId: session.id, error };
+            }
+          })
+        );
+
+        // Count successes and failures
+        results.forEach((result) => {
+          if (result.status === 'fulfilled' && result.value.success) {
+            successCount++;
+          } else {
+            failCount++;
+          }
+        });
       }
 
       // Reload stats
@@ -227,6 +252,7 @@ export function Settings({ googleCalendar, onUsernameChange, onNavigate }) {
         weekendDaysOff,
         weekendBonus,
         annualIsencaoLimit,
+        isPremium,
         updatedAt: Date.now()
       };
 
@@ -259,6 +285,7 @@ export function Settings({ googleCalendar, onUsernameChange, onNavigate }) {
     setWeekendDaysOff(1);
     setWeekendBonus(100);
     setAnnualIsencaoLimit(200);
+    setIsPremium(false);
   };
 
   if (loading) {
@@ -311,6 +338,35 @@ export function Settings({ googleCalendar, onUsernameChange, onNavigate }) {
                 maxLength={20}
               />
             </div>
+          </div>
+        </section>
+
+        <section className="settings-section">
+          <div className="section-title">
+            <Crown />
+            <h2>Premium Subscription</h2>
+          </div>
+          <p className="section-description">
+            Enable premium features including AI Advisor access. Premium features unlock advanced capabilities.
+          </p>
+
+          <div className="setting-item checkbox-setting">
+            <div className="setting-header">
+              <Crown className="setting-icon premium" />
+              <div>
+                <label htmlFor="isPremium">Premium Status</label>
+                <p className="setting-description">Enable premium features (including AI Advisor)</p>
+              </div>
+            </div>
+            <label className="toggle-switch">
+              <input
+                id="isPremium"
+                type="checkbox"
+                checked={isPremium}
+                onChange={(e) => setIsPremium(e.target.checked)}
+              />
+              <span className="toggle-slider"></span>
+            </label>
           </div>
         </section>
 

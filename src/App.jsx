@@ -4,6 +4,7 @@ import { auth } from './lib/firebase';
 import { Login } from './components/Login';
 import { ClockInApp } from './components/ClockInApp';
 import { Loader } from './components/Loader';
+import { ErrorBoundary } from './components/ErrorBoundary';
 
 function App() {
   const [user, setUser] = useState(null);
@@ -32,7 +33,11 @@ function App() {
     return <Loader />;
   }
 
-  return user ? <ClockInApp user={user} /> : <Login onLogin={setUser} />;
+  return (
+    <ErrorBoundary>
+      {user ? <ClockInApp user={user} /> : <Login onLogin={setUser} />}
+    </ErrorBoundary>
+  );
 }
 
 export default App;
