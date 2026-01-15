@@ -20,6 +20,7 @@ import { SessionList } from './SessionList';
 const Analytics = lazy(() => import('./Analytics').then(module => ({ default: module.Analytics })));
 const Settings = lazy(() => import('./Settings').then(module => ({ default: module.Settings })));
 const AIAdvisor = lazy(() => import('./AIAdvisor').then(module => ({ default: module.AIAdvisor })));
+const PremiumPlus = lazy(() => import('./PremiumPlus').then(module => ({ default: module.PremiumPlus })));
 const CalendarImport = lazy(() => import('./CalendarImport').then(module => ({ default: module.CalendarImport })));
 const CalendarView = lazy(() => import('./CalendarView').then(module => ({ default: module.CalendarView })));
 
@@ -680,6 +681,14 @@ export function ClockInApp({ user }) {
           <ErrorBoundary>
             <Suspense fallback={<Loader />}>
               <AIAdvisor user={user} onNavigate={handlePageChange} />
+            </Suspense>
+          </ErrorBoundary>
+        );
+      case 'premium-plus':
+        return (
+          <ErrorBoundary>
+            <Suspense fallback={<Loader />}>
+              <PremiumPlus user={user} onNavigate={handlePageChange} />
             </Suspense>
           </ErrorBoundary>
         );

@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, memo } from 'react';
-import { Menu, X, Home, Calendar, BarChart3, Info, Settings, HelpCircle, Bot } from 'lucide-react';
+import { Menu, X, Home, Calendar, BarChart3, Info, Settings, HelpCircle, Bot, Crown } from 'lucide-react';
 import './Navigation.css';
 
 export const Navigation = memo(function Navigation({ currentPage, onPageChange }) {
@@ -15,6 +15,7 @@ export const Navigation = memo(function Navigation({ currentPage, onPageChange }
     { id: 'calendar', label: 'Calendar', icon: Calendar },
     { id: 'analytics', label: 'Analytics', icon: BarChart3 },
     { id: 'ai-advisor', label: 'AI Advisor', icon: Bot },
+    { id: 'premium-plus', label: 'Premium+', icon: Crown },
     { id: 'settings', label: 'Settings', icon: Settings },
     { id: 'faq', label: 'Frequent Questions', icon: HelpCircle },
     { id: 'about', label: 'About', icon: Info }
