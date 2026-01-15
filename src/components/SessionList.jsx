@@ -31,6 +31,18 @@ export const SessionList = memo(function SessionList({
   onSyncSession,
   onCreateSession
 }) {
+  // Validate selectedDate
+  if (!selectedDate || !(selectedDate instanceof Date) || isNaN(selectedDate.getTime())) {
+    return (
+      <div className="card" style={{ marginTop: '2rem' }}>
+        <div className="card-header">
+          <h2 className="card-title">Invalid Date</h2>
+          <p className="card-description">Please select a valid date</p>
+        </div>
+      </div>
+    );
+  }
+
   const totalDayHours = sessionsForDate.reduce((sum, s) => sum + s.totalHours, 0);
   const totalLunchTime = sessionsForDate.reduce((sum, s) => sum + (s.lunchDuration || 0), 0);
   const totalWorkingHours = totalDayHours - totalLunchTime;
@@ -105,7 +117,7 @@ export const SessionList = memo(function SessionList({
 
       <div className="sessions-container">
         {/* Show ActiveSessionCard when clocked in and viewing today */}
-        {isClockedIn && clockInTime && 
+        {isClockedIn && clockInTime && selectedDate && 
           selectedDate.toDateString() === new Date().toDateString() && (
             <ActiveSessionCard
               clockInTime={clockInTime}
@@ -114,7 +126,7 @@ export const SessionList = memo(function SessionList({
             />
           )}
         
-        {sessionsForDate.length === 0 && !(isClockedIn && selectedDate.toDateString() === new Date().toDateString()) ? (
+        {sessionsForDate.length === 0 && !(isClockedIn && selectedDate && selectedDate.toDateString() === new Date().toDateString()) ? (
           <p className="empty-sessions">
             No sessions recorded for this date
           </p>

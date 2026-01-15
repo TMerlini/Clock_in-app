@@ -112,8 +112,8 @@
 
 .plans-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 2rem;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.5rem;
   margin-bottom: 3rem;
 }
 
@@ -203,6 +203,11 @@
 .plan-icon.gold {
   background: linear-gradient(135deg, rgba(234, 179, 8, 0.1), rgba(202, 138, 4, 0.1));
   color: #eab308;
+}
+
+.plan-icon.gray {
+  background: linear-gradient(135deg, rgba(107, 114, 128, 0.1), rgba(75, 85, 99, 0.1));
+  color: #6b7280;
 }
 
 .plan-name {
@@ -296,6 +301,18 @@
   box-shadow: 0 4px 12px rgba(234, 179, 8, 0.4);
 }
 
+.plan-button.gray {
+  background: var(--secondary);
+  color: var(--foreground);
+  border: 2px solid var(--border);
+}
+
+.plan-button.gray:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border-color: var(--primary);
+}
+
 .plan-button.current {
   background: var(--secondary);
   color: var(--foreground);
@@ -331,7 +348,7 @@
   color: var(--accent);
 }
 
-/* Mobile Responsiveness */
+/* Tablet Responsiveness */
 @media (max-width: 1024px) {
   .plans-grid {
     grid-template-columns: repeat(2, 1fr);

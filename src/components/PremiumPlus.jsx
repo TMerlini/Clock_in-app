@@ -65,6 +65,29 @@ export function PremiumPlus({ user, onNavigate }) {
   };
 
   const handleSubscribe = async (planId, planName) => {
+    // Handle free plan - no Stripe checkout needed
+    if (planId === 'FREE') {
+      try {
+        const currentUser = auth.currentUser;
+        if (!currentUser) return;
+
+        const settingsRef = doc(db, 'userSettings', currentUser.uid);
+        await setDoc(settingsRef, {
+          subscriptionPlan: 'free'
+        }, { merge: true });
+
+        setCurrentPlan('free');
+        setSuccessMessage('Successfully switched to Free plan!');
+        setTimeout(() => {
+          setSuccessMessage(null);
+        }, 3000);
+      } catch (error) {
+        console.error('Error updating to free plan:', error);
+        alert('Error updating plan. Please try again.');
+      }
+      return;
+    }
+
     if (!isStripeConfigured()) {
       alert('Stripe is not configured. Please contact support.');
       return;
@@ -127,16 +150,31 @@ export function PremiumPlus({ user, onNavigate }) {
 
   const plans = [
     {
-      id: 'BASIC',
-      name: 'Basic',
-      price: '€9.99',
+      id: 'FREE',
+      name: 'Free',
+      price: '€0',
       period: 'month',
       icon: Zap,
       features: [
         'Core time tracking',
-        'Basic analytics',
+        'Basic session management',
+        'Limited analytics',
+        'Basic export'
+      ],
+      color: 'gray',
+      isFree: true
+    },
+    {
+      id: 'BASIC',
+      name: 'Basic',
+      price: '€0.99',
+      period: 'month',
+      icon: Zap,
+      features: [
+        'Everything in Free',
+        'Full analytics',
         'Google Calendar sync',
-        'Session management',
+        'Advanced session management',
         'Export sessions'
       ],
       color: 'blue'
@@ -144,7 +182,7 @@ export function PremiumPlus({ user, onNavigate }) {
     {
       id: 'PRO',
       name: 'Pro',
-      price: '€19.99',
+      price: '€4.99',
       period: 'month',
       icon: Sparkles,
       features: [
@@ -161,7 +199,7 @@ export function PremiumPlus({ user, onNavigate }) {
     {
       id: 'PREMIUM_AI',
       name: 'Premium AI',
-      price: '€29.99',
+      price: '€9.99',
       period: 'month',
       icon: Crown,
       features: [
@@ -177,9 +215,19 @@ export function PremiumPlus({ user, onNavigate }) {
   ];
 
   const getButtonText = (planId) => {
-    if (!currentPlan) return 'Subscribe';
+    // Free plan is always available and is the default
+    if (planId === 'FREE') {
+      if (!currentPlan || currentPlan.toLowerCase() === 'free') {
+        return 'Current Plan';
+      }
+      return 'Downgrade';
+    }
+
+    if (!currentPlan || currentPlan.toLowerCase() === 'free') {
+      return 'Subscribe';
+    }
     
-    const planHierarchy = { BASIC: 1, PRO: 2, PREMIUM_AI: 3 };
+    const planHierarchy = { FREE: 0, BASIC: 1, PRO: 2, PREMIUM_AI: 3 };
     const currentLevel = planHierarchy[currentPlan.toUpperCase()] || 0;
     const targetLevel = planHierarchy[planId] || 0;
 
@@ -189,15 +237,28 @@ export function PremiumPlus({ user, onNavigate }) {
     if (targetLevel > currentLevel) {
       return 'Upgrade';
     }
+    if (targetLevel < currentLevel) {
+      return 'Downgrade';
+    }
     return 'Subscribe';
   };
 
   const isCurrentPlan = (planId) => {
+    // If no current plan, Free is the default
+    if (!currentPlan && planId === 'FREE') {
+      return true;
+    }
     return currentPlan?.toLowerCase() === planId.toLowerCase();
   };
 
   const isButtonDisabled = (planId) => {
-    return isCurrentPlan(planId) || redirecting || loading;
+    const isCurrent = isCurrentPlan(planId);
+    // Free plan button is disabled only if it's the current plan
+    if (planId === 'FREE' && isCurrent) {
+      return true;
+    }
+    // Other plans are disabled if current, redirecting, or loading
+    return isCurrent || redirecting || loading;
   };
 
   if (loading) {
@@ -288,7 +349,7 @@ export function PremiumPlus({ user, onNavigate }) {
                 onClick={() => handleSubscribe(plan.id, plan.name)}
                 disabled={disabled}
               >
-                {redirecting ? (
+                {redirecting && !plan.isFree ? (
                   <>
                     <Loader className="spinning" size={16} />
                     <span>Redirecting...</span>
@@ -304,7 +365,7 @@ export function PremiumPlus({ user, onNavigate }) {
 
       <div className="premium-plus-footer">
         <p>
-          All plans include a 14-day free trial. Cancel anytime.
+          Paid plans include a 14-day free trial. Cancel anytime.
           <br />
           Questions? <button className="link-button" onClick={() => onNavigate && onNavigate('faq')}>Visit our FAQ</button>
         </p>

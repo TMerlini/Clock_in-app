@@ -263,6 +263,13 @@ export function ClockInApp({ user }) {
 
   const loadSessionsForDate = async (date) => {
     try {
+      // Validate date before using it
+      if (!date || !(date instanceof Date) || isNaN(date.getTime())) {
+        console.error('Invalid date provided to loadSessionsForDate:', date);
+        setSessionsForDate([]);
+        return;
+      }
+
       const startDate = startOfDay(date);
       const endDate = endOfDay(date);
 
@@ -738,7 +745,18 @@ export function ClockInApp({ user }) {
             <div>
               <DatePickerSection
                 selectedDate={selectedDate}
-                onDateSelect={setSelectedDate}
+                onDateSelect={(date) => {
+                  // Ensure we always have a valid date
+                  if (date && date instanceof Date && !isNaN(date.getTime())) {
+                    setSelectedDate(date);
+                  } else if (date) {
+                    // If date is not a Date object, try to convert it
+                    const dateObj = date instanceof Date ? date : new Date(date);
+                    if (!isNaN(dateObj.getTime())) {
+                      setSelectedDate(dateObj);
+                    }
+                  }
+                }}
                 modifiers={modifiers}
                 modifiersClassNames={modifiersClassNames}
               />
