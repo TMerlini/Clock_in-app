@@ -420,6 +420,8 @@ export function ClockInApp({ user }) {
       let weekendDaysOff = 1;
       let weekendBonus = 100;
       let annualIsencaoLimit = 200;
+      let bankHolidayApplyDaysOff = true;
+      let bankHolidayApplyBonus = true;
       try {
         const settingsRef = doc(db, 'userSettings', user.uid);
         const settingsDoc = await getDoc(settingsRef);
@@ -428,6 +430,8 @@ export function ClockInApp({ user }) {
           weekendDaysOff = settings.weekendDaysOff || 1;
           weekendBonus = settings.weekendBonus || 100;
           annualIsencaoLimit = settings.annualIsencaoLimit || 200;
+          bankHolidayApplyDaysOff = settings.bankHolidayApplyDaysOff !== undefined ? settings.bankHolidayApplyDaysOff : true;
+          bankHolidayApplyBonus = settings.bankHolidayApplyBonus !== undefined ? settings.bankHolidayApplyBonus : true;
         }
       } catch (error) {
         console.error('Error loading settings:', error);
@@ -498,8 +502,8 @@ export function ClockInApp({ user }) {
         paidExtraHours: paidExtraHours,
         isWeekend: useWeekendFromDetails,
         isBankHoliday: isBankHoliday,
-        weekendDaysOff: useWeekendFromDetails ? weekendDaysOff : 0,
-        weekendBonus: useWeekendFromDetails ? weekendBonus : 0,
+        weekendDaysOff: useWeekendFromDetails ? weekendDaysOff : (isBankHoliday && bankHolidayApplyDaysOff ? weekendDaysOff : 0),
+        weekendBonus: useWeekendFromDetails ? weekendBonus : (isBankHoliday && bankHolidayApplyBonus ? weekendBonus : 0),
         // Session details from ActiveSessionCard
         includeLunchTime: details.includeLunchTime || false,
         lunchDuration: lunchDuration,

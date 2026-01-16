@@ -24,6 +24,8 @@ export function SessionCreator({ user, selectedDate, onClose, onUpdate }) {
   const [lunchMinutes, setLunchMinutes] = useState(0);
   const [weekendDaysOff, setWeekendDaysOff] = useState(1);
   const [weekendBonus, setWeekendBonus] = useState(100);
+  const [bankHolidayApplyDaysOff, setBankHolidayApplyDaysOff] = useState(true);
+  const [bankHolidayApplyBonus, setBankHolidayApplyBonus] = useState(true);
   const [isWeekend, setIsWeekend] = useState(false);
   const [isBankHoliday, setIsBankHoliday] = useState(false);
 
@@ -60,6 +62,8 @@ export function SessionCreator({ user, selectedDate, onClose, onUpdate }) {
         setLunchMinutes(Math.round((duration - Math.floor(duration)) * 60));
         setWeekendDaysOff(settings.weekendDaysOff || 1);
         setWeekendBonus(settings.weekendBonus || 100);
+        setBankHolidayApplyDaysOff(settings.bankHolidayApplyDaysOff !== undefined ? settings.bankHolidayApplyDaysOff : true);
+        setBankHolidayApplyBonus(settings.bankHolidayApplyBonus !== undefined ? settings.bankHolidayApplyBonus : true);
       }
     } catch (error) {
       console.error('Error loading settings:', error);
@@ -152,8 +156,8 @@ export function SessionCreator({ user, selectedDate, onClose, onUpdate }) {
       dinnerAmount: hadDinner && dinnerAmount ? parseFloat(dinnerAmount) : 0,
       isWeekend: isWeekend,
       isBankHoliday: isBankHoliday,
-      weekendDaysOff: isWeekend ? weekendDaysOff : 0,
-      weekendBonus: isWeekend ? weekendBonus : 0,
+      weekendDaysOff: isWeekend ? weekendDaysOff : (isBankHoliday && bankHolidayApplyDaysOff ? weekendDaysOff : 0),
+      weekendBonus: isWeekend ? weekendBonus : (isBankHoliday && bankHolidayApplyBonus ? weekendBonus : 0),
       location: location,
       notes: notes,
       regularHours: regularHours,

@@ -196,6 +196,9 @@ export const Analytics = memo(function Analytics({ user }) {
     const sessionsWithLunch = filtered.filter(s => s.includeLunchTime).length;
     const sessionsWithDinner = filtered.filter(s => s.hadDinner).length;
     const weekendSessions = filtered.filter(s => s.isWeekend).length;
+    // Count bank holidays that have benefits (days off or bonus)
+    const bankHolidaySessions = filtered.filter(s => s.isBankHoliday && ((s.weekendDaysOff && s.weekendDaysOff > 0) || (s.weekendBonus && s.weekendBonus > 0))).length;
+    const totalBenefitSessions = weekendSessions + bankHolidaySessions;
 
     return {
       totalHours,
@@ -211,6 +214,8 @@ export const Analytics = memo(function Analytics({ user }) {
       totalWeekendDaysOff,
       totalWeekendBonus,
       weekendSessions,
+      bankHolidaySessions,
+      totalBenefitSessions,
       totalDays,
       avgHoursPerDay: totalDays > 0 ? totalHours / totalDays : 0
     };
@@ -243,7 +248,7 @@ export const Analytics = memo(function Analytics({ user }) {
     // Round to 4 decimal places to avoid floating point precision issues
     const totalOverworkHours = Math.round(sessions.reduce((sum, s) => sum + (s.paidExtraHours || 0), 0) * 10000) / 10000;
 
-    // Calculate total days off earned from weekend sessions
+    // Calculate total days off earned from weekend and bank holiday sessions
     // Round to 4 decimal places to avoid floating point precision issues
     const totalWeekendDaysOff = Math.round(sessions.reduce((sum, s) => sum + (s.weekendDaysOff || 0), 0) * 10000) / 10000;
     
@@ -437,6 +442,7 @@ export const Analytics = memo(function Analytics({ user }) {
       ['Total Sessions', filtered.length],
       ['Total Days Worked', new Set(filtered.map(s => format(new Date(s.clockIn), 'yyyy-MM-dd'))).size],
       ['Weekend Sessions', stats.weekendSessions],
+      ['Bank Holiday Sessions', stats.bankHolidaySessions],
       ['Total Hours', stats.totalHours.toFixed(2)],
       ['Lunch Hours', stats.lunchHours.toFixed(2)],
       ['Total Lunch Expenses', stats.totalLunchExpenses.toFixed(2)],
@@ -593,7 +599,11 @@ export const Analytics = memo(function Analytics({ user }) {
           <div className="stat-content">
             <div className="stat-label">Days Off</div>
             <div className="stat-value">{stats.totalWeekendDaysOff.toFixed(1)}</div>
-            <div className="stat-sublabel">{stats.weekendSessions} weekend sessions</div>
+            <div className="stat-sublabel">
+              {stats.totalBenefitSessions > 0 
+                ? `${stats.weekendSessions} weekend${stats.bankHolidaySessions > 0 ? ` + ${stats.bankHolidaySessions} bank holiday` : ''} session${stats.totalBenefitSessions > 1 ? 's' : ''}`
+                : '0 sessions'}
+            </div>
           </div>
         </div>
 
@@ -604,7 +614,11 @@ export const Analytics = memo(function Analytics({ user }) {
           <div className="stat-content">
             <div className="stat-label">Weekend +</div>
             <div className="stat-value">€{stats.totalWeekendBonus.toFixed(2)}</div>
-            <div className="stat-sublabel">{stats.weekendSessions} weekend sessions</div>
+            <div className="stat-sublabel">
+              {stats.totalBenefitSessions > 0 
+                ? `${stats.weekendSessions} weekend${stats.bankHolidaySessions > 0 ? ` + ${stats.bankHolidaySessions} bank holiday` : ''} session${stats.totalBenefitSessions > 1 ? 's' : ''}`
+                : '0 sessions'}
+            </div>
           </div>
         </div>
       </div>
@@ -661,7 +675,9 @@ export const Analytics = memo(function Analytics({ user }) {
                     {overworkStats.totalWeekendDaysOff.toFixed(1)} total - {overworkStats.totalDeductedDaysOff.toFixed(1)} used
                     <br />
                     <span style={{ fontSize: '0.75rem', opacity: 0.8 }}>
-                      {stats.weekendSessions} weekend sessions
+                      {stats.totalBenefitSessions > 0 
+                        ? `${stats.weekendSessions} weekend${stats.bankHolidaySessions > 0 ? ` + ${stats.bankHolidaySessions} bank holiday` : ''} session${stats.totalBenefitSessions > 1 ? 's' : ''}`
+                        : '0 sessions'}
                     </span>
                   </div>
                 </div>

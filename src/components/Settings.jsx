@@ -19,6 +19,8 @@ export function Settings({ googleCalendar, onUsernameChange, onNavigate }) {
   const [weekendDaysOff, setWeekendDaysOff] = useState(1);
   const [weekendBonus, setWeekendBonus] = useState(100);
   const [annualIsencaoLimit, setAnnualIsencaoLimit] = useState(200);
+  const [bankHolidayApplyDaysOff, setBankHolidayApplyDaysOff] = useState(true);
+  const [bankHolidayApplyBonus, setBankHolidayApplyBonus] = useState(true);
   const [isPremium, setIsPremium] = useState(false);
   const [saved, setSaved] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -68,6 +70,8 @@ export function Settings({ googleCalendar, onUsernameChange, onNavigate }) {
         setWeekendDaysOff(settings.weekendDaysOff || 1);
         setWeekendBonus(settings.weekendBonus || 100);
         setAnnualIsencaoLimit(settings.annualIsencaoLimit || 200);
+        setBankHolidayApplyDaysOff(settings.bankHolidayApplyDaysOff !== undefined ? settings.bankHolidayApplyDaysOff : true);
+        setBankHolidayApplyBonus(settings.bankHolidayApplyBonus !== undefined ? settings.bankHolidayApplyBonus : true);
         setIsPremium(settings.isPremium || false);
         
         // Notify parent of username
@@ -252,6 +256,8 @@ export function Settings({ googleCalendar, onUsernameChange, onNavigate }) {
         weekendDaysOff,
         weekendBonus,
         annualIsencaoLimit,
+        bankHolidayApplyDaysOff,
+        bankHolidayApplyBonus,
         isPremium,
         updatedAt: Date.now()
       };
@@ -285,6 +291,8 @@ export function Settings({ googleCalendar, onUsernameChange, onNavigate }) {
     setWeekendDaysOff(1);
     setWeekendBonus(100);
     setAnnualIsencaoLimit(200);
+    setBankHolidayApplyDaysOff(true);
+    setBankHolidayApplyBonus(true);
     setIsPremium(false);
   };
 
@@ -586,7 +594,7 @@ export function Settings({ googleCalendar, onUsernameChange, onNavigate }) {
             <h2>Weekend Work</h2>
           </div>
           <p className="section-description">
-            Configure default benefits for working on weekends (Saturday & Sunday).
+            Configure default benefits for working on weekends (Saturday & Sunday) and bank holidays.
           </p>
 
           <div className="settings-grid">
@@ -595,7 +603,7 @@ export function Settings({ googleCalendar, onUsernameChange, onNavigate }) {
                 <Calendar className="setting-icon" />
                 <div>
                   <label htmlFor="weekendDaysOff">Days Off Per Weekend</label>
-                  <p className="setting-description">Days off earned for each weekend work day</p>
+                  <p className="setting-description">Days off earned for each weekend work day or bank holiday</p>
                 </div>
               </div>
               <div className="setting-input-group">
@@ -618,7 +626,7 @@ export function Settings({ googleCalendar, onUsernameChange, onNavigate }) {
                 <DollarSign className="setting-icon overtime" />
                 <div>
                   <label htmlFor="weekendBonus">Weekend Bonus</label>
-                  <p className="setting-description">Extra compensation per weekend work day</p>
+                  <p className="setting-description">Extra compensation per weekend work day or bank holiday</p>
                 </div>
               </div>
               <div className="setting-input-group">
@@ -632,6 +640,68 @@ export function Settings({ googleCalendar, onUsernameChange, onNavigate }) {
                   className="setting-input"
                 />
                 <span className="input-suffix">€</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="settings-section">
+          <div className="section-title">
+            <Calendar />
+            <h2>Bank Holidays</h2>
+          </div>
+          <p className="section-description">
+            Configure whether bank holidays should receive the same benefits as weekend work. You can enable days off and bonus independently.
+          </p>
+
+          <div className="settings-grid">
+            <div className="setting-item">
+              <div className="setting-header">
+                <Calendar className="setting-icon" />
+                <div>
+                  <label htmlFor="bankHolidayApplyDaysOff">Apply Days Off to Bank Holidays</label>
+                  <p className="setting-description">When enabled, bank holidays will receive the same days off as weekend work. When disabled, bank holidays will not earn days off.</p>
+                </div>
+              </div>
+              <div className="setting-input-group">
+                <label className="toggle-switch">
+                  <input
+                    id="bankHolidayApplyDaysOff"
+                    type="checkbox"
+                    checked={bankHolidayApplyDaysOff}
+                    onChange={(e) => setBankHolidayApplyDaysOff(e.target.checked)}
+                    className="toggle-input"
+                  />
+                  <span className="toggle-slider"></span>
+                </label>
+                <span className="toggle-label">
+                  {bankHolidayApplyDaysOff ? 'Enabled' : 'Disabled'}
+                </span>
+              </div>
+            </div>
+
+            <div className="setting-item">
+              <div className="setting-header">
+                <DollarSign className="setting-icon overtime" />
+                <div>
+                  <label htmlFor="bankHolidayApplyBonus">Apply Bonus to Bank Holidays</label>
+                  <p className="setting-description">When enabled, bank holidays will receive the same bonus as weekend work. When disabled, bank holidays will not earn bonus.</p>
+                </div>
+              </div>
+              <div className="setting-input-group">
+                <label className="toggle-switch">
+                  <input
+                    id="bankHolidayApplyBonus"
+                    type="checkbox"
+                    checked={bankHolidayApplyBonus}
+                    onChange={(e) => setBankHolidayApplyBonus(e.target.checked)}
+                    className="toggle-input"
+                  />
+                  <span className="toggle-slider"></span>
+                </label>
+                <span className="toggle-label">
+                  {bankHolidayApplyBonus ? 'Enabled' : 'Disabled'}
+                </span>
               </div>
             </div>
           </div>

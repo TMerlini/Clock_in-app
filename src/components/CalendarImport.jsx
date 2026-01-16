@@ -225,6 +225,8 @@ export function CalendarImport({ user }) {
           let weekendDaysOff = 1;
           let weekendBonus = 100;
           let annualIsencaoLimit = 200;
+          let bankHolidayApplyDaysOff = true;
+          let bankHolidayApplyBonus = true;
           try {
             const settingsRef = doc(db, 'userSettings', user.uid);
             const settingsDoc = await getDoc(settingsRef);
@@ -233,6 +235,8 @@ export function CalendarImport({ user }) {
               weekendDaysOff = settings.weekendDaysOff || 1;
               weekendBonus = settings.weekendBonus || 100;
               annualIsencaoLimit = settings.annualIsencaoLimit || 200;
+              bankHolidayApplyDaysOff = settings.bankHolidayApplyDaysOff !== undefined ? settings.bankHolidayApplyDaysOff : true;
+              bankHolidayApplyBonus = settings.bankHolidayApplyBonus !== undefined ? settings.bankHolidayApplyBonus : true;
             }
           } catch (error) {
             console.error('Error loading settings:', error);
@@ -298,8 +302,8 @@ export function CalendarImport({ user }) {
             paidExtraHours: paidExtraHours,
             isWeekend: isWeekend,
             isBankHoliday: isBankHoliday,
-            weekendDaysOff: isWeekend ? weekendDaysOff : 0,
-            weekendBonus: isWeekend ? weekendBonus : 0,
+            weekendDaysOff: isWeekend ? weekendDaysOff : (isBankHoliday && bankHolidayApplyDaysOff ? weekendDaysOff : 0),
+            weekendBonus: isWeekend ? weekendBonus : (isBankHoliday && bankHolidayApplyBonus ? weekendBonus : 0),
             location: event.location || '',
             notes: notes,
             calendarEventId: event.id,
