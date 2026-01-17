@@ -81,6 +81,29 @@ A comprehensive time tracking application for managing work hours, overtime, mea
   - Sync status display (synced, pending, failed sessions)
   - Batch sync for pending/failed sessions
 
+### 🤖 AI Advisor (Premium AI Feature)
+- **Portuguese Labor Law Expertise** - AI-powered compliance analysis based on Código do Trabalho
+- **Legal Limit Calculations** - Automatic tracking of overtime, Isenção, and vacation limits
+- **HR Best Practices** - Work-life balance guidance and productivity recommendations
+- **Compliance Monitoring** - Proactive alerts when approaching legal limits
+- **Work Pattern Analysis** - Personalized insights based on your actual work data
+- **Context-Aware Advice** - AI understands your sessions, settings, and work patterns
+- **75 AI Calls/Month Base** - Included with Premium AI subscription
+- **Call Pack System** - Purchase additional +50 call packs (€4.99, never expire) for power users
+- **Powered by OpenRouter** - Multi-model AI routing for optimal performance
+
+### 💎 Subscription Plans
+- **Free** - Core time tracking and basic session management
+- **Basic (€0.99/month)** - Full analytics, Google Calendar sync, advanced session management
+- **Pro (€4.99/month)** - Advanced analytics, detailed reports, priority support, custom date ranges
+- **Premium AI (€9.99/month)** - All Pro features + AI Advisor with Portuguese labor law expertise:
+  - 75 AI calls/month base allocation
+  - Portuguese labor law compliance analysis
+  - Legal limit calculations (overtime, Isenção, vacation)
+  - HR best practices & work-life balance guidance
+  - Compliance monitoring & proactive alerts
+  - Buy additional call packs as needed (+50 calls for €4.99, never expire)
+
 ### 🔐 Authentication & User Profile
 - **Firebase Authentication** - Secure user authentication
 - **Google Sign-In** - Easy login with Google account
@@ -112,6 +135,7 @@ A comprehensive time tracking application for managing work hours, overtime, mea
 ### Integrations
 - **Google Calendar API** - Calendar event creation
 - **Google Identity Services** - OAuth 2.0 authentication
+- **OpenRouter API** - Multi-model AI routing for AI Advisor (powered by OpenRouter)
 
 ### Development Tools
 - **ESLint** - Code linting and quality
@@ -404,6 +428,8 @@ The app is configured for automatic deployment to Vercel:
 
 **userSettings** - User preferences
 - `username`: string (optional, display name)
+- `subscriptionPlan`: string ('free' | 'basic' | 'pro' | 'premium_ai')
+- `subscriptionStartDate`: timestamp
 - `regularHoursThreshold`: number
 - `enableUnpaidExtra`: boolean (default: true)
 - `unpaidExtraThreshold`: number
@@ -413,6 +439,19 @@ The app is configured for automatic deployment to Vercel:
 - `weekStartDay`: string ('monday' | 'sunday')
 - `weekendDaysOff`: number
 - `weekendBonus`: number
+- `aiUsage`: object (Premium AI users)
+  - `callsAllocated`: number (75 base per month)
+  - `callsUsed`: number
+  - `totalTokensUsed`: number
+  - `callPacks`: array (purchased call packs)
+    - `id`: string
+    - `calls`: number (50)
+    - `purchasedAt`: timestamp
+    - `used`: number
+    - `remaining`: number
+  - `lastResetDate`: timestamp
+- `userType`: string ('regular' | 'guest') - Optional: tracks if account was created by admin
+- `createdBy`: string (optional, admin user ID for guest accounts)
 
 **overworkDeductions** - Overwork usage tracking
 - `userId`: string
@@ -426,6 +465,15 @@ The app is configured for automatic deployment to Vercel:
 This app is actively maintained with regular updates and new features. For a comprehensive list of planned enhancements, see **[FUTURE_ENHANCEMENTS.md](FUTURE_ENHANCEMENTS.md)**.
 
 ### 🚀 Recent Updates (2026)
+
+**Premium AI & AI Advisor (January 2026)**
+- ✅ **AI Advisor with Portuguese Labor Law Expertise** - AI-powered compliance analysis and HR guidance
+- ✅ **Premium AI Subscription Plan** - €9.99/month with 75 AI calls/month base
+- ✅ **Call Pack System** - Purchase +50 call packs for €4.99 (never expire, roll over indefinitely)
+- ✅ **OpenRouter Integration** - Multi-model AI routing for optimal performance
+- ✅ **Compliance Monitoring** - Proactive alerts when approaching legal limits
+- ✅ **Context-Aware Analysis** - AI understands your sessions, settings, and work patterns
+- ✅ **Admin Dashboard** - Management interface for user administration and analytics
 
 **Performance Optimizations (January 2026)**
 - ✅ **Eliminated Async Waterfalls** - Parallel data loading for 50-70% faster page loads

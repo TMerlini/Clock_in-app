@@ -21,6 +21,8 @@ const Analytics = lazy(() => import('./Analytics').then(module => ({ default: mo
 const Settings = lazy(() => import('./Settings').then(module => ({ default: module.Settings })));
 const AIAdvisor = lazy(() => import('./AIAdvisor').then(module => ({ default: module.AIAdvisor })));
 const PremiumPlus = lazy(() => import('./PremiumPlus').then(module => ({ default: module.PremiumPlus })));
+const CallPackPurchase = lazy(() => import('./CallPackPurchase').then(module => ({ default: module.CallPackPurchase })));
+const Admin = lazy(() => import('./Admin').then(module => ({ default: module.Admin })));
 const CalendarImport = lazy(() => import('./CalendarImport').then(module => ({ default: module.CalendarImport })));
 const CalendarView = lazy(() => import('./CalendarView').then(module => ({ default: module.CalendarView })));
 
@@ -703,6 +705,22 @@ export function ClockInApp({ user }) {
             </Suspense>
           </ErrorBoundary>
         );
+      case 'call-pack-purchase':
+        return (
+          <ErrorBoundary>
+            <Suspense fallback={<Loader />}>
+              <CallPackPurchase user={user} onNavigate={handlePageChange} />
+            </Suspense>
+          </ErrorBoundary>
+        );
+      case 'admin':
+        return (
+          <ErrorBoundary>
+            <Suspense fallback={<Loader />}>
+              <Admin user={user} onNavigate={handlePageChange} />
+            </Suspense>
+          </ErrorBoundary>
+        );
       case 'faq':
         return <FAQ />;
       case 'settings':
@@ -785,7 +803,7 @@ export function ClockInApp({ user }) {
 
   return (
     <div className="app-container">
-      <Navigation currentPage={currentPage} onPageChange={handlePageChange} />
+      <Navigation currentPage={currentPage} onPageChange={handlePageChange} user={user} />
 
       <div className="app-header">
         <div className="header-content">

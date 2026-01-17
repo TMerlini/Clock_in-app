@@ -414,53 +414,121 @@ export const Analytics = memo(function Analytics({ user }) {
     const filtered = filteredSessions;
     const { start, end } = dateRange;
 
-    const csvContent = [
-      ['Clock In App - Time Report'],
-      [`Period: ${format(start, 'MMM dd, yyyy')} - ${format(end, 'MMM dd, yyyy')}`],
-      [`Report Type: ${reportType.charAt(0).toUpperCase() + reportType.slice(1)}`],
-      [`Generated: ${format(new Date(), 'MMM dd, yyyy HH:mm:ss')}`],
-      [''],
-      ['Date', 'Clock In', 'Clock Out', 'Total Hours', 'Lunch Time', 'Lunch (€)', 'Dinner (€)', 'Meals Total (€)', 'Weekend', 'Days Off', 'Weekend Bonus (€)', 'Regular Hours', 'Isenção (Unpaid)', 'Overwork (Paid)'],
-      ...filtered.map(s => [
-        format(new Date(s.clockIn), 'yyyy-MM-dd'),
-        format(new Date(s.clockIn), 'HH:mm:ss'),
-        format(new Date(s.clockOut), 'HH:mm:ss'),
+    // Helper function to escape CSV values
+    const escapeCSV = (value) => {
+      if (value === null || value === undefined) return '';
+      const stringValue = String(value).trim();
+      // Always wrap in quotes for consistency and to handle special characters
+      return `"${stringValue.replace(/"/g, '""')}"`;
+    };
+
+    // Helper function to create CSV row with proper formatting
+    const csvRow = (values) => {
+      // Ensure all values are present (pad with empty strings if needed)
+      const paddedValues = values.map(v => v !== undefined && v !== null ? v : '');
+      return paddedValues.map(escapeCSV).join(',');
+    };
+
+    // Build CSV content with proper formatting
+    const lines = [];
+
+    // Header Section
+    lines.push(csvRow(['CLOCK IN APP - TIME TRACKING REPORT']));
+    lines.push(csvRow([]));
+    lines.push(csvRow(['Period:', `${format(start, 'MMM dd, yyyy')} - ${format(end, 'MMM dd, yyyy')}`]));
+    lines.push(csvRow(['Report Type:', reportType.charAt(0).toUpperCase() + reportType.slice(1)]));
+    lines.push(csvRow(['Generated:', format(new Date(), 'MMM dd, yyyy HH:mm:ss')]));
+    lines.push(csvRow([]));
+
+    // Summary Section
+    lines.push(csvRow(['SUMMARY STATISTICS']));
+    lines.push(csvRow(['Metric', 'Value']));
+    lines.push(csvRow(['Total Sessions', filtered.length]));
+    lines.push(csvRow(['Total Days Worked', new Set(filtered.map(s => format(new Date(s.clockIn), 'yyyy-MM-dd'))).size]));
+    lines.push(csvRow(['Weekend Sessions', stats.weekendSessions]));
+    lines.push(csvRow(['Bank Holiday Sessions', stats.bankHolidaySessions]));
+    lines.push(csvRow(['Total Hours', `${stats.totalHours.toFixed(2)} hours`]));
+    lines.push(csvRow(['Regular Hours', `${stats.regularHours.toFixed(2)} hours`]));
+    lines.push(csvRow(['Isenção Hours (Unpaid)', `${stats.unpaidHours.toFixed(2)} hours`]));
+    lines.push(csvRow(['Overwork Hours (Paid)', `${stats.paidOvertimeHours.toFixed(2)} hours`]));
+    lines.push(csvRow(['Lunch Hours', `${stats.lunchHours.toFixed(2)} hours`]));
+    lines.push(csvRow(['Total Lunch Expenses', `€${stats.totalLunchExpenses.toFixed(2)}`]));
+    lines.push(csvRow(['Total Dinner Expenses', `€${stats.totalDinnerExpenses.toFixed(2)}`]));
+    lines.push(csvRow(['Total Meal Expenses', `€${stats.totalMealExpenses.toFixed(2)}`]));
+    lines.push(csvRow(['Total Days Off Earned', `${stats.totalWeekendDaysOff.toFixed(1)} days`]));
+    lines.push(csvRow(['Total Weekend + Bank Holiday Bonus', `€${stats.totalWeekendBonus.toFixed(2)}`]));
+    lines.push(csvRow([]));
+
+    // Detailed Sessions Section
+    lines.push(csvRow(['DETAILED SESSIONS']));
+    lines.push(csvRow([]));
+    
+    // Column headers - ensure consistent order
+    const headers = [
+      'Date',
+      'Clock In',
+      'Clock Out',
+      'Total Hours',
+      'Lunch Time (h)',
+      'Lunch Amount (€)',
+      'Dinner Amount (€)',
+      'Meals Total (€)',
+      'Weekend',
+      'Bank Holiday',
+      'Days Off',
+      'Bonus (€)',
+      'Regular Hours',
+      'Isenção (Unpaid)',
+      'Overwork (Paid)',
+      'Location',
+      'Notes'
+    ];
+    lines.push(csvRow(headers));
+
+    // Session rows - ensure all columns are in the same order as headers
+    filtered.forEach(s => {
+      const clockInDate = new Date(s.clockIn);
+      const clockOutDate = new Date(s.clockOut);
+      
+      // Format notes - replace newlines with spaces for CSV readability
+      const formattedNotes = (s.notes || '').replace(/\n/g, ' ').replace(/\r/g, '').trim();
+      
+      const row = [
+        format(clockInDate, 'yyyy-MM-dd'),
+        format(clockInDate, 'HH:mm:ss'),
+        format(clockOutDate, 'HH:mm:ss'),
         s.totalHours.toFixed(2),
-        (s.lunchDuration || 0).toFixed(2),
-        (s.lunchAmount || 0).toFixed(2),
-        (s.dinnerAmount || 0).toFixed(2),
+        s.lunchDuration ? s.lunchDuration.toFixed(2) : '0.00',
+        s.lunchAmount ? s.lunchAmount.toFixed(2) : '0.00',
+        s.dinnerAmount ? s.dinnerAmount.toFixed(2) : '0.00',
         ((s.lunchAmount || 0) + (s.dinnerAmount || 0)).toFixed(2),
         s.isWeekend ? 'Yes' : 'No',
+        s.isBankHoliday ? 'Yes' : 'No',
         (s.weekendDaysOff || 0).toFixed(1),
         (s.weekendBonus || 0).toFixed(2),
         s.regularHours.toFixed(2),
         s.unpaidExtraHours.toFixed(2),
-        s.paidExtraHours.toFixed(2)
-      ]),
-      [''],
-      ['Summary'],
-      ['Total Sessions', filtered.length],
-      ['Total Days Worked', new Set(filtered.map(s => format(new Date(s.clockIn), 'yyyy-MM-dd'))).size],
-      ['Weekend Sessions', stats.weekendSessions],
-      ['Bank Holiday Sessions', stats.bankHolidaySessions],
-      ['Total Hours', stats.totalHours.toFixed(2)],
-      ['Lunch Hours', stats.lunchHours.toFixed(2)],
-      ['Total Lunch Expenses', stats.totalLunchExpenses.toFixed(2)],
-      ['Total Dinner Expenses', stats.totalDinnerExpenses.toFixed(2)],
-      ['Total Meal Expenses', stats.totalMealExpenses.toFixed(2)],
-      ['Total Days Off Earned', stats.totalWeekendDaysOff.toFixed(1)],
-      ['Total Weekend Bonus', stats.totalWeekendBonus.toFixed(2)],
-      ['Regular Hours', stats.regularHours.toFixed(2)],
-      ['Isenção Hours (Unpaid)', stats.unpaidHours.toFixed(2)],
-      ['Overwork Hours (Paid)', stats.paidOvertimeHours.toFixed(2)]
-    ].map(row => row.join(',')).join('\n');
+        s.paidExtraHours.toFixed(2),
+        s.location || '',
+        formattedNotes
+      ];
+      
+      lines.push(csvRow(row));
+    });
 
-    const blob = new Blob([csvContent], { type: 'text/csv' });
+    lines.push(csvRow([]));
+    lines.push(csvRow(['--- End of Report ---']));
+
+    const csvContent = lines.join('\n');
+    const BOM = '\uFEFF'; // UTF-8 BOM for Excel compatibility
+    const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
     link.download = `clock-report-${reportType}-${format(new Date(), 'yyyy-MM-dd')}.csv`;
+    document.body.appendChild(link);
     link.click();
+    document.body.removeChild(link);
     URL.revokeObjectURL(url);
   };
 

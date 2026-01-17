@@ -20,12 +20,60 @@
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  flex-wrap: wrap;
 }
 
 .header-content {
   display: flex;
   align-items: center;
   gap: 1rem;
+}
+
+
+.call-counter-container {
+  margin-top: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.token-counter-small {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+  color: var(--muted-foreground);
+  text-align: center;
+  white-space: nowrap;
+}
+
+.buy-more-calls-button {
+  padding: 0.25rem 0.75rem;
+  font-size: 0.7rem;
+  background: rgba(139, 92, 246, 0.1);
+  border: 1px solid rgba(139, 92, 246, 0.3);
+  border-radius: 6px;
+  color: var(--primary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  transition: all 0.2s ease;
+  font-weight: 500;
+}
+
+.buy-more-calls-button:hover {
+  background: rgba(139, 92, 246, 0.2);
+  border-color: rgba(139, 92, 246, 0.5);
+  transform: translateY(-1px);
+}
+
+.buy-more-calls-button:active {
+  transform: translateY(0);
 }
 
 .header-icon {

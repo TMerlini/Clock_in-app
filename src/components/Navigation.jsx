@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef, memo } from 'react';
-import { Menu, X, Home, Calendar, BarChart3, Info, Settings, HelpCircle, Bot, Crown } from 'lucide-react';
+import { Menu, X, Home, Calendar, BarChart3, Info, Settings, HelpCircle, Bot, Crown, Shield } from 'lucide-react';
+import { isAdmin } from '../lib/adminUtils';
 import './Navigation.css';
 
-export const Navigation = memo(function Navigation({ currentPage, onPageChange }) {
+export const Navigation = memo(function Navigation({ currentPage, onPageChange, user }) {
   const [isOpen, setIsOpen] = useState(false);
   const [buttonPosition, setButtonPosition] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
@@ -20,6 +21,12 @@ export const Navigation = memo(function Navigation({ currentPage, onPageChange }
     { id: 'faq', label: 'Frequent Questions', icon: HelpCircle },
     { id: 'about', label: 'About', icon: Info }
   ];
+
+  // Add Admin menu item if user is admin
+  const finalMenuItems = [...menuItems];
+  if (user && isAdmin(user)) {
+    finalMenuItems.push({ id: 'admin', label: 'Admin', icon: Shield });
+  }
 
   const handleNavigate = (pageId) => {
     onPageChange(pageId);
@@ -132,12 +139,12 @@ export const Navigation = memo(function Navigation({ currentPage, onPageChange }
         </div>
 
         <ul className="nav-list">
-          {menuItems.map((item) => {
+          {finalMenuItems.map((item) => {
             const Icon = item.icon;
             return (
               <li key={item.id}>
                 <button
-                  className={`nav-item ${currentPage === item.id ? 'active' : ''}`}
+                  className={`nav-item ${currentPage === item.id ? 'active' : ''} ${item.id === 'admin' ? 'admin-item' : ''}`}
                   onClick={() => handleNavigate(item.id)}
                 >
                   <Icon />

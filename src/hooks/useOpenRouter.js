@@ -1,6 +1,10 @@
 import { useState } from 'react';
 import { OpenRouter } from '@openrouter/sdk';
 import { OPENROUTER_API_KEY, OPENROUTER_DEFAULT_MODEL } from '../lib/openRouterConfig';
+import { auth } from '../lib/firebase';
+import { checkCallAvailability, deductCall, getCallStatus } from '../lib/tokenManager';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { db } from '../lib/firebase';
 
 let openRouterClient = null;
 
@@ -32,6 +36,40 @@ export function useOpenRouter() {
 
     try {
       const client = getOpenRouterClient();
+      
+      // Check if user is Premium AI and has calls available
+      const currentUser = auth.currentUser;
+      let isPremiumAI = false;
+      let actualTokens = 0;
+      
+      // Admin email - full Premium AI access, no call limits
+      const ADMIN_EMAIL = 'merloproductions@gmail.com';
+      const isAdmin = currentUser?.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase();
+      
+      if (currentUser && !isAdmin) {
+        // Check if user has Premium AI subscription
+        const settingsRef = doc(db, 'userSettings', currentUser.uid);
+        const settingsDoc = await getDoc(settingsRef);
+        
+        if (settingsDoc.exists()) {
+          const settings = settingsDoc.data();
+          const subscriptionPlan = (settings.subscriptionPlan || settings.plan || '').toLowerCase();
+          isPremiumAI = subscriptionPlan === 'premium_ai';
+          
+          if (isPremiumAI) {
+            // Check call availability (need at least 1 call)
+            const hasCalls = await checkCallAvailability(currentUser.uid);
+            
+            if (!hasCalls) {
+              const status = await getCallStatus(currentUser.uid);
+              throw new Error(`You've used all your calls for this subscription period (${status.callsUsed}/${status.callsAllocated}). Your calls will reset on your next subscription renewal.`);
+            }
+          }
+        }
+      } else if (isAdmin) {
+        // Admin always has Premium AI access
+        isPremiumAI = true;
+      }
 
       // Use provided model, or fallback to default, or use user's OpenRouter default
       // Since user has specific providers allowed, we'll use a model that works with those providers
@@ -52,13 +90,56 @@ export function useOpenRouter() {
       console.log('Sending request to OpenRouter:', {
         model: modelToUse,
         messageCount: messages.length,
-        hasApiKey: !!OPENROUTER_API_KEY
+        hasApiKey: !!OPENROUTER_API_KEY,
+        isPremiumAI: isPremiumAI,
+        isAdmin: isAdmin
       });
 
       const completion = await client.chat.send(requestBody);
 
       if (!completion.choices || !completion.choices[0] || !completion.choices[0].message) {
         throw new Error('Invalid response format from OpenRouter API');
+      }
+
+      // Extract actual token usage from API response
+      if (completion.usage) {
+        const promptTokens = completion.usage.prompt_tokens || 0;
+        const completionTokens = completion.usage.completion_tokens || 0;
+        actualTokens = promptTokens + completionTokens;
+        console.log('Actual token usage:', { promptTokens, completionTokens, total: actualTokens });
+      }
+
+      // Deduct one call and track actual tokens after successful API call
+      // Admin still tracks tokens for monitoring/testing, but doesn't deduct calls
+      if (isPremiumAI && currentUser) {
+        try {
+          if (!isAdmin) {
+            // Regular users: deduct call and track tokens
+            await deductCall(currentUser.uid, actualTokens);
+          } else {
+            // Admin: only track tokens (don't deduct calls), for testing/monitoring
+            // We still want to see token usage but not limit calls
+            if (actualTokens > 0) {
+              // Update token count only (increment totalTokensUsed without decrementing callsRemaining)
+              const settingsRef = doc(db, 'userSettings', currentUser.uid);
+              const settingsDoc = await getDoc(settingsRef);
+              if (settingsDoc.exists()) {
+                const settings = settingsDoc.data();
+                const aiUsage = settings.aiUsage || { totalTokensUsed: 0 };
+                const currentTotalTokens = aiUsage.totalTokensUsed || 0;
+                await setDoc(settingsRef, {
+                  aiUsage: {
+                    ...aiUsage,
+                    totalTokensUsed: currentTotalTokens + actualTokens
+                  }
+                }, { merge: true });
+              }
+            }
+          }
+        } catch (callError) {
+          console.error('Error updating call/token status:', callError);
+          // Don't fail the request if update fails
+        }
       }
 
       return completion.choices[0].message.content;

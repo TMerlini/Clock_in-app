@@ -4,8 +4,20 @@ import { db, auth } from '../lib/firebase';
 import { useOpenRouter } from '../hooks/useOpenRouter';
 import { getUserContext } from '../lib/userContextHelper';
 import { OPENROUTER_DEFAULT_MODEL } from '../lib/openRouterConfig';
+import { getCallStatus, checkAndResetCalls, initializeCalls } from '../lib/tokenManager';
+import { ShoppingCart } from 'lucide-react';
 import { Bot, Crown, Send, AlertCircle, Settings, Loader, BarChart3, TrendingUp, Clock } from 'lucide-react';
 import './AIAdvisor.css';
+
+// Helper function to format token count
+function formatTokenCount(tokens) {
+  if (tokens >= 1000000) {
+    return `${(tokens / 1000000).toFixed(1)}M`;
+  } else if (tokens >= 1000) {
+    return `${(tokens / 1000).toFixed(1)}k`;
+  }
+  return tokens.toString();
+}
 
 export function AIAdvisor({ user, onNavigate }) {
   const [isPremium, setIsPremium] = useState(false);
@@ -14,6 +26,17 @@ export function AIAdvisor({ user, onNavigate }) {
   const [inputValue, setInputValue] = useState('');
   const [userContext, setUserContext] = useState('');
   const [contextLoading, setContextLoading] = useState(false);
+  const [callStatus, setCallStatus] = useState({ 
+    callsAllocated: 0, 
+    callsUsed: 0, 
+    callsRemaining: 0, 
+    packsRemaining: 0,
+    totalAvailable: 0,
+    totalTokensUsed: 0,
+    callPacks: []
+  });
+  const [isPremiumAI, setIsPremiumAI] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const messagesEndRef = useRef(null);
   const { sendMessage, isLoading, error } = useOpenRouter();
 
@@ -35,20 +58,99 @@ export function AIAdvisor({ user, onNavigate }) {
     scrollToBottom();
   }, [messages]);
 
+  // Debug effect to log call status
+  useEffect(() => {
+    if (isPremiumAI) {
+      console.log('Premium AI user detected, call status:', callStatus);
+    }
+  }, [isPremiumAI, callStatus]);
+
   const loadPremiumStatus = async () => {
     try {
       const currentUser = auth.currentUser;
       if (!currentUser) return;
+
+      // Admin email - full Premium AI access
+      const ADMIN_EMAIL = 'merloproductions@gmail.com';
+      const adminCheck = currentUser.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase();
+      setIsAdmin(adminCheck);
 
       const settingsRef = doc(db, 'userSettings', currentUser.uid);
       const settingsDoc = await getDoc(settingsRef);
 
       if (settingsDoc.exists()) {
         const settings = settingsDoc.data();
-        const premium = settings.isPremium || false;
+        const subscriptionPlan = (settings.subscriptionPlan || settings.plan || '').toLowerCase();
+        // Admin always has Premium AI access
+        const premiumAI = adminCheck || subscriptionPlan === 'premium_ai';
+        // Premium is true if user has any paid plan (including premium_ai), isPremium flag, or is admin
+        const premium = adminCheck || settings.isPremium || premiumAI || subscriptionPlan === 'basic' || subscriptionPlan === 'pro';
+        
         setIsPremium(premium);
+        setIsPremiumAI(premiumAI);
+        
+        console.log('Premium status check:', { premium, premiumAI, subscriptionPlan, isAdmin: adminCheck });
 
         if (premium) {
+          // Check and reset calls if needed (for Premium AI users)
+          if (premiumAI) {
+              // Admin gets unlimited calls but still tracks token usage for testing
+            if (adminCheck) {
+              // Load actual call status to show token usage, but display as unlimited
+              try {
+                const status = await getCallStatus(currentUser.uid);
+                // Set to show unlimited but keep token tracking
+                setCallStatus({ 
+                  callsAllocated: 999999, 
+                  callsUsed: status.callsUsed || 0, 
+                  callsRemaining: 999999,
+                  packsRemaining: 0,
+                  totalAvailable: 999999,
+                  totalTokensUsed: status.totalTokensUsed || 0,
+                  callPacks: []
+                });
+              } catch (error) {
+                // Fallback if error loading
+                setCallStatus({ 
+                  callsAllocated: 999999, 
+                  callsUsed: 0, 
+                  callsRemaining: 999999,
+                  packsRemaining: 0,
+                  totalAvailable: 999999,
+                  totalTokensUsed: 0,
+                  callPacks: []
+                });
+              }
+            } else {
+              try {
+                await checkAndResetCalls(currentUser.uid);
+                const status = await getCallStatus(currentUser.uid);
+                console.log('Call status loaded:', status);
+                setCallStatus(status);
+                
+                // If status shows 0 allocated, initialize calls
+                if (status.callsAllocated === 0) {
+                  console.log('Initializing calls for Premium AI user');
+                  await initializeCalls(currentUser.uid);
+                  const newStatus = await getCallStatus(currentUser.uid);
+                  setCallStatus(newStatus);
+                }
+              } catch (error) {
+                console.error('Error loading call status:', error);
+                // Set default call status even on error
+                setCallStatus({ 
+                  callsAllocated: 75, 
+                  callsUsed: 0, 
+                  callsRemaining: 75,
+                  packsRemaining: 0,
+                  totalAvailable: 75,
+                  totalTokensUsed: 0,
+                  callPacks: []
+                });
+              }
+            }
+          }
+          
           // Load user context for AI
           setContextLoading(true);
           try {
@@ -106,6 +208,29 @@ export function AIAdvisor({ user, onNavigate }) {
 
       // Add AI response
       setMessages([...newMessages, { role: 'assistant', content: response }]);
+      
+      // Update call status after successful message (for Premium AI users)
+      if (isPremiumAI) {
+        const currentUser = auth.currentUser;
+        if (currentUser) {
+          try {
+            const status = await getCallStatus(currentUser.uid);
+            // For admin, keep unlimited calls display but update token count
+            if (isAdmin) {
+              setCallStatus({ 
+                callsAllocated: 999999, 
+                callsUsed: status.callsUsed || 0, 
+                callsRemaining: 999999, 
+                totalTokensUsed: status.totalTokensUsed || 0 
+              });
+            } else {
+              setCallStatus(status);
+            }
+          } catch (error) {
+            console.error('Error updating call status:', error);
+          }
+        }
+      }
     } catch (error) {
       console.error('Error sending message:', error);
       
@@ -119,6 +244,9 @@ export function AIAdvisor({ user, onNavigate }) {
           `3. Ensure at least one provider is enabled/allowed for your default model\n` +
           `4. The app uses your OpenRouter default model (omitting the model parameter per API docs)\n\n` +
           `See: https://openrouter.ai/docs/api-reference/overview for details on using your default model.`;
+      } else if (errorMessage.includes('calls') || errorMessage.includes('used all your')) {
+        // Call limit error - already formatted in useOpenRouter
+        errorMessage = errorMessage;
       }
       
       setMessages([...newMessages, {
@@ -200,6 +328,29 @@ export function AIAdvisor({ user, onNavigate }) {
 
       // Add AI response
       setMessages([...newMessages, { role: 'assistant', content: response }]);
+      
+      // Update call status after successful message (for Premium AI users)
+      if (isPremiumAI) {
+        const currentUser = auth.currentUser;
+        if (currentUser) {
+          try {
+            const status = await getCallStatus(currentUser.uid);
+            // For admin, keep unlimited calls display but update token count
+            if (isAdmin) {
+              setCallStatus({ 
+                callsAllocated: 999999, 
+                callsUsed: status.callsUsed || 0, 
+                callsRemaining: 999999, 
+                totalTokensUsed: status.totalTokensUsed || 0 
+              });
+            } else {
+              setCallStatus(status);
+            }
+          } catch (error) {
+            console.error('Error updating call status:', error);
+          }
+        }
+      }
     } catch (error) {
       console.error('Error sending message:', error);
       
@@ -213,6 +364,9 @@ export function AIAdvisor({ user, onNavigate }) {
           `3. Ensure at least one provider is enabled/allowed for your default model\n` +
           `4. The app uses your OpenRouter default model (omitting the model parameter per API docs)\n\n` +
           `See: https://openrouter.ai/docs/api-reference/overview for details on using your default model.`;
+      } else if (errorMessage.includes('calls') || errorMessage.includes('used all your')) {
+        // Call limit error - already formatted in useOpenRouter
+        errorMessage = errorMessage;
       }
       
       setMessages([...newMessages, {
@@ -363,11 +517,49 @@ export function AIAdvisor({ user, onNavigate }) {
           <button
             className="send-button"
             onClick={handleSendMessage}
-            disabled={!inputValue.trim() || isLoading || contextLoading}
+            disabled={!inputValue.trim() || isLoading || contextLoading || (isPremiumAI && callStatus.totalAvailable <= 0)}
           >
             <Send size={20} />
           </button>
         </div>
+        {isPremiumAI && (
+          <div className="call-counter-container">
+            <div className="token-counter-small">
+              {callStatus.callsAllocated >= 999999
+                ? `Unlimited calls (Admin)${callStatus.totalTokensUsed > 0 ? ` • ${formatTokenCount(callStatus.totalTokensUsed)} tokens used` : ''}`
+                : callStatus.totalAvailable !== undefined
+                ? (() => {
+                    const baseRemaining = callStatus.callsRemaining || 0;
+                    const packsRemaining = callStatus.packsRemaining || 0;
+                    const hasPacks = packsRemaining > 0;
+                    const totalAvailable = callStatus.totalAvailable || 0;
+                    
+                    return (
+                      <>
+                        <span>
+                          {totalAvailable}/{callStatus.callsAllocated + (hasPacks ? `+${packsRemaining}` : '')} calls
+                          {hasPacks && ` (${baseRemaining} base + ${packsRemaining} packs)`}
+                          {callStatus.totalTokensUsed > 0 && ` • ${formatTokenCount(callStatus.totalTokensUsed)} tokens used`}
+                        </span>
+                      </>
+                    );
+                  })()
+                : callStatus.callsAllocated === 0 && !loading
+                ? '75/75 calls remaining'
+                : 'Loading...'}
+            </div>
+            {callStatus.callsAllocated < 999999 && (
+              <button 
+                className="buy-more-calls-button"
+                onClick={() => onNavigate && onNavigate('call-pack-purchase')}
+                title="Buy more AI calls"
+              >
+                <ShoppingCart size={14} />
+                <span>Buy More</span>
+              </button>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

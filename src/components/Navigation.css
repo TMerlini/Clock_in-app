@@ -152,6 +152,16 @@
   border-left-color: var(--primary);
 }
 
+.nav-item.admin-item {
+  border-top: 1px solid var(--border);
+  margin-top: 0.5rem;
+  padding-top: 0.75rem;
+}
+
+.nav-item.admin-item svg {
+  color: #eab308;
+}
+
 .nav-item svg {
   width: 20px;
   height: 20px;

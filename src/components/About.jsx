@@ -1,4 +1,4 @@
-import { Clock, Coffee, AlertTriangle, DollarSign, TrendingUp, Calendar, BarChart3, Info, UtensilsCrossed, MapPin, Globe } from 'lucide-react';
+import { Clock, Coffee, AlertTriangle, DollarSign, TrendingUp, Calendar, BarChart3, Info, UtensilsCrossed, MapPin, Globe, Bot, Crown } from 'lucide-react';
 import './About.css';
 
 export function About() {
@@ -182,7 +182,61 @@ export function About() {
                 <p>Configure regular hours, unpaid extra, and paid overtime limits</p>
               </div>
             </div>
+            <div className="feature-item">
+              <Bot />
+              <div>
+                <strong>AI Advisor (Premium AI)</strong>
+                <p>AI-powered compliance analysis with Portuguese labor law expertise and HR guidance</p>
+              </div>
+            </div>
+            <div className="feature-item">
+              <Crown />
+              <div>
+                <strong>Premium Plans</strong>
+                <p>Choose from Basic, Pro, or Premium AI plans with advanced features and AI assistance</p>
+              </div>
+            </div>
           </div>
+        </section>
+
+        <section className="about-section">
+          <div className="section-header">
+            <Bot />
+            <h2>AI Advisor - Premium AI Feature</h2>
+          </div>
+          <p>
+            Premium AI subscribers get access to an intelligent AI Advisor powered by OpenRouter with expertise
+            in Portuguese labor law and HR best practices.
+          </p>
+          <div className="analytics-features">
+            <div className="analytics-item">
+              <h4>🇵🇹 Portuguese Labor Law Expertise</h4>
+              <p>AI understands Código do Trabalho and provides compliance analysis based on actual Portuguese labor law</p>
+            </div>
+            <div className="analytics-item">
+              <h4>⚖️ Legal Limit Calculations</h4>
+              <p>Automatic tracking and calculations for overtime limits, Isenção usage, vacation rights, and compliance percentages</p>
+            </div>
+            <div className="analytics-item">
+              <h4>👥 HR Best Practices</h4>
+              <p>Work-life balance guidance, burnout prevention tips, and productivity optimization recommendations</p>
+            </div>
+            <div className="analytics-item">
+              <h4>🔔 Proactive Alerts</h4>
+              <p>Early warnings when approaching legal limits, helping you stay compliant before issues arise</p>
+            </div>
+            <div className="analytics-item">
+              <h4>📊 Context-Aware Analysis</h4>
+              <p>AI has access to your sessions, settings, and work patterns for personalized, relevant advice</p>
+            </div>
+            <div className="analytics-item">
+              <h4>📦 Call Pack System</h4>
+              <p>75 calls/month included, with option to purchase +50 call packs (€4.99, never expire) for power users</p>
+            </div>
+          </div>
+          <p style={{ marginTop: '1rem', fontStyle: 'italic', color: 'var(--muted-foreground)' }}>
+            <strong>Powered by OpenRouter</strong> - Multi-model AI routing ensures optimal performance and reliability.
+          </p>
         </section>
 
         <section className="about-section">
@@ -233,6 +287,7 @@ export function About() {
             <li><strong>React 18</strong> - Modern UI framework with hooks and performance optimizations</li>
             <li><strong>Firebase</strong> - Real-time database and authentication</li>
             <li><strong>Google Calendar API</strong> - Seamless calendar integration</li>
+            <li><strong>OpenRouter API</strong> - Multi-model AI routing for AI Advisor (powered by OpenRouter)</li>
             <li><strong>Vite</strong> - Lightning-fast build tool with code splitting</li>
             <li><strong>Vercel</strong> - Global edge network deployment</li>
           </ul>
@@ -278,10 +333,10 @@ export function About() {
         </section>
 
         <section className="about-section footer-section">
-          <p className="version">Version 2.1.0 - January 2026</p>
+          <p className="version">Version 2.2.0 - January 2026</p>
           <p className="copyright">© 2026 Clock In - Intelligent Time Manager. Built for professionals who value their time.</p>
           <p style={{ marginTop: '0.5rem', fontSize: '0.9rem', color: 'var(--muted-foreground)' }}>
-            Latest update: Performance optimizations following Vercel's React best practices
+            Latest update: AI Advisor with Portuguese labor law expertise, Premium AI plans, and call pack system
           </p>
         </section>
       </div>

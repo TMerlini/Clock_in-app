@@ -1,0 +1,342 @@
+.call-pack-purchase-container {
+  padding: 2rem;
+  max-width: 900px;
+  margin: 0 auto;
+  min-height: 100vh;
+}
+
+.call-pack-purchase-container .loading {
+  text-align: center;
+  padding: 3rem;
+  color: var(--muted-foreground);
+  font-size: 1.1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.call-pack-purchase-container .loading .spinning {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.error-state {
+  text-align: center;
+  padding: 3rem;
+  color: var(--muted-foreground);
+}
+
+.error-state svg {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 1rem;
+  color: var(--destructive);
+}
+
+.success-banner {
+  padding: 1rem 1.5rem;
+  background: rgba(34, 197, 94, 0.1);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  border-radius: 8px;
+  color: #22c55e;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 2rem;
+  font-weight: 500;
+}
+
+.call-pack-header {
+  margin-bottom: 2rem;
+  padding: 2rem;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.header-icon {
+  width: 48px;
+  height: 48px;
+  color: var(--primary);
+}
+
+.call-pack-header h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--foreground);
+  margin: 0;
+}
+
+.call-pack-header p {
+  font-size: 1rem;
+  color: var(--muted-foreground);
+  margin: 0.25rem 0 0 0;
+}
+
+.current-status-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 2rem;
+  margin-bottom: 2rem;
+}
+
+.current-status-card h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--foreground);
+  margin: 0 0 1.5rem 0;
+}
+
+.status-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+}
+
+.status-item {
+  text-align: center;
+  padding: 1.5rem;
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.status-item.highlight {
+  background: rgba(139, 92, 246, 0.1);
+  border-color: rgba(139, 92, 246, 0.3);
+}
+
+.status-label {
+  font-size: 0.875rem;
+  color: var(--muted-foreground);
+  margin-bottom: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.status-value {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--foreground);
+  margin-bottom: 0.25rem;
+}
+
+.status-sublabel {
+  font-size: 0.75rem;
+  color: var(--muted-foreground);
+}
+
+.call-pack-options {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 2rem;
+  margin-bottom: 2rem;
+}
+
+.call-pack-options h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--foreground);
+  margin: 0 0 1rem 0;
+}
+
+.value-proposition {
+  font-size: 1rem;
+  color: var(--muted-foreground);
+  line-height: 1.6;
+  margin: 0 0 1.5rem 0;
+  padding: 1rem 1.5rem;
+  background: rgba(139, 92, 246, 0.05);
+  border-left: 3px solid var(--primary);
+  border-radius: 6px;
+}
+
+.pack-card {
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  padding: 2rem;
+  transition: all 0.2s ease;
+}
+
+.pack-card:hover {
+  border-color: var(--primary);
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.1);
+}
+
+.pack-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.pack-icon {
+  width: 48px;
+  height: 48px;
+  color: var(--primary);
+}
+
+.pack-info {
+  flex: 1;
+}
+
+.pack-info h3 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--foreground);
+  margin: 0 0 0.25rem 0;
+}
+
+.pack-description {
+  font-size: 0.875rem;
+  color: var(--muted-foreground);
+  margin: 0;
+}
+
+.pack-price {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.pack-features {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.feature-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: var(--foreground);
+}
+
+.feature-item svg {
+  color: #22c55e;
+  flex-shrink: 0;
+}
+
+.purchase-button {
+  width: 100%;
+  padding: 1rem 2rem;
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  transition: all 0.2s ease;
+}
+
+.purchase-button:hover:not(:disabled) {
+  background: var(--primary-hover, rgba(139, 92, 246, 0.9));
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+}
+
+.purchase-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.purchase-button .spinning {
+  animation: spin 1s linear infinite;
+}
+
+.packs-history {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 2rem;
+}
+
+.packs-history h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--foreground);
+  margin: 0 0 1.5rem 0;
+}
+
+.packs-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.pack-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.5rem;
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.pack-item-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.pack-item-size {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--foreground);
+}
+
+.pack-item-details {
+  font-size: 0.875rem;
+  color: var(--muted-foreground);
+}
+
+.pack-item-remaining {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+@media (max-width: 768px) {
+  .call-pack-purchase-container {
+    padding: 1rem;
+  }
+
+  .status-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .pack-features {
+    grid-template-columns: 1fr;
+  }
+
+  .pack-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .pack-price {
+    font-size: 1.5rem;
+  }
+}

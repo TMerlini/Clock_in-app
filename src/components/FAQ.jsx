@@ -95,7 +95,19 @@ export function FAQ() {
       questions: [
         {
           question: "How does this app help me comply with Portuguese labor law?",
-          answer: "This app helps you:\n• Track if you exceed 8 hours/day (regular hours limit)\n• Monitor daily overtime (max 2h/day)\n• Track total overtime to stay within annual limits (150-200h/year)\n• Record breaks and lunch periods\n• Calculate proper overtime compensation rates\n• Document weekend work and special compensation\n• Export reports for legal compliance records"
+          answer: "This app helps you:\n• Track if you exceed 8 hours/day (regular hours limit)\n• Monitor daily overtime (max 2h/day)\n• Track total overtime to stay within annual limits (150-200h/year)\n• Record breaks and lunch periods\n• Calculate proper overtime compensation rates\n• Document weekend work and special compensation\n• Export reports for legal compliance records\n\nWith Premium AI, the AI Advisor provides expert compliance analysis, legal limit calculations, and proactive alerts based on Portuguese labor law (Código do Trabalho)."
+        },
+        {
+          question: "What is the AI Advisor and what can it do?",
+          answer: "The AI Advisor (Premium AI feature) is an intelligent assistant with expertise in Portuguese labor law and HR best practices. It can:\n• Analyze your work patterns against Portuguese labor law requirements\n• Calculate compliance percentages (e.g., 'You've used 75% of your Isenção limit')\n• Provide legal limit calculations for overtime, Isenção, and vacation\n• Offer HR best practices and work-life balance guidance\n• Alert you when approaching legal limits\n• Answer questions about your time tracking data, analytics, and settings\n• Provide personalized recommendations based on your actual work patterns\n\nThe AI Advisor uses OpenRouter for multi-model AI routing and has access to your time tracking data for context-aware advice."
+        },
+        {
+          question: "What is Premium AI and what does it include?",
+          answer: "Premium AI (€9.99/month) includes:\n• All Pro plan features (advanced analytics, detailed reports, priority support)\n• AI Advisor access with 75 calls/month base allocation\n• Portuguese labor law compliance analysis\n• Legal limit calculations (overtime, Isenção, vacation)\n• HR best practices & work-life balance guidance\n• Compliance monitoring & proactive alerts\n• Expert advice on work patterns and productivity\n\nYou can purchase additional call packs (+50 calls for €4.99) that never expire, perfect for power users who need more AI assistance."
+        },
+        {
+          question: "How do call packs work?",
+          answer: "Call packs are additional AI Advisor calls you can purchase beyond your monthly base allocation:\n• Each pack adds +50 calls for €4.99\n• Call packs never expire and roll over indefinitely\n• Used after base allocation (75 calls/month) is exhausted\n• Perfect for power users who need more AI assistance\n• Track your usage: 'X/Y calls remaining (Y base + Z packs)'\n• Purchase packs from the AI Advisor page or Premium+ page when you have a Premium AI subscription"
         },
         {
           question: "Why does the app separate 'Regular', 'Isenção', and 'Overwork' hours?",

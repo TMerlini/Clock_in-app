@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { db, auth } from '../lib/firebase';
 import { STRIPE_PRICE_IDS, STRIPE_PAYMENT_LINKS, PLAN_NAMES, isStripeConfigured, hasPaymentLinks } from '../lib/stripeConfig';
-import { Crown, Check, Sparkles, Zap, AlertCircle, Loader } from 'lucide-react';
+import { initializeCalls } from '../lib/tokenManager';
+import { Crown, Check, Sparkles, Zap, AlertCircle, Loader, ShoppingCart } from 'lucide-react';
 import './PremiumPlus.css';
 
 export function PremiumPlus({ user, onNavigate }) {
@@ -25,6 +26,23 @@ export function PremiumPlus({ user, onNavigate }) {
 
     if (success || sessionId) {
       setSuccessMessage('Payment successful! Your subscription is being activated...');
+        // Initialize calls for Premium AI if returning from successful payment
+        const currentUser = auth.currentUser;
+        if (currentUser) {
+          try {
+            const settingsRef = doc(db, 'userSettings', currentUser.uid);
+            const settingsDoc = await getDoc(settingsRef);
+            if (settingsDoc.exists()) {
+              const settings = settingsDoc.data();
+              const plan = (settings.subscriptionPlan || settings.plan || '').toLowerCase();
+              if (plan === 'premium_ai') {
+                await initializeCalls(currentUser.uid);
+              }
+            }
+          } catch (error) {
+            console.error('Error initializing calls after payment:', error);
+          }
+        }
       // Reload subscription status after a brief delay
       setTimeout(() => {
         loadSubscriptionStatus();
@@ -56,6 +74,18 @@ export function PremiumPlus({ user, onNavigate }) {
         // Check for subscription plan in settings
         const plan = settings.subscriptionPlan || settings.plan || null;
         setCurrentPlan(plan);
+        
+        // Initialize calls if user has Premium AI subscription but calls aren't initialized
+        if (plan && plan.toLowerCase() === 'premium_ai') {
+          const aiUsage = settings.aiUsage;
+          if (!aiUsage || !aiUsage.callsAllocated) {
+            try {
+              await initializeCalls(currentUser.uid);
+            } catch (error) {
+              console.error('Error initializing calls:', error);
+            }
+          }
+        }
       }
     } catch (error) {
       console.error('Error loading subscription status:', error);
@@ -87,6 +117,21 @@ export function PremiumPlus({ user, onNavigate }) {
       }
       return;
     }
+
+        // Initialize calls for Premium AI plan
+        if (planId === 'PREMIUM_AI') {
+          const currentUser = auth.currentUser;
+          if (currentUser) {
+            try {
+              // Initialize calls when subscribing to Premium AI
+              // This will be called again after successful payment, but it's idempotent
+              await initializeCalls(currentUser.uid);
+            } catch (error) {
+              console.error('Error initializing calls:', error);
+              // Don't block subscription flow if call initialization fails
+            }
+          }
+        }
 
     if (!isStripeConfigured()) {
       alert('Stripe is not configured. Please contact support.');
@@ -204,11 +249,12 @@ export function PremiumPlus({ user, onNavigate }) {
       icon: Crown,
       features: [
         'Everything in Pro',
-        'AI Advisor access',
-        'Personalized insights',
-        'Advanced recommendations',
-        'Work pattern analysis',
-        'Time optimization tips'
+        'AI Advisor access (75 calls/month base)',
+        'Portuguese labor law compliance analysis',
+        'Legal limit calculations (overtime, Isenção, vacation)',
+        'HR best practices & work-life balance guidance',
+        'Compliance monitoring & proactive alerts',
+        'Buy additional call packs as needed'
       ],
       color: 'gold'
     }
@@ -344,6 +390,22 @@ export function PremiumPlus({ user, onNavigate }) {
                 ))}
               </ul>
 
+              {plan.id === 'PREMIUM_AI' && (
+                <div className="openrouter-branding">
+                  <span className="openrouter-text">Powered by</span>
+                  <img
+                    src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/webp/open-router.webp"
+                    alt="OpenRouter"
+                    className="openrouter-logo openrouter-logo-light"
+                  />
+                  <img
+                    src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/webp/open-router-dark.webp"
+                    alt="OpenRouter"
+                    className="openrouter-logo openrouter-logo-dark"
+                  />
+                </div>
+              )}
+
               <button
                 className={`plan-button ${plan.color} ${isCurrent ? 'current' : ''}`}
                 onClick={() => handleSubscribe(plan.id, plan.name)}
@@ -362,6 +424,26 @@ export function PremiumPlus({ user, onNavigate }) {
           );
         })}
       </div>
+
+      {currentPlan && currentPlan.toLowerCase() === 'premium_ai' && (
+        <div className="call-pack-section">
+          <div className="call-pack-card">
+            <div className="call-pack-content">
+              <div>
+                <h3>Need More AI Calls?</h3>
+                <p>Purchase additional call packs that never expire. Perfect for power users!</p>
+              </div>
+              <button
+                className="call-pack-button"
+                onClick={() => onNavigate && onNavigate('call-pack-purchase')}
+              >
+                <ShoppingCart size={18} />
+                <span>Buy Call Packs</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="premium-plus-footer">
         <p>
