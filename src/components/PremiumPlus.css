@@ -463,6 +463,7 @@
 @media (max-width: 640px) {
   .premium-plus-container {
     padding: 1rem;
+    padding-top: 5rem;
   }
 
   .premium-plus-header {

@@ -68,9 +68,6 @@ export const HomePage = memo(function HomePage({
     <div className="main-content">
       <div className="homepage-left">
         <div className="card">
-          <div className="card-header">
-            <h2 className="card-title">{t('home.timeTracker')}</h2>
-          </div>
           <div className="card-content">
             <button
               onClick={onClockInOut}

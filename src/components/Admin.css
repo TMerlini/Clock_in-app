@@ -541,6 +541,13 @@
   color: var(--foreground);
 }
 
+@media (max-width: 640px) {
+  .admin-container {
+    padding: 1rem;
+    padding-top: 5rem;
+  }
+}
+
 @media (max-width: 768px) {
   .admin-container {
     padding: 1rem;

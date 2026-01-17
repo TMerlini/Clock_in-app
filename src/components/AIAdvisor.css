@@ -520,6 +520,7 @@
 @media (max-width: 640px) {
   .ai-advisor-container {
     padding: 1rem;
+    padding-top: 5rem;
   }
 
   .ai-advisor-header {

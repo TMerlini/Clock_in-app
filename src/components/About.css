@@ -335,9 +335,20 @@
   margin: 0;
 }
 
+@media (max-width: 640px) {
+  .about-container {
+    padding: 1rem;
+    padding-top: 5rem !important;
+  }
+}
+
 @media (max-width: 768px) {
   .about-container {
     padding: 1rem;
+  }
+
+  .about-header {
+    padding: 1.5rem;
   }
 
   .about-header {
