@@ -5,6 +5,7 @@ import { formatHoursMinutes } from '../lib/utils';
 import { doc, getDoc } from 'firebase/firestore';
 import { db, auth } from '../lib/firebase';
 import { PremiumPromoBar } from './PremiumPromoBar';
+import { useTranslation } from 'react-i18next';
 import './ClockInApp.css';
 
 export const HomePage = memo(function HomePage({
@@ -19,12 +20,15 @@ export const HomePage = memo(function HomePage({
   getWorkingMessage,
   onNavigate
 }) {
+  const { t } = useTranslation();
   const [isPremium, setIsPremium] = useState(false);
+  const [premiumLoading, setPremiumLoading] = useState(true);
 
   // Check subscription status
   useEffect(() => {
     const checkSubscription = async () => {
       try {
+        setPremiumLoading(true);
         const user = auth.currentUser;
         if (!user) {
           setIsPremium(false);
@@ -45,6 +49,8 @@ export const HomePage = memo(function HomePage({
       } catch (error) {
         console.error('Error checking subscription:', error);
         setIsPremium(false);
+      } finally {
+        setPremiumLoading(false);
       }
     };
 
@@ -63,19 +69,19 @@ export const HomePage = memo(function HomePage({
       <div className="homepage-left">
         <div className="card">
           <div className="card-header">
-            <h2 className="card-title">Time Tracker</h2>
+            <h2 className="card-title">{t('home.timeTracker')}</h2>
           </div>
           <div className="card-content">
             <button
               onClick={onClockInOut}
               className={`clock-button ${isClockedIn ? 'clocked-in' : 'clocked-out'}`}
             >
-              <span>{isClockedIn ? 'Clock Out' : 'Clock In'}</span>
+              <span>{isClockedIn ? t('home.clockOut') : t('home.clockIn')}</span>
             </button>
 
             {isClockedIn && (
               <div className="timer-section">
-                <p className="timer-title">Elapsed Time</p>
+                <p className="timer-title">{t('home.elapsedTime')}</p>
                 <div className="elapsed-time">
                   {formatTime(currentElapsedTime)}
                 </div>
@@ -86,20 +92,20 @@ export const HomePage = memo(function HomePage({
 
                 <div className="time-breakdown">
                   <div className="time-category regular">
-                    <span className="time-category-label">Regular Hours (0-8h)</span>
+                    <span className="time-category-label">{t('home.regularHours')}</span>
                     <span className="time-category-value">{formatHoursMinutes(currentBreakdown.regularHours)}</span>
                   </div>
 
                   {currentTotalHours > 8 && (
                     <div className="time-category unpaid">
-                      <span className="time-category-label">Unpaid Extra (8-10h)</span>
+                      <span className="time-category-label">{t('home.unpaidExtra')}</span>
                       <span className="time-category-value">{formatHoursMinutes(currentBreakdown.unpaidExtraHours)}</span>
                     </div>
                   )}
 
                   {currentTotalHours > 10 && (
                     <div className="time-category paid">
-                      <span className="time-category-label">Paid Extra (10h+)</span>
+                      <span className="time-category-label">{t('home.paidExtra')}</span>
                       <span className="time-category-value">{formatHoursMinutes(currentBreakdown.paidExtraHours)}</span>
                     </div>
                   )}
@@ -118,7 +124,7 @@ export const HomePage = memo(function HomePage({
               <Clock />
             </div>
             <div className="daily-stat-content">
-              <div className="daily-stat-label">Hours Day</div>
+              <div className="daily-stat-label">{t('home.hoursDay')}</div>
               <div className="daily-stat-value">{formatHoursMinutes(totalDayHours)}</div>
             </div>
           </div>
@@ -128,7 +134,7 @@ export const HomePage = memo(function HomePage({
               <AlertTriangle />
             </div>
             <div className="daily-stat-content">
-              <div className="daily-stat-label">Isenção</div>
+              <div className="daily-stat-label">{t('home.isencao')}</div>
               <div className="daily-stat-value">{formatHoursMinutes(totalUnpaid)}</div>
             </div>
           </div>
@@ -138,7 +144,7 @@ export const HomePage = memo(function HomePage({
               <TrendingUp />
             </div>
             <div className="daily-stat-content">
-              <div className="daily-stat-label">Overwork</div>
+              <div className="daily-stat-label">{t('home.overwork')}</div>
               <div className="daily-stat-value">{formatHoursMinutes(totalPaid)}</div>
             </div>
           </div>
@@ -148,7 +154,7 @@ export const HomePage = memo(function HomePage({
               <Coffee />
             </div>
             <div className="daily-stat-content">
-              <div className="daily-stat-label">Lunch Time</div>
+              <div className="daily-stat-label">{t('home.lunchTime')}</div>
               <div className="daily-stat-value">{formatHoursMinutes(totalLunchTime)}</div>
             </div>
           </div>
@@ -158,7 +164,7 @@ export const HomePage = memo(function HomePage({
               <UtensilsCrossed />
             </div>
             <div className="daily-stat-content">
-              <div className="daily-stat-label">Expenses</div>
+              <div className="daily-stat-label">{t('home.expenses')}</div>
               <div className="daily-stat-value">€{totalExpenses.toFixed(2)}</div>
             </div>
           </div>
@@ -168,7 +174,7 @@ export const HomePage = memo(function HomePage({
               <Clock />
             </div>
             <div className="daily-stat-content">
-              <div className="daily-stat-label">Clock In/Out</div>
+              <div className="daily-stat-label">{t('home.clockInOut')}</div>
               <div className="daily-stat-value clock-io-times">
                 {firstSession ? (
                   <>
@@ -177,15 +183,15 @@ export const HomePage = memo(function HomePage({
                     <span className="clock-out-time">{format(new Date(lastSession.clockOut), 'HH:mm')}</span>
                   </>
                 ) : (
-                  <span className="no-data">--:--</span>
+                  <span className="no-data">{t('home.noData')}</span>
                 )}
               </div>
             </div>
           </div>
         </div>
 
-        {/* Premium Promotion Bar - Only show for non-premium users */}
-        {!isPremium && (
+        {/* Premium Promotion Bar - Only show for non-premium users after loading completes */}
+        {!premiumLoading && !isPremium && (
           <PremiumPromoBar onNavigate={onNavigate} />
         )}
       </div>

@@ -1,146 +1,69 @@
 import { HelpCircle, ChevronDown, ChevronUp, BookOpen } from 'lucide-react';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import './FAQ.css';
 
 export function FAQ() {
+  const { t } = useTranslation();
   const [openIndex, setOpenIndex] = useState(null);
 
   const toggleQuestion = (index) => {
     setOpenIndex(openIndex === index ? null : index);
   };
 
-  const faqs = [
+  const categoryNames = {
+    "Working Hours": t('faq.categories.workingHours'),
+    "Overtime": t('faq.categories.overtime'),
+    "Breaks & Rest Periods": t('faq.categories.breaksRestPeriods'),
+    "Weekend Work": t('faq.categories.weekendWork'),
+    "Using This App": t('faq.categories.usingThisApp'),
+    "Legal Compliance": t('faq.categories.legalCompliance')
+  };
+
+  // FAQ structure with translation keys
+  const faqCategories = [
     {
       category: "Working Hours",
-      questions: [
-        {
-          question: "What are the standard working hours in Portugal?",
-          answer: "According to Portuguese labor law (Código do Trabalho), full-time employment is legally defined as 40 hours per week, typically distributed as 8 hours per day over a five-day workweek. This standard applies across various industries, though specific sectors may have different arrangements through collective bargaining agreements."
-        },
-        {
-          question: "What is the maximum daily working time?",
-          answer: "The standard daily working time is 8 hours per day. With overtime, employees can work up to 10 hours per day (8 regular hours + 2 hours overtime maximum). However, the total overtime is subject to annual limits."
-        },
-        {
-          question: "What is Working Time Exemption (Isenção de Horário)?",
-          answer: "The exemption from working hours (Article 218 of Código do Trabalho) provides greater flexibility in work schedule execution. It requires a written agreement between employee and employer. Workers with this exemption still maintain their rights to rest periods, weekly rest, mandatory holidays, and daily rest of at least 11 hours between working days."
-        }
-      ]
+      questionKeys: ['q1', 'q2', 'q3']
     },
     {
       category: "Overtime",
-      questions: [
-        {
-          question: "How much overtime can I work?",
-          answer: "The maximum overtime is limited to 2 hours per day. Annual caps are: 150 hours for companies with 50+ employees, 175 hours for smaller companies, and up to 200 hours in exceptional cases (force majeure or specific collective agreements)."
-        },
-        {
-          question: "How is overtime compensated?",
-          answer: "Overtime compensation rates:\n• First hour: 125% of regular rate\n• Additional hours: 137.5% of regular rate\n• Weekend/holiday overtime: 150% of regular rate\n\nEmployers must request overtime in advance, and employees can decline for extenuating circumstances."
-        },
-        {
-          question: "When can employers request overtime?",
-          answer: "Employers can only request overtime when there's a temporary increase in work or an indispensable need to prevent damage to the company. Overtime must be requested in advance, and employees have the right to decline for valid reasons."
-        },
-        {
-          question: "What does 'Isenção' (Unpaid Extra Hours) mean in this app?",
-          answer: "In this app, 'Isenção' refers to hours worked between 8-10 hours per day that may not receive overtime compensation if you have a Working Time Exemption agreement (Isenção de Horário). Hours beyond 10 per day are tracked as 'Paid Overtime' as they typically require additional compensation. The app includes an annual Isenção limit (default: 200 hours/year) - once reached, additional hours are automatically classified as paid overwork to ensure compliance."
-        },
-        {
-          question: "How does the annual Isenção limit work?",
-          answer: "The app tracks Isenção hours per calendar year (January 1 - December 31). You can configure the annual limit in Settings (default: 200 hours/year). Once the annual limit is reached, any additional hours beyond 8 per day are automatically classified as paid overwork instead of Isenção. The Analytics page shows your annual usage (e.g., '150 / 200 hours (50 remaining)') to help you monitor your limit throughout the year."
-        }
-      ]
+      questionKeys: ['q1', 'q2', 'q3', 'q4', 'q5']
     },
     {
       category: "Breaks & Rest Periods",
-      questions: [
-        {
-          question: "What breaks am I entitled to during work?",
-          answer: "For working periods exceeding 5 hours, employees are entitled to a break of between 1 hour and 2 hours. This break cannot be taken at the beginning or end of the working period and is commonly used for lunch."
-        },
-        {
-          question: "What is the minimum daily rest period?",
-          answer: "Employees are entitled to a minimum of 11 consecutive hours of rest between working days. This applies to all workers, including those with Working Time Exemption agreements."
-        },
-        {
-          question: "What is the minimum weekly rest period?",
-          answer: "Employees are entitled to a minimum of 24 consecutive hours of rest per week, typically taken on Sunday. This weekly rest period should ideally be added to the daily rest period of the preceding or following day, resulting in approximately 35 consecutive hours of rest."
-        },
-        {
-          question: "Can I work during my lunch break?",
-          answer: "No. The mandatory break after 5 hours of work (typically lunch) must be taken and cannot be worked through. This is a legal requirement under Portuguese labor law to ensure employee wellbeing."
-        }
-      ]
+      questionKeys: ['q1', 'q2', 'q3', 'q4']
     },
     {
       category: "Weekend Work",
-      questions: [
-        {
-          question: "Can I be required to work on weekends?",
-          answer: "Weekend work (Saturday and Sunday) is generally subject to special rules and typically requires employee consent. It's compensated at 150% of the regular rate and should respect the weekly rest period of 24 consecutive hours."
-        },
-        {
-          question: "How is weekend work compensated?",
-          answer: "Weekend and public holiday work is paid at 150% of the regular rate. Some collective agreements or company policies may also grant additional benefits such as compensatory time off or bonuses, which can be tracked in this app's Weekend Work settings."
-        },
-        {
-          question: "What are my rights if I work on Sunday?",
-          answer: "If you work on Sunday (the typical weekly rest day), you should receive: overtime compensation at 150% rate, and an alternative rest day during the week to maintain your 24-hour weekly rest entitlement."
-        }
-      ]
+      questionKeys: ['q1', 'q2', 'q3']
     },
     {
       category: "Using This App",
-      questions: [
-        {
-          question: "How does this app help me comply with Portuguese labor law?",
-          answer: "This app helps you:\n• Track if you exceed 8 hours/day (regular hours limit)\n• Monitor daily overtime (max 2h/day)\n• Track total overtime to stay within annual limits (150-200h/year)\n• Record breaks and lunch periods\n• Calculate proper overtime compensation rates\n• Document weekend work and special compensation\n• Export reports for legal compliance records\n\nWith Premium AI, the AI Advisor provides expert compliance analysis, legal limit calculations, and proactive alerts based on Portuguese labor law (Código do Trabalho)."
-        },
-        {
-          question: "What is the AI Advisor and what can it do?",
-          answer: "The AI Advisor (Premium AI feature) is an intelligent assistant with expertise in Portuguese labor law and HR best practices. It can:\n• Analyze your work patterns against Portuguese labor law requirements\n• Calculate compliance percentages (e.g., 'You've used 75% of your Isenção limit')\n• Provide legal limit calculations for overtime, Isenção, and vacation\n• Offer HR best practices and work-life balance guidance\n• Alert you when approaching legal limits\n• Answer questions about your time tracking data, analytics, and settings\n• Provide personalized recommendations based on your actual work patterns\n\nThe AI Advisor uses OpenRouter for multi-model AI routing and has access to your time tracking data for context-aware advice."
-        },
-        {
-          question: "What is Premium AI and what does it include?",
-          answer: "Premium AI (€9.99/month) includes:\n• All Pro plan features (advanced analytics, detailed reports, priority support)\n• AI Advisor access with 75 calls/month base allocation\n• Portuguese labor law compliance analysis\n• Legal limit calculations (overtime, Isenção, vacation)\n• HR best practices & work-life balance guidance\n• Compliance monitoring & proactive alerts\n• Expert advice on work patterns and productivity\n\nYou can purchase additional call packs (+50 calls for €4.99) that never expire, perfect for power users who need more AI assistance."
-        },
-        {
-          question: "How do call packs work?",
-          answer: "Call packs are additional AI Advisor calls you can purchase beyond your monthly base allocation:\n• Each pack adds +50 calls for €4.99\n• Call packs never expire and roll over indefinitely\n• Used after base allocation (75 calls/month) is exhausted\n• Perfect for power users who need more AI assistance\n• Track your usage: 'X/Y calls remaining (Y base + Z packs)'\n• Purchase packs from the AI Advisor page or Premium+ page when you have a Premium AI subscription"
-        },
-        {
-          question: "Why does the app separate 'Regular', 'Isenção', and 'Overwork' hours?",
-          answer: "The app categorizes hours to align with Portuguese law:\n• Regular Hours (0-8h): Standard working time\n• Isenção/Unpaid Extra (8-10h): Hours that may not be compensated if you have Working Time Exemption\n• Paid Overwork (10h+): Hours typically requiring overtime compensation at higher rates\n\nThis helps you and your employer track compliance and proper compensation."
-        },
-        {
-          question: "Should I track my lunch breaks in the app?",
-          answer: "Yes! Tracking lunch breaks ensures compliance with the legal requirement for breaks after 5 hours of work. The app allows you to:\n• Mark when you took a lunch break\n• Record the duration (1-2 hours as per law)\n• Calculate actual working hours excluding breaks\n• Track lunch expenses if applicable"
-        },
-        {
-          question: "How can I use the overwork tracking feature?",
-          answer: "The overwork tracking helps you monitor accumulated overtime:\n• View total overtime hours (converted to work days: 8h = 1 day)\n• Track when overtime is used/compensated\n• Ensure you don't exceed annual limits (150-200h)\n• Record reasons for overtime usage\n• Maintain compliance documentation"
-        }
-      ]
+      questionKeys: ['q1', 'q2', 'q3', 'q4', 'q5', 'q6', 'q7']
     },
     {
       category: "Legal Compliance",
-      questions: [
-        {
-          question: "Are employers required to track working hours?",
-          answer: "Yes. Employers in Portugal have a legal obligation to maintain accurate records of employees' working hours. This is crucial for demonstrating compliance with maximum working hours, overtime limits, and rest period requirements. This app can serve as your personal tracking tool."
-        },
-        {
-          question: "What should I do if I regularly exceed overtime limits?",
-          answer: "If you regularly exceed the legal overtime limits (2h/day or 150-200h/year), you should:\n1. Document your hours (use this app for records)\n2. Discuss the situation with your employer\n3. Contact the Portuguese labor authority (ACT - Autoridade para as Condições do Trabalho)\n4. Seek advice from a labor union or employment lawyer"
-        },
-        {
-          question: "Where can I find official information about Portuguese labor law?",
-          answer: "Official sources for Portuguese labor law:\n• ACT (Autoridade para as Condições do Trabalho): https://www.act.gov.pt\n• Código do Trabalho (Labor Code): Available on ACT website\n• Ministry of Labor: https://www.mtsss.gov.pt\n• European Labor Authority: https://www.ela.europa.eu\n\nAlways consult official sources or legal professionals for specific legal advice."
-        }
-      ]
+      questionKeys: ['q1', 'q2', 'q3']
     }
   ];
+
+  // Build FAQ data from translations
+  const faqs = faqCategories.map(cat => ({
+    category: cat.category,
+    questions: cat.questionKeys.map(qKey => {
+      const categoryKey = cat.category === "Working Hours" ? "workingHours" :
+                          cat.category === "Overtime" ? "overtime" :
+                          cat.category === "Breaks & Rest Periods" ? "breaksRestPeriods" :
+                          cat.category === "Weekend Work" ? "weekendWork" :
+                          cat.category === "Using This App" ? "usingThisApp" :
+                          "legalCompliance";
+      return {
+        question: t(`faq.questions.${categoryKey}.${qKey}.question`),
+        answer: t(`faq.questions.${categoryKey}.${qKey}.answer`)
+      };
+    })
+  }));
 
   return (
     <div className="faq-container">
@@ -148,8 +71,8 @@ export function FAQ() {
         <div className="header-content-faq">
           <BookOpen />
           <div>
-            <h1>Frequent Questions</h1>
-            <p>Portuguese Labor Law & App Usage</p>
+            <h1>{t('faq.title')}</h1>
+            <p>{t('faq.subtitle')}</p>
           </div>
         </div>
       </div>
@@ -158,23 +81,19 @@ export function FAQ() {
         <div className="faq-intro">
           <HelpCircle className="intro-icon" />
           <div>
-            <h2>About Portuguese Labor Law</h2>
+            <h2>{t('faq.intro.title')}</h2>
             <p>
-              This FAQ section provides information based on the Portuguese Labor Code (Código do Trabalho)
-              and explains how this app helps you track compliance with working hours, overtime, breaks,
-              and rest period regulations.
+              {t('faq.intro.description')}
             </p>
             <p className="disclaimer">
-              <strong>Disclaimer:</strong> This information is for general guidance only and does not constitute
-              legal advice. For specific legal situations, please consult the official Portuguese Labor Code or
-              seek advice from a qualified employment lawyer.
+              <strong>{t('faq.intro.disclaimer')}</strong>
             </p>
           </div>
         </div>
 
         {faqs.map((category, categoryIndex) => (
           <div key={categoryIndex} className="faq-category">
-            <h2 className="category-title">{category.category}</h2>
+            <h2 className="category-title">{categoryNames[category.category] || category.category}</h2>
             <div className="questions-list">
               {category.questions.map((faq, questionIndex) => {
                 const globalIndex = `${categoryIndex}-${questionIndex}`;
@@ -204,21 +123,21 @@ export function FAQ() {
         ))}
 
         <div className="faq-footer">
-          <h3>Additional Resources</h3>
+          <h3>{t('faq.additionalResources')}</h3>
           <ul className="resources-list">
             <li>
               <a href="https://www.act.gov.pt" target="_blank" rel="noopener noreferrer">
-                ACT - Autoridade para as Condições do Trabalho
+                {t('faq.resources.act')}
               </a>
             </li>
             <li>
               <a href="https://portal.act.gov.pt/AnexosPDF/Legisla%C3%A7%C3%A3o%20nacional/C%C3%B3digo%20do%20trabalho.pdf" target="_blank" rel="noopener noreferrer">
-                Código do Trabalho (Labor Code PDF)
+                {t('faq.resources.laborCode')}
               </a>
             </li>
             <li>
               <a href="https://www.mtsss.gov.pt" target="_blank" rel="noopener noreferrer">
-                Ministry of Labor, Solidarity and Social Security
+                {t('faq.resources.ministry')}
               </a>
             </li>
           </ul>

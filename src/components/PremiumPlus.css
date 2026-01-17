@@ -84,14 +84,14 @@
   text-align: center;
 }
 
-.header-content {
+.premium-plus-header .header-content {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 1rem;
 }
 
-.header-icon {
+.premium-plus-header .header-icon {
   width: 64px;
   height: 64px;
   color: var(--primary);

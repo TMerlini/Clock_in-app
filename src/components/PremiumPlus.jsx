@@ -4,9 +4,11 @@ import { db, auth } from '../lib/firebase';
 import { STRIPE_PRICE_IDS, STRIPE_PAYMENT_LINKS, PLAN_NAMES, isStripeConfigured, hasPaymentLinks } from '../lib/stripeConfig';
 import { initializeCalls } from '../lib/tokenManager';
 import { Crown, Check, Sparkles, Zap, AlertCircle, Loader, ShoppingCart } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import './PremiumPlus.css';
 
 export function PremiumPlus({ user, onNavigate }) {
+  const { t } = useTranslation();
   const [currentPlan, setCurrentPlan] = useState(null);
   const [loading, setLoading] = useState(true);
   const [redirecting, setRedirecting] = useState(false);
@@ -25,7 +27,7 @@ export function PremiumPlus({ user, onNavigate }) {
     const sessionId = urlParams.get('session_id');
 
     if (success || sessionId) {
-      setSuccessMessage('Payment successful! Your subscription is being activated...');
+      setSuccessMessage(t('premiumPlus.paymentSuccessful'));
         // Initialize calls for Premium AI if returning from successful payment
         const currentUser = auth.currentUser;
         if (currentUser) {
@@ -50,7 +52,7 @@ export function PremiumPlus({ user, onNavigate }) {
         window.history.replaceState({}, document.title, window.location.pathname);
       }, 2000);
     } else if (canceled) {
-      setSuccessMessage('Payment was canceled. You can try again anytime.');
+      setSuccessMessage(t('premiumPlus.paymentCanceled'));
       setTimeout(() => {
         setSuccessMessage(null);
         window.history.replaceState({}, document.title, window.location.pathname);
@@ -107,7 +109,7 @@ export function PremiumPlus({ user, onNavigate }) {
         }, { merge: true });
 
         setCurrentPlan('free');
-        setSuccessMessage('Successfully switched to Free plan!');
+        setSuccessMessage(t('premiumPlus.switchedToFree'));
         setTimeout(() => {
           setSuccessMessage(null);
         }, 3000);
@@ -196,65 +198,65 @@ export function PremiumPlus({ user, onNavigate }) {
   const plans = [
     {
       id: 'FREE',
-      name: 'Free',
+      name: t('premiumPlus.plans.free.name'),
       price: '€0',
-      period: 'month',
+      period: t('premiumPlus.plans.free.period', { defaultValue: 'month' }),
       icon: Zap,
       features: [
-        'Core time tracking',
-        'Basic session management',
-        'Limited analytics',
-        'Basic export'
+        t('premiumPlus.plans.free.feature1'),
+        t('premiumPlus.plans.free.feature2'),
+        t('premiumPlus.plans.free.feature3'),
+        t('premiumPlus.plans.free.feature4')
       ],
       color: 'gray',
       isFree: true
     },
     {
       id: 'BASIC',
-      name: 'Basic',
+      name: t('premiumPlus.plans.basic.name'),
       price: '€0.99',
-      period: 'month',
+      period: t('premiumPlus.plans.basic.period', { defaultValue: 'month' }),
       icon: Zap,
       features: [
-        'Everything in Free',
-        'Full analytics',
-        'Google Calendar sync',
-        'Advanced session management',
-        'Export sessions'
+        t('premiumPlus.plans.basic.feature1'),
+        t('premiumPlus.plans.basic.feature2'),
+        t('premiumPlus.plans.basic.feature3'),
+        t('premiumPlus.plans.basic.feature4'),
+        t('premiumPlus.plans.basic.feature5')
       ],
       color: 'blue'
     },
     {
       id: 'PRO',
-      name: 'Pro',
+      name: t('premiumPlus.plans.pro.name'),
       price: '€4.99',
-      period: 'month',
+      period: t('premiumPlus.plans.pro.period', { defaultValue: 'month' }),
       icon: Sparkles,
       features: [
-        'Everything in Basic',
-        'Advanced analytics',
-        'Detailed reports',
-        'Export functionality',
-        'Priority support',
-        'Custom date ranges'
+        t('premiumPlus.plans.pro.feature1'),
+        t('premiumPlus.plans.pro.feature2'),
+        t('premiumPlus.plans.pro.feature3'),
+        t('premiumPlus.plans.pro.feature4'),
+        t('premiumPlus.plans.pro.feature5'),
+        t('premiumPlus.plans.pro.feature6')
       ],
       color: 'purple',
       popular: true
     },
     {
       id: 'PREMIUM_AI',
-      name: 'Premium AI',
+      name: t('premiumPlus.plans.premiumAi.name'),
       price: '€9.99',
-      period: 'month',
+      period: t('premiumPlus.plans.premiumAi.period', { defaultValue: 'month' }),
       icon: Crown,
       features: [
-        'Everything in Pro',
-        'AI Advisor access (75 calls/month base)',
-        'Portuguese labor law compliance analysis',
-        'Legal limit calculations (overtime, Isenção, vacation)',
-        'HR best practices & work-life balance guidance',
-        'Compliance monitoring & proactive alerts',
-        'Buy additional call packs as needed'
+        t('premiumPlus.plans.premiumAi.feature1'),
+        t('premiumPlus.plans.premiumAi.feature2'),
+        t('premiumPlus.plans.premiumAi.feature3'),
+        t('premiumPlus.plans.premiumAi.feature4'),
+        t('premiumPlus.plans.premiumAi.feature5'),
+        t('premiumPlus.plans.premiumAi.feature6'),
+        t('premiumPlus.plans.premiumAi.feature7')
       ],
       color: 'gold'
     }
@@ -264,13 +266,13 @@ export function PremiumPlus({ user, onNavigate }) {
     // Free plan is always available and is the default
     if (planId === 'FREE') {
       if (!currentPlan || currentPlan.toLowerCase() === 'free') {
-        return 'Current Plan';
+        return t('premiumPlus.currentPlan');
       }
-      return 'Downgrade';
+      return t('premiumPlus.switchToFree');
     }
 
     if (!currentPlan || currentPlan.toLowerCase() === 'free') {
-      return 'Subscribe';
+      return t('premiumPlus.subscribe');
     }
     
     const planHierarchy = { FREE: 0, BASIC: 1, PRO: 2, PREMIUM_AI: 3 };
@@ -278,15 +280,15 @@ export function PremiumPlus({ user, onNavigate }) {
     const targetLevel = planHierarchy[planId] || 0;
 
     if (currentPlan.toLowerCase() === planId.toLowerCase()) {
-      return 'Current Plan';
+      return t('premiumPlus.currentPlan');
     }
     if (targetLevel > currentLevel) {
-      return 'Upgrade';
+      return t('premiumPlus.subscribe'); // Upgrade
     }
     if (targetLevel < currentLevel) {
-      return 'Downgrade';
+      return t('premiumPlus.switchToFree'); // Downgrade
     }
-    return 'Subscribe';
+    return t('premiumPlus.subscribe');
   };
 
   const isCurrentPlan = (planId) => {
@@ -312,7 +314,7 @@ export function PremiumPlus({ user, onNavigate }) {
       <div className="premium-plus-container">
         <div className="loading">
           <Loader className="spinning" />
-          <span>Loading plans...</span>
+          <span>{t('premiumPlus.loadingPlans')}</span>
         </div>
       </div>
     );
@@ -342,8 +344,8 @@ export function PremiumPlus({ user, onNavigate }) {
         <div className="header-content">
           <Crown className="header-icon" />
           <div>
-            <h1>Premium+ Plans</h1>
-            <p>Choose the plan that's right for you</p>
+            <h1>{t('premiumPlus.title')}</h1>
+            <p>{t('premiumPlus.subtitle')}</p>
           </div>
         </div>
       </div>
@@ -361,12 +363,12 @@ export function PremiumPlus({ user, onNavigate }) {
               className={`plan-card ${plan.popular ? 'popular' : ''} ${isCurrent ? 'current' : ''}`}
             >
               {plan.popular && (
-                <div className="popular-badge">Most Popular</div>
+                <div className="popular-badge">{t('premiumPlus.plans.mostPopular')}</div>
               )}
               {isCurrent && (
                 <div className="current-badge">
                   <Check size={16} />
-                  <span>Current Plan</span>
+                  <span>{t('premiumPlus.currentPlan')}</span>
                 </div>
               )}
 
@@ -414,7 +416,7 @@ export function PremiumPlus({ user, onNavigate }) {
                 {redirecting && !plan.isFree ? (
                   <>
                     <Loader className="spinning" size={16} />
-                    <span>Redirecting...</span>
+                    <span>{t('callPackPurchase.redirecting')}</span>
                   </>
                 ) : (
                   buttonText
@@ -430,15 +432,15 @@ export function PremiumPlus({ user, onNavigate }) {
           <div className="call-pack-card">
             <div className="call-pack-content">
               <div>
-                <h3>Need More AI Calls?</h3>
-                <p>Purchase additional call packs that never expire. Perfect for power users!</p>
+                <h3>{t('premiumPlus.needMoreCalls')}</h3>
+                <p>{t('premiumPlus.callPackDescription')}</p>
               </div>
               <button
                 className="call-pack-button"
                 onClick={() => onNavigate && onNavigate('call-pack-purchase')}
               >
                 <ShoppingCart size={18} />
-                <span>Buy Call Packs</span>
+                <span>{t('premiumPlus.buyCallPacks')}</span>
               </button>
             </div>
           </div>

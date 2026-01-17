@@ -4,10 +4,13 @@ import { Calendar } from './ui/calendar';
 import { Calendar as CalendarIcon, RefreshCw, AlertCircle } from 'lucide-react';
 import { format, startOfDay, endOfDay, subDays, addDays } from 'date-fns';
 import { formatHoursMinutes } from '../lib/utils';
+import { useTranslation } from 'react-i18next';
+import { getDateFnsLocale } from '../lib/i18n';
 import './CalendarView.css';
 import 'react-day-picker/style.css';
 
 export const CalendarView = memo(function CalendarView({ user }) {
+  const { t } = useTranslation();
   const googleCalendar = useGoogleCalendar();
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [events, setEvents] = useState([]);
@@ -90,7 +93,7 @@ export const CalendarView = memo(function CalendarView({ user }) {
         (error.message && error.message.includes('401'));
       
       if (isAuthError) {
-        alert('Your Google Calendar token has expired. Please click the cloud icon (⚠️) in the header to refresh it, or go to Settings and re-authorize Google Calendar.');
+        alert(t('calendar.tokenExpired'));
       }
     } finally {
       setLoading(false);
@@ -201,9 +204,9 @@ export const CalendarView = memo(function CalendarView({ user }) {
             <div className="card-header">
               <h2 className="card-title">
                 <CalendarIcon style={{ display: 'inline', width: '20px', height: '20px', marginRight: '8px' }} />
-                Google Calendar Events
+                {t('calendar.title')}
               </h2>
-              <p className="card-description">View all events from your Google Calendar (read-only)</p>
+              <p className="card-description">{t('calendar.description')}</p>
             </div>
             <div className="calendar-wrapper">
               <Calendar
@@ -212,6 +215,7 @@ export const CalendarView = memo(function CalendarView({ user }) {
                 onSelect={handleDateSelect}
                 modifiers={modifiers}
                 modifiersClassNames={modifiersClassNames}
+                locale={getDateFnsLocale()}
               />
             </div>
             {googleCalendar.isAuthorized && (
@@ -222,7 +226,7 @@ export const CalendarView = memo(function CalendarView({ user }) {
                   disabled={loading}
                 >
                   <RefreshCw className={loading ? 'spinning' : ''} size={16} />
-                  Refresh Events
+                  {t('calendar.refreshEvents')}
                 </button>
               </div>
             )}
@@ -230,23 +234,23 @@ export const CalendarView = memo(function CalendarView({ user }) {
 
           <div className="card" style={{ marginTop: '2rem' }}>
             <div className="card-header">
-              <h2 className="card-title">Events for {format(selectedDate, 'MMMM dd, yyyy')}</h2>
+              <h2 className="card-title">{t('calendar.eventsFor')} {format(selectedDate, 'MMMM dd, yyyy', { locale: getDateFnsLocale() })}</h2>
             </div>
             <div className="sessions-container">
               {!googleCalendar.isAuthorized ? (
                 <div className="import-placeholder">
                   <AlertCircle size={48} />
-                  <h2>Calendar Not Connected</h2>
-                  <p>Please authorize Google Calendar in Settings to view events.</p>
+                  <h2>{t('calendar.calendarNotConnected')}</h2>
+                  <p>{t('calendar.authorizeInSettings')}</p>
                 </div>
               ) : loading && events.length === 0 ? (
                 <div className="loading-state">
                   <RefreshCw className="spinning" size={48} />
-                  <p>Loading calendar events...</p>
+                  <p>{t('calendar.loadingEvents')}</p>
                 </div>
               ) : eventsForDate.length === 0 ? (
                 <p className="empty-sessions">
-                  No events for this date
+                  {t('calendar.noEvents')}
                 </p>
               ) : (
                 <div className="sessions-list">
@@ -283,7 +287,7 @@ export const CalendarView = memo(function CalendarView({ user }) {
                         })()}
                         {event.location && (
                           <div className="calendar-event-location">
-                            <strong>Location:</strong> {event.location}
+                            <strong>{t('calendar.location')}:</strong> {event.location}
                           </div>
                         )}
                         {(parsedNotes || event.description) && (
@@ -303,7 +307,7 @@ export const CalendarView = memo(function CalendarView({ user }) {
                         )}
                         <div className="calendar-event-sync-badge">
                           <CalendarIcon size={14} />
-                          <span>From Google Calendar</span>
+                          <span>{t('calendar.fromGoogleCalendar')}</span>
                         </div>
                       </div>
                     );

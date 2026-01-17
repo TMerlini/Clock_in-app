@@ -1,0 +1,748 @@
+{
+  "common": {
+    "loading": "Carregando...",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "reset": "Repor",
+    "saved": "Guardado!",
+    "error": "Erro",
+    "success": "Sucesso",
+    "close": "Fechar",
+    "menu": "Menu"
+  },
+  "navigation": {
+    "home": "Início",
+    "calendar": "Calendário",
+    "analytics": "Análises",
+    "aiAdvisor": "Assistente IA",
+    "premiumPlus": "Premium+",
+    "settings": "Definições",
+    "faq": "Perguntas Frequentes",
+    "about": "Sobre",
+    "admin": "Administrador"
+  },
+  "settings": {
+    "title": "Definições",
+    "subtitle": "Personalize as suas preferências de rastreamento de tempo",
+    "profile": {
+      "title": "Perfil",
+      "description": "Defina o seu nome de exibição. Este será mostrado no cabeçalho em vez do seu email.",
+      "username": "Nome de Utilizador / Alias",
+      "usernameDescription": "O seu nome de exibição (será mostrado com prefixo @)",
+      "usernamePlaceholder": "seunome"
+    },
+    "premium": {
+      "title": "Subscrição Premium",
+      "description": "Ative funcionalidades premium incluindo acesso ao Assistente IA. As funcionalidades premium desbloqueiam capacidades avançadas.",
+      "premiumStatus": "Estado Premium",
+      "premiumDescription": "Ativar funcionalidades premium (incluindo Assistente IA)"
+    },
+    "language": {
+      "title": "Idioma",
+      "description": "Escolha o seu idioma preferido para a interface da aplicação.",
+      "selectLanguage": "Selecionar Idioma",
+      "english": "Inglês",
+      "portuguese": "Português"
+    },
+    "hourThresholds": {
+      "title": "Limites de Horas",
+      "description": "Configure como as suas horas de trabalho são categorizadas. Estes limites determinam quando as horas regulares terminam e o trabalho extra começa.",
+      "regularHours": "Limite de Horas Regulares",
+      "regularHoursDescription": "Horas até este valor são consideradas tempo de trabalho regular",
+      "enableUnpaidExtra": "Ativar Extra Não Remunerado (Isenção)",
+      "enableUnpaidExtraDescription": "Rastrear horas entre regular e trabalho extra remunerado como horas extras não remuneradas",
+      "unpaidExtraThreshold": "Limite de Extra Não Remunerado",
+      "unpaidExtraThresholdDescription": "Horas além deste valor são consideradas trabalho extra remunerado",
+      "hourCategories": "Categorias de Horas",
+      "regular": "Regular",
+      "unpaidExtra": "Extra Não Remunerado (Isenção)",
+      "paidOvertime": "Trabalho Extra Remunerado"
+    },
+    "isencao": {
+      "title": "Configuração de Isenção",
+      "description": "Defina o limite anual para Isenção (horas extras não remuneradas). Uma vez atingido o limite, horas adicionais serão classificadas como trabalho extra remunerado.",
+      "annualLimit": "Limite Anual de Isenção",
+      "annualLimitDescription": "Máximo de horas de Isenção permitidas por ano civil (padrão: 200 horas)"
+    },
+    "breaks": {
+      "title": "Definições de Pausas",
+      "description": "Configure durações padrão de pausas. Esta será a dedução padrão quando \"Incluir hora de almoço\" estiver marcado.",
+      "lunchDuration": "Duração Padrão do Almoço",
+      "lunchDurationDescription": "Tempo deduzido das horas de trabalho quando o almoço está incluído"
+    },
+    "calendar": {
+      "title": "Definições de Calendário",
+      "description": "Personalize como o calendário é exibido e se comporta.",
+      "weekStart": "Dia de Início da Semana",
+      "weekStartDescription": "Primeiro dia da semana na visualização do calendário"
+    },
+    "weekendWork": {
+      "title": "Trabalho ao Fim de Semana",
+      "description": "Configure benefícios padrão para trabalhar aos fins de semana (Sábado e Domingo) e feriados.",
+      "daysOff": "Dias de Descanso por Fim de Semana",
+      "daysOffDescription": "Dias de descanso ganhos por cada dia de trabalho ao fim de semana ou feriado",
+      "bonus": "Bónus de Fim de Semana",
+      "bonusDescription": "Compensação extra por dia de trabalho ao fim de semana ou feriado"
+    },
+    "bankHolidays": {
+      "title": "Feriados",
+      "description": "Configure se os feriados devem receber os mesmos benefícios que o trabalho ao fim de semana. Pode ativar dias de descanso e bónus independentemente.",
+      "applyDaysOff": "Aplicar Dias de Descanso aos Feriados",
+      "applyDaysOffDescription": "Quando ativado, os feriados receberão os mesmos dias de descanso que o trabalho ao fim de semana. Quando desativado, os feriados não ganharão dias de descanso.",
+      "applyBonus": "Aplicar Bónus aos Feriados",
+      "applyBonusDescription": "Quando ativado, os feriados receberão o mesmo bónus que o trabalho ao fim de semana. Quando desativado, os feriados não ganharão bónus.",
+      "enabled": "Ativado",
+      "disabled": "Desativado"
+    },
+    "googleCalendar": {
+      "title": "Integração Google Calendar",
+      "description": "Ative a sincronização automática do calendário para adicionar sessões de trabalho ao seu Google Calendar quando sair do serviço.",
+      "syncStatus": "Estado de Sincronização",
+      "synced": "Sincronizado",
+      "pending": "Pendente",
+      "failed": "Falhou",
+      "lastSynced": "Última sincronização",
+      "syncSessions": "Sincronizar Sessão(ões)",
+      "importFromCalendar": "Importar do Calendário",
+      "syncing": "A sincronizar..."
+    },
+    "actions": {
+      "resetToDefaults": "Repor Padrões",
+      "saveSettings": "Guardar Definições",
+      "settingsSaved": "Definições guardadas com sucesso! As alterações aplicar-se-ão a novas sessões.",
+      "loadingSettings": "A carregar definições..."
+    },
+    "units": {
+      "hours": "horas",
+      "days": "dias",
+      "hoursPerYear": "horas/ano",
+      "sunday": "Domingo",
+      "monday": "Segunda-feira"
+    }
+  },
+  "home": {
+    "timeTracker": "Rastreador de Tempo",
+    "clockIn": "Entrar",
+    "clockOut": "Sair",
+    "elapsedTime": "Tempo Decorrido",
+    "regularHours": "Horas Regulares (0-8h)",
+    "unpaidExtra": "Extra Não Remunerado (8-10h)",
+    "paidExtra": "Extra Remunerado (10h+)",
+    "hoursDay": "Horas do Dia",
+    "isencao": "Isenção",
+    "overwork": "Sobreposição",
+    "lunchTime": "Hora de Almoço",
+    "expenses": "Despesas",
+    "clockInOut": "Entrada/Saída",
+    "noData": "--:--"
+  },
+  "aiAdvisor": {
+    "title": "Assistente IA",
+    "subtitle": "Obtenha informações e recomendações inteligentes sobre o seu rastreamento de tempo",
+    "welcome": "Olá! Sou o seu Assistente IA. Tenho acesso aos seus dados de rastreamento de tempo e posso ajudá-lo com questões sobre as suas sessões de trabalho, análises, definições ou qualquer outra coisa que precise de ajuda. Como posso ajudá-lo hoje?",
+    "placeholder": "Pergunte-me qualquer coisa sobre o seu rastreamento de tempo...",
+    "send": "Enviar",
+    "loading": "A carregar Assistente IA...",
+    "loadingData": "A carregar os seus dados...",
+    "premiumFeature": "Funcionalidade Premium",
+    "premiumOnly": "O Assistente IA está disponível apenas para utilizadores premium.",
+    "premiumBenefits": "Benefícios Premium:",
+    "benefit1": "Assistente IA com acesso aos seus dados de rastreamento de tempo",
+    "benefit2": "Conselhos e informações personalizadas",
+    "benefit3": "Ajuda com análises e definições",
+    "benefit4": "Assistência IA de uso geral",
+    "goToSettings": "Ir para Definições para Ativar Premium",
+    "yourIntelligentAssistant": "O seu assistente inteligente para informações sobre rastreamento de tempo",
+    "suggestions": {
+      "title": "Perguntas Sugeridas",
+      "analyzePatterns": "Analise os meus padrões de trabalho",
+      "complianceCheck": "Verifique o meu cumprimento da lei laboral",
+      "overtimeStatus": "Qual é o meu estado de trabalho extra?",
+      "workLifeBalance": "Sugira melhorias de equilíbrio trabalho-vida",
+      "analyticsInsights": {
+        "title": "Análises e Perceções",
+        "description": "Obtenha perceções sobre os seus padrões de trabalho",
+        "prompt": "Analise os meus padrões de trabalho e forneça perceções sobre como posso melhorar a minha gestão de tempo"
+      },
+      "workPatterns": {
+        "title": "Padrões de Trabalho",
+        "description": "Descubra as suas tendências de produtividade",
+        "prompt": "Quais são os meus padrões e tendências de trabalho? Mostre-me os meus tempos e dias mais produtivos"
+      },
+      "isencaoOvertime": {
+        "title": "Isenção e Trabalho Extra",
+        "description": "Otimize o uso das suas horas",
+        "prompt": "Como posso otimizar o meu uso de Isenção e horas extras? Estou perto do meu limite anual?"
+      },
+      "settingsReview": {
+        "title": "Revisão de Definições",
+        "description": "Obtenha recomendações para as suas definições",
+        "prompt": "Revise as minhas definições atuais e sugira limites ideais para horas regulares, Isenção e outras configurações"
+      }
+    },
+    "calls": {
+      "unlimited": "Chamadas ilimitadas (Admin)",
+      "remaining": "chamadas restantes",
+      "tokensUsed": "tokens utilizados",
+      "buyMore": "Comprar Mais",
+      "buyMoreTitle": "Comprar mais chamadas IA"
+    }
+  },
+  "premiumPromo": {
+    "title": "Desbloqueie Funcionalidades Premium",
+    "subtitle": "Assistente IA, Análises Avançadas e Mais"
+  },
+  "callPackPurchase": {
+    "title": "Pacotes de Chamadas IA",
+    "subtitle": "Compre chamadas adicionais do Assistente IA com conhecimentos de direito laboral português e orientação de RH. Obtenha análises de conformidade especializadas, cálculos de limites legais e recomendações de melhores práticas.",
+    "loadingStatus": "A carregar estado das chamadas...",
+    "unableToLoad": "Não foi possível carregar o estado das chamadas",
+    "ensureSubscription": "Certifique-se de que tem uma subscrição Premium AI.",
+    "currentStatus": "O Seu Estado Atual",
+    "baseCalls": "Chamadas Base",
+    "resetsMonthly": "Repõe mensalmente",
+    "callPacks": "Pacotes de Chamadas",
+    "calls": "chamadas",
+    "neverExpire": "Nunca expiram",
+    "totalAvailable": "Total Disponível",
+    "readyToUse": "Pronto para usar",
+    "purchaseCallPack": "Comprar Pacote de Chamadas",
+    "valueProposition": "Cada chamada dá-lhe acesso a análises assistidas por IA dos seus padrões de trabalho face à lei laboral portuguesa (Código do Trabalho), ajudando-o a manter-se em conformidade e a tomar decisões informadas sobre o seu tempo.",
+    "packTitle": "+50 Chamadas Pack",
+    "packDescription": "50 chamadas do Assistente IA com conhecimentos de direito laboral português e RH. Nunca expiram, perfeito para monitorização de conformidade e orientação profissional.",
+    "packPrice": "€4.99",
+    "feature1": "50 chamadas adicionais",
+    "feature2": "Nunca expiram (permanecem indefinidamente)",
+    "feature3": "Usadas após esgotar a alocação base",
+    "feature4": "Análise de conformidade com a lei laboral portuguesa",
+    "feature5": "Cálculos de limites legais (trabalho extra, Isenção, férias)",
+    "feature6": "Melhores práticas de RH e orientação de equilíbrio trabalho-vida",
+    "feature7": "Monitorização de conformidade e alertas proativos",
+    "feature8": "Conselhos especializados sobre padrões de trabalho e produtividade",
+    "purchaseButton": "Comprar +50 Chamadas por €4.99",
+    "redirecting": "A redirecionar...",
+    "yourCallPacks": "Os Seus Pacotes de Chamadas",
+    "purchased": "Comprado",
+    "remaining": "restantes",
+    "paymentSuccess": "Pagamento bem-sucedido! A adicionar pacote de chamadas à sua conta...",
+    "packPurchased": "Pacote de chamadas comprado! +50 chamadas adicionadas à sua conta.",
+    "paymentReceivedError": "Pagamento recebido, mas erro ao adicionar pacote. Por favor, contacte o suporte.",
+    "pleaseLogin": "Por favor, inicie sessão para comprar pacotes de chamadas.",
+    "notConfigured": "A compra de pacotes de chamadas ainda não está configurada. Por favor, contacte o suporte.",
+    "errorRedirecting": "Erro ao redirecionar para pagamento. Por favor, tente novamente."
+  },
+  "premiumPlus": {
+    "title": "Planos Premium",
+    "subtitle": "Escolha o plano que melhor funciona para si",
+    "loadingPlans": "A carregar planos de subscrição...",
+    "paymentSuccessful": "Pagamento bem-sucedido! A sua subscrição está a ser ativada...",
+    "paymentCanceled": "O pagamento foi cancelado. Pode tentar novamente a qualquer momento.",
+    "switchedToFree": "Mudou com sucesso para o plano Gratuito!",
+    "currentPlan": "Plano Atual",
+    "subscribe": "Subscrever",
+    "switchToFree": "Mudar para Gratuito",
+    "needMoreCalls": "Precisa de Mais Chamadas IA?",
+    "callPackDescription": "Compre pacotes de chamadas adicionais que nunca expiram. Perfeito para utilizadores avançados!",
+    "buyCallPacks": "Comprar Pacotes de Chamadas",
+    "plans": {
+      "mostPopular": "Mais Popular",
+      "free": {
+        "name": "Gratuito",
+        "period": "mês",
+        "feature1": "Rastreamento de tempo básico",
+        "feature2": "Gestão básica de sessões",
+        "feature3": "Análises limitadas",
+        "feature4": "Exportação básica"
+      },
+      "basic": {
+        "name": "Básico",
+        "price": "€0.99",
+        "period": "mês",
+        "feature1": "Tudo do Gratuito",
+        "feature2": "Análises completas",
+        "feature3": "Sincronização Google Calendar",
+        "feature4": "Gestão avançada de sessões",
+        "feature5": "Exportar sessões"
+      },
+      "pro": {
+        "name": "Pro",
+        "price": "€4.99",
+        "period": "mês",
+        "feature1": "Tudo do Básico",
+        "feature2": "Análises avançadas",
+        "feature3": "Relatórios detalhados",
+        "feature4": "Funcionalidade de exportação",
+        "feature5": "Suporte prioritário",
+        "feature6": "Intervalos de datas personalizados"
+      },
+      "premiumAi": {
+        "name": "Premium AI",
+        "price": "€9.99",
+        "period": "mês",
+        "feature1": "Tudo do Pro",
+        "feature2": "Acesso ao Assistente IA (75 chamadas/mês base)",
+        "feature3": "Análise de conformidade com a lei laboral portuguesa",
+        "feature4": "Cálculos de limites legais (trabalho extra, Isenção, férias)",
+        "feature5": "Melhores práticas de RH e orientação de equilíbrio trabalho-vida",
+        "feature6": "Monitorização de conformidade e alertas proativos",
+        "feature7": "Compre pacotes de chamadas adicionais conforme necessário"
+      }
+    }
+  },
+  "sessionList": {
+    "selectDate": "Selecionar Data",
+    "viewSessionsDate": "Ver as suas sessões para qualquer data"
+  },
+  "sessions": {
+    "title": "Sessões para",
+    "invalidDate": "Data Inválida",
+    "selectValidDate": "Por favor, selecione uma data válida",
+    "sessionFound": "sessão encontrada",
+    "sessionsFound": "sessões encontradas",
+    "addSession": "Adicionar Sessão",
+    "editSession": "Editar Sessão",
+    "addManualSession": "Adicionar sessão manual",
+    "editFirstSession": "Editar primeira sessão",
+    "noSessionsRecorded": "Nenhuma sessão registada para esta data",
+    "session": "Sessão",
+    "syncToCalendar": "Sincronizar com Google Calendar",
+    "editSessionTitle": "Editar sessão",
+    "deleteSessionTitle": "Eliminar sessão",
+    "in": "Entrada",
+    "out": "Saída",
+    "regular": "Regular",
+    "unpaid": "Não Pago",
+    "paid": "Pago",
+    "regularWorkDay": "Dia de trabalho regular",
+    "overtimeDay": "Dia de trabalho extra - Horas extra pagas acumuladas",
+    "extendedHours": "Horas estendidas - Período de trabalho extra não pago",
+    "under8Hours": "Menos de 8 horas trabalhadas",
+    "working": "Trabalho"
+  },
+  "calendar": {
+    "title": "Eventos Google Calendar",
+    "description": "Ver todos os eventos do seu Google Calendar (apenas leitura)",
+    "refreshEvents": "Atualizar Eventos",
+    "eventsFor": "Eventos para",
+    "calendarNotConnected": "Calendário Não Conectado",
+    "authorizeInSettings": "Por favor, autorize o Google Calendar nas Definições para ver eventos.",
+    "loadingEvents": "A carregar eventos do calendário...",
+    "noEvents": "Nenhum evento para esta data",
+    "fromGoogleCalendar": "Do Google Calendar",
+    "location": "Localização",
+    "tokenExpired": "O seu token do Google Calendar expirou. Por favor, clique no ícone da nuvem (⚠️) no cabeçalho para atualizar, ou vá às Definições e reautorize o Google Calendar."
+  },
+  "analytics": {
+    "title": "Análises e Relatórios",
+    "loading": "A carregar análises...",
+    "daily": "Diário",
+    "weekly": "Semanal",
+    "monthly": "Mensal",
+    "yearly": "Anual",
+    "period": "Período",
+    "totalHours": "Total de Horas",
+    "daysWorked": "dias trabalhados",
+    "regularHours": "Horas Regulares",
+    "standardWorkTime": "Tempo de trabalho padrão",
+    "isencaoUnpaid": "Isenção (Não Pago)",
+    "overworkPaid": "Trabalho Extra (Pago)",
+    "over10Hours": "Mais de 10 horas",
+    "lunchTime": "Tempo de Almoço",
+    "sessions": "sessões",
+    "mealExpenses": "Despesas de Refeições",
+    "lunchDinner": "Almoço + Jantar",
+    "daysOff": "Dias de Descanso",
+    "weekendBonus": "Fim de Semana +",
+    "overworkDetails": "Detalhes do Trabalho Extra",
+    "trackAccumulated": "Acompanhe as suas horas de trabalho extra acumuladas e uso",
+    "totalAccumulated": "Total Acumulado",
+    "days": "dias",
+    "overwork": "trabalho extra",
+    "daysOffEarned": "dias de descanso",
+    "totalUsed": "Total Usado",
+    "workDays": "dias de trabalho",
+    "daysOffEarnedTitle": "Dias de Descanso Ganhos",
+    "total": "total",
+    "used": "usado",
+    "remainingAvailable": "Disponível Restante",
+    "daysAvailable": "dias disponíveis",
+    "useOverworkHours": "Usar Horas de Trabalho Extra",
+    "cancel": "Cancelar",
+    "addUsage": "+ Adicionar Uso",
+    "daysToUse": "Dias a Usar",
+    "hoursToUse": "Horas a Usar",
+    "reasonOptional": "Motivo (opcional)",
+    "reasonPlaceholder": "ex., Tempo pessoal, Compensação por atraso",
+    "submit": "Submeter",
+    "usageHistory": "Histórico de Uso",
+    "noOverworkUsed": "Ainda não foram usadas horas de trabalho extra",
+    "deleteEntry": "Eliminar esta entrada",
+    "detailedSessions": "Sessões Detalhadas",
+    "searchPlaceholder": "Pesquisar por data ou notas...",
+    "allSessions": "Todas as Sessões",
+    "weekendOnly": "Apenas Fim de Semana",
+    "withLunch": "Com Almoço",
+    "withMeals": "Com Refeições",
+    "paidOvertime": "Trabalho Extra Pago",
+    "last10": "Últimas 10",
+    "last30": "Últimas 30",
+    "last60": "Últimas 60",
+    "all": "Todas",
+    "limitSessions": "Limitar número de sessões exibidas",
+    "noSessionsFound": "Nenhuma sessão encontrada correspondente à sua pesquisa e filtros",
+    "showing": "A mostrar",
+    "of": "de",
+    "date": "Data",
+    "clockIn": "Entrada",
+    "clockOut": "Saída",
+    "total": "Total",
+    "lunch": "Almoço",
+    "meals": "Refeições €",
+    "regular": "Regular",
+    "isencao": "Isenção",
+    "overwork": "Trabalho Extra",
+    "noSessionsFoundTable": "Nenhuma sessão encontrada",
+    "exportCSV": "Exportar CSV",
+    "bankHoliday": "feriado",
+    "session": "sessão",
+    "pleaseEnterValid": "Por favor, introduza dias ou horas válidos",
+    "cannotDeductMore": "Não pode deduzir mais horas do que as disponíveis.",
+    "remaining": "Restante",
+    "tryingToDeduct": "A tentar deduzir",
+    "failedToAdd": "Falha ao adicionar dedução. Por favor, tente novamente.",
+    "confirmDelete": "Tem a certeza de que deseja eliminar esta entrada de uso de trabalho extra?",
+    "failedToDelete": "Falha ao eliminar entrada. Por favor, tente novamente."
+  },
+  "faq": {
+    "title": "Perguntas Frequentes",
+    "subtitle": "Lei Laboral Portuguesa e Uso da Aplicação",
+    "intro": {
+      "title": "Sobre a Lei Laboral Portuguesa",
+      "description": "Esta secção de FAQ fornece informações baseadas no Código do Trabalho Português (Código do Trabalho) e explica como esta aplicação o ajuda a rastrear o cumprimento das regulamentações de horas de trabalho, horas extras, pausas e períodos de descanso.",
+      "disclaimer": "Aviso Legal: Esta informação é apenas para orientação geral e não constitui aconselhamento jurídico. Para situações jurídicas específicas, consulte o Código do Trabalho Português oficial ou procure aconselhamento de um advogado de trabalho qualificado."
+    },
+    "categories": {
+      "workingHours": "Horas de Trabalho",
+      "overtime": "Horas Extras",
+      "breaksRestPeriods": "Pausas e Períodos de Descanso",
+      "weekendWork": "Trabalho ao Fim de Semana",
+      "usingThisApp": "Usando Esta Aplicação",
+      "legalCompliance": "Cumprimento Legal"
+    },
+    "additionalResources": "Recursos Adicionais",
+    "resources": {
+      "act": "ACT - Autoridade para as Condições do Trabalho",
+      "laborCode": "Código do Trabalho (PDF)",
+      "ministry": "Ministério do Trabalho, Solidariedade e Segurança Social"
+    },
+    "questions": {
+      "workingHours": {
+        "q1": {
+          "question": "Quais são as horas de trabalho padrão em Portugal?",
+          "answer": "De acordo com a lei laboral portuguesa (Código do Trabalho), o emprego a tempo inteiro é legalmente definido como 40 horas por semana, tipicamente distribuídas como 8 horas por dia ao longo de uma semana de trabalho de cinco dias. Este padrão aplica-se a várias indústrias, embora setores específicos possam ter arranjos diferentes através de acordos coletivos."
+        },
+        "q2": {
+          "question": "Qual é o tempo máximo de trabalho diário?",
+          "answer": "O tempo de trabalho diário padrão é de 8 horas por dia. Com horas extras, os trabalhadores podem trabalhar até 10 horas por dia (8 horas regulares + 2 horas de horas extras no máximo). No entanto, o total de horas extras está sujeito a limites anuais."
+        },
+        "q3": {
+          "question": "O que é Isenção de Horário de Trabalho (Isenção de Horário)?",
+          "answer": "A isenção de horário de trabalho (Artigo 218 do Código do Trabalho) proporciona maior flexibilidade na execução do horário de trabalho. Requer um acordo escrito entre trabalhador e empregador. Os trabalhadores com esta isenção mantêm ainda os seus direitos a períodos de descanso, descanso semanal, feriados obrigatórios e descanso diário de pelo menos 11 horas entre dias de trabalho."
+        }
+      },
+      "overtime": {
+        "q1": {
+          "question": "Quantas horas extras posso trabalhar?",
+          "answer": "O máximo de horas extras é limitado a 2 horas por dia. Os limites anuais são: 150 horas para empresas com 50+ trabalhadores, 175 horas para empresas menores, e até 200 horas em casos excecionais (força maior ou acordos coletivos específicos)."
+        },
+        "q2": {
+          "question": "Como são compensadas as horas extras?",
+          "answer": "Taxas de compensação de horas extras:\n• Primeira hora: 125% da taxa regular\n• Horas adicionais: 137,5% da taxa regular\n• Horas extras ao fim de semana/feriado: 150% da taxa regular\n\nOs empregadores devem solicitar horas extras com antecedência, e os trabalhadores podem recusar por circunstâncias atenuantes."
+        },
+        "q3": {
+          "question": "Quando podem os empregadores solicitar horas extras?",
+          "answer": "Os empregadores só podem solicitar horas extras quando há um aumento temporário no trabalho ou uma necessidade indispensável de evitar danos à empresa. As horas extras devem ser solicitadas com antecedência, e os trabalhadores têm o direito de recusar por razões válidas."
+        },
+        "q4": {
+          "question": "O que significa 'Isenção' (Horas Extra Não Remuneradas) nesta aplicação?",
+          "answer": "Nesta aplicação, 'Isenção' refere-se às horas trabalhadas entre 8-10 horas por dia que podem não receber compensação de horas extras se tiver um acordo de Isenção de Horário. As horas além de 10 por dia são rastreadas como 'Horas Extras Remuneradas', pois tipicamente requerem compensação adicional. A aplicação inclui um limite anual de Isenção (padrão: 200 horas/ano) - uma vez atingido, horas adicionais são automaticamente classificadas como trabalho extra remunerado para garantir conformidade."
+        },
+        "q5": {
+          "question": "Como funciona o limite anual de Isenção?",
+          "answer": "A aplicação rastreia horas de Isenção por ano civil (1 de Janeiro - 31 de Dezembro). Pode configurar o limite anual nas Definições (padrão: 200 horas/ano). Uma vez atingido o limite anual, quaisquer horas adicionais além de 8 por dia são automaticamente classificadas como trabalho extra remunerado em vez de Isenção. A página de Análises mostra o seu uso anual (ex: '150 / 200 horas (50 restantes)') para o ajudar a monitorizar o seu limite ao longo do ano."
+        }
+      },
+      "breaksRestPeriods": {
+        "q1": {
+          "question": "A que pausas tenho direito durante o trabalho?",
+          "answer": "Para períodos de trabalho superiores a 5 horas, os trabalhadores têm direito a uma pausa entre 1 hora e 2 horas. Esta pausa não pode ser tomada no início ou no fim do período de trabalho e é comummente usada para almoço."
+        },
+        "q2": {
+          "question": "Qual é o período mínimo de descanso diário?",
+          "answer": "Os trabalhadores têm direito a um mínimo de 11 horas consecutivas de descanso entre dias de trabalho. Isto aplica-se a todos os trabalhadores, incluindo aqueles com acordos de Isenção de Horário."
+        },
+        "q3": {
+          "question": "Qual é o período mínimo de descanso semanal?",
+          "answer": "Os trabalhadores têm direito a um mínimo de 24 horas consecutivas de descanso por semana, tipicamente tomadas ao domingo. Este período de descanso semanal deve idealmente ser adicionado ao período de descanso diário do dia anterior ou seguinte, resultando em aproximadamente 35 horas consecutivas de descanso."
+        },
+        "q4": {
+          "question": "Posso trabalhar durante a minha pausa de almoço?",
+          "answer": "Não. A pausa obrigatória após 5 horas de trabalho (tipicamente almoço) deve ser tomada e não pode ser trabalhada. Isto é um requisito legal sob a lei laboral portuguesa para garantir o bem-estar dos trabalhadores."
+        }
+      },
+      "weekendWork": {
+        "q1": {
+          "question": "Posso ser obrigado a trabalhar aos fins de semana?",
+          "answer": "O trabalho ao fim de semana (Sábado e Domingo) está geralmente sujeito a regras especiais e tipicamente requer o consentimento do trabalhador. É compensado a 150% da taxa regular e deve respeitar o período de descanso semanal de 24 horas consecutivas."
+        },
+        "q2": {
+          "question": "Como é compensado o trabalho ao fim de semana?",
+          "answer": "O trabalho ao fim de semana e feriados é pago a 150% da taxa regular. Alguns acordos coletivos ou políticas da empresa podem também conceder benefícios adicionais, como tempo de descanso compensatório ou bónus, que podem ser rastreados nas definições de Trabalho ao Fim de Semana desta aplicação."
+        },
+        "q3": {
+          "question": "Quais são os meus direitos se trabalhar ao domingo?",
+          "answer": "Se trabalhar ao domingo (o típico dia de descanso semanal), deve receber: compensação de horas extras a 150% de taxa, e um dia de descanso alternativo durante a semana para manter o seu direito de descanso semanal de 24 horas."
+        }
+      },
+      "usingThisApp": {
+        "q1": {
+          "question": "Como esta aplicação me ajuda a cumprir a lei laboral portuguesa?",
+          "answer": "Esta aplicação ajuda-o a:\n• Rastrear se excede 8 horas/dia (limite de horas regulares)\n• Monitorizar horas extras diárias (máx 2h/dia)\n• Rastrear o total de horas extras para se manter dentro dos limites anuais (150-200h/ano)\n• Registar pausas e períodos de almoço\n• Calcular taxas de compensação adequadas de horas extras\n• Documentar trabalho ao fim de semana e compensação especial\n• Exportar relatórios para registos de conformidade legal\n\nCom Premium AI, o Assistente IA fornece análise de conformidade especializada, cálculos de limites legais e alertas proativos baseados na lei laboral portuguesa (Código do Trabalho)."
+        },
+        "q2": {
+          "question": "O que é o Assistente IA e o que pode fazer?",
+          "answer": "O Assistente IA (funcionalidade Premium AI) é um assistente inteligente com experiência em lei laboral portuguesa e melhores práticas de RH. Pode:\n• Analisar os seus padrões de trabalho contra requisitos da lei laboral portuguesa\n• Calcular percentagens de conformidade (ex: 'Usou 75% do seu limite de Isenção')\n• Fornecer cálculos de limites legais para horas extras, Isenção e férias\n• Oferecer melhores práticas de RH e orientação de equilíbrio trabalho-vida\n• Alertá-lo quando se aproxima de limites legais\n• Responder a questões sobre os seus dados de rastreamento de tempo, análises e definições\n• Fornecer recomendações personalizadas baseadas nos seus padrões de trabalho reais\n\nO Assistente IA usa OpenRouter para encaminhamento multi-modelo IA e tem acesso aos seus dados de rastreamento de tempo para aconselhamento contextual."
+        },
+        "q3": {
+          "question": "O que é Premium AI e o que inclui?",
+          "answer": "Premium AI (€9,99/mês) inclui:\n• Todas as funcionalidades do plano Pro (análises avançadas, relatórios detalhados, suporte prioritário)\n• Acesso ao Assistente IA com 75 chamadas/mês de alocação base\n• Análise de conformidade com a lei laboral portuguesa\n• Cálculos de limites legais (horas extras, Isenção, férias)\n• Melhores práticas de RH e orientação de equilíbrio trabalho-vida\n• Monitorização de conformidade e alertas proativos\n• Aconselhamento especializado sobre padrões de trabalho e produtividade\n\nPode comprar pacotes de chamadas adicionais (+50 chamadas por €4,99) que nunca expiram, perfeitos para utilizadores avançados que precisam de mais assistência IA."
+        },
+        "q4": {
+          "question": "Como funcionam os pacotes de chamadas?",
+          "answer": "Os pacotes de chamadas são chamadas adicionais do Assistente IA que pode comprar além da sua alocação mensal base:\n• Cada pacote adiciona +50 chamadas por €4,99\n• Os pacotes de chamadas nunca expiram e acumulam indefinidamente\n• Usados após a alocação base (75 chamadas/mês) ser esgotada\n• Perfeitos para utilizadores avançados que precisam de mais assistência IA\n• Rastreie o seu uso: 'X/Y chamadas restantes (Y base + Z pacotes)'\n• Compre pacotes na página do Assistente IA ou página Premium+ quando tiver uma subscrição Premium AI"
+        },
+        "q5": {
+          "question": "Por que a aplicação separa horas 'Regulares', 'Isenção' e 'Trabalho Extra'?",
+          "answer": "A aplicação categoriza horas para alinhar com a lei portuguesa:\n• Horas Regulares (0-8h): Tempo de trabalho padrão\n• Isenção/Extra Não Remunerado (8-10h): Horas que podem não ser compensadas se tiver Isenção de Horário\n• Trabalho Extra Remunerado (10h+): Horas que tipicamente requerem compensação de horas extras a taxas mais altas\n\nIsto ajuda-o a si e ao seu empregador a rastrear conformidade e compensação adequada."
+        },
+        "q6": {
+          "question": "Devo rastrear as minhas pausas de almoço na aplicação?",
+          "answer": "Sim! Rastrear pausas de almoço garante conformidade com o requisito legal de pausas após 5 horas de trabalho. A aplicação permite-lhe:\n• Marcar quando tomou uma pausa de almoço\n• Registar a duração (1-2 horas conforme a lei)\n• Calcular horas de trabalho reais excluindo pausas\n• Rastrear despesas de almoço se aplicável"
+        },
+        "q7": {
+          "question": "Como posso usar a funcionalidade de rastreamento de trabalho extra?",
+          "answer": "O rastreamento de trabalho extra ajuda-o a monitorizar horas extras acumuladas:\n• Ver total de horas extras (convertido em dias de trabalho: 8h = 1 dia)\n• Rastrear quando as horas extras são usadas/compensadas\n• Garantir que não excede limites anuais (150-200h)\n• Registar razões para uso de horas extras\n• Manter documentação de conformidade"
+        }
+      },
+      "legalCompliance": {
+        "q1": {
+          "question": "Os empregadores são obrigados a rastrear horas de trabalho?",
+          "answer": "Sim. Os empregadores em Portugal têm uma obrigação legal de manter registos precisos das horas de trabalho dos trabalhadores. Isto é crucial para demonstrar conformidade com horas máximas de trabalho, limites de horas extras e requisitos de período de descanso. Esta aplicação pode servir como a sua ferramenta de rastreamento pessoal."
+        },
+        "q2": {
+          "question": "O que devo fazer se regularmente exceder limites de horas extras?",
+          "answer": "Se regularmente exceder os limites legais de horas extras (2h/dia ou 150-200h/ano), deve:\n1. Documentar as suas horas (use esta aplicação para registos)\n2. Discutir a situação com o seu empregador\n3. Contactar a autoridade laboral portuguesa (ACT - Autoridade para as Condições do Trabalho)\n4. Procurar aconselhamento de um sindicato ou advogado de trabalho"
+        },
+        "q3": {
+          "question": "Onde posso encontrar informações oficiais sobre a lei laboral portuguesa?",
+          "answer": "Fontes oficiais para lei laboral portuguesa:\n• ACT (Autoridade para as Condições do Trabalho): https://www.act.gov.pt\n• Código do Trabalho (Código Laboral): Disponível no site da ACT\n• Ministério do Trabalho: https://www.mtsss.gov.pt\n• Autoridade Europeia do Trabalho: https://www.ela.europa.eu\n\nConsulte sempre fontes oficiais ou profissionais legais para aconselhamento jurídico específico."
+        }
+      }
+    }
+  },
+  "about": {
+    "title": "Clock In",
+    "subtitle": "Gestor de Tempo Inteligente",
+    "aboutThisApp": {
+      "title": "Sobre Esta Aplicação",
+      "paragraph1": "Clock In é uma solução abrangente de rastreamento de tempo projetada para ajudar profissionais a gerir as suas horas de trabalho com precisão e inteligência. Seja freelancer, contratado, trabalhador remoto ou funcionário a tempo inteiro, o Clock In fornece ferramentas poderosas para rastrear tempo, analisar padrões, gerir despesas e otimizar a sua produtividade.",
+      "paragraph2": "Construído com tecnologias web modernas e projetado para uso no mundo real, o Clock In adapta-se ao seu fluxo de trabalho e fornece informações acionáveis sobre como passa o seu tempo."
+    },
+    "howItWorks": {
+      "title": "Como Funciona",
+      "step1": {
+        "title": "Entrar",
+        "description": "Clique no botão grande na página inicial para começar a rastrear o seu tempo."
+      },
+      "step2": {
+        "title": "Trabalhar",
+        "description": "O temporizador corre automaticamente, mostrando-lhe divisões em tempo real das suas horas."
+      },
+      "step3": {
+        "title": "Sair",
+        "description": "Clique no botão novamente para parar o rastreamento. A sua sessão é guardada automaticamente."
+      }
+    },
+    "hourCategories": {
+      "title": "Categorias de Horas",
+      "regularHours": {
+        "title": "Horas Regulares",
+        "description": "O seu tempo de trabalho padrão até ao seu limite configurado (padrão: 8 horas). Estas horas formam a base do seu horário de trabalho diário."
+      },
+      "isencao": {
+        "title": "Isenção - Extra Não Remunerado (Opcional)",
+        "description": "Configure o rastreamento de horas extras não remuneradas para horas além do tempo regular. Pode ser ativado/desativado nas Definições com limites personalizados. Limite anual (padrão: 200 horas/ano) garante conformidade - uma vez atingido, horas adicionais são classificadas como trabalho extra remunerado."
+      },
+      "overwork": {
+        "title": "Trabalho Extra - Horas Extras Remuneradas",
+        "description": "Horas além do seu limite de horas extras que são compensadas. O trabalho extra acumulado pode ser rastreado e convertido em dias de descanso (8h = 1 dia)."
+      },
+      "lunch": {
+        "title": "Hora de Almoço e Pausas",
+        "description": "Rastreie a duração do almoço com horas e minutos personalizáveis. Defina o seu tempo de almoço padrão nas Definições para criação rápida de sessões."
+      }
+    },
+    "keyFeatures": {
+      "title": "Funcionalidades Principais",
+      "realTimeTracking": {
+        "title": "Rastreamento em Tempo Real",
+        "description": "Temporizador ao vivo com categorização automática de horas enquanto trabalha"
+      },
+      "interactiveCalendar": {
+        "title": "Calendário Interativo",
+        "description": "Indicadores de sessão visual e navegação rápida de datas"
+      },
+      "advancedAnalytics": {
+        "title": "Análises Avançadas",
+        "description": "Relatórios diários, semanais, mensais e anuais com divisões detalhadas"
+      },
+      "googleCalendarIntegration": {
+        "title": "Integração Google Calendar",
+        "description": "Sincronização de um clique de sessões de trabalho para o seu calendário"
+      },
+      "flexibleLunchTracking": {
+        "title": "Rastreamento Flexível de Almoço",
+        "description": "Duração do almoço personalizável com horas e minutos"
+      },
+      "expenseManagement": {
+        "title": "Gestão de Despesas",
+        "description": "Rastreie despesas de almoço e jantar por sessão"
+      },
+      "locationNotes": {
+        "title": "Notas de Localização",
+        "description": "Adicione localização de trabalho às sessões (escritório, casa, local do cliente, etc.)"
+      },
+      "weekendWorkBenefits": {
+        "title": "Benefícios de Trabalho ao Fim de Semana",
+        "description": "Configure dias de descanso ganhos e compensação de bónus para trabalho ao fim de semana"
+      },
+      "overworkManagement": {
+        "title": "Gestão de Trabalho Extra",
+        "description": "Rastreie horas extras acumuladas e histórico de uso (8h = 1 dia de descanso)"
+      },
+      "customizableThresholds": {
+        "title": "Limites Personalizáveis",
+        "description": "Configure horas regulares, extra não remunerado e limites de horas extras remuneradas"
+      },
+      "aiAdvisor": {
+        "title": "Assistente IA (Premium AI)",
+        "description": "Análise de conformidade alimentada por IA com experiência em lei laboral portuguesa e orientação de RH"
+      },
+      "premiumPlans": {
+        "title": "Planos Premium",
+        "description": "Escolha entre planos Básico, Pro ou Premium AI com funcionalidades avançadas e assistência IA"
+      }
+    },
+    "aiAdvisorSection": {
+      "title": "Assistente IA - Funcionalidade Premium AI",
+      "description": "Os assinantes Premium AI têm acesso a um Assistente IA inteligente alimentado por OpenRouter com experiência em lei laboral portuguesa e melhores práticas de RH.",
+      "portugueseLaborLaw": {
+        "title": "🇵🇹 Experiência em Lei Laboral Portuguesa",
+        "description": "A IA compreende o Código do Trabalho e fornece análise de conformidade baseada na lei laboral portuguesa real"
+      },
+      "legalLimitCalculations": {
+        "title": "⚖️ Cálculos de Limites Legais",
+        "description": "Rastreamento e cálculos automáticos para limites de horas extras, uso de Isenção, direitos de férias e percentagens de conformidade"
+      },
+      "hrBestPractices": {
+        "title": "👥 Melhores Práticas de RH",
+        "description": "Orientação de equilíbrio trabalho-vida, dicas de prevenção de esgotamento e recomendações de otimização de produtividade"
+      },
+      "proactiveAlerts": {
+        "title": "🔔 Alertas Proativos",
+        "description": "Avisos antecipados ao aproximar-se de limites legais, ajudando-o a manter a conformidade antes que surjam problemas"
+      },
+      "contextAwareAnalysis": {
+        "title": "📊 Análise Contextual",
+        "description": "A IA tem acesso às suas sessões, definições e padrões de trabalho para aconselhamento personalizado e relevante"
+      },
+      "callPackSystem": {
+        "title": "📦 Sistema de Pacotes de Chamadas",
+        "description": "75 chamadas/mês incluídas, com opção de comprar pacotes de +50 chamadas (€4.99, nunca expiram) para utilizadores avançados"
+      },
+      "poweredBy": "Alimentado por OpenRouter - O encaminhamento multi-modelo IA garante desempenho e fiabilidade ótimos."
+    },
+    "analyticsReports": {
+      "title": "Análises e Relatórios",
+      "description": "Obtenha informações profundas sobre os seus padrões de trabalho com painéis de análises abrangentes:",
+      "multipleReportViews": {
+        "title": "📊 Múltiplas Vistas de Relatório",
+        "description": "Análise de período de tempo diária, semanal, mensal e anual"
+      },
+      "searchFilter": {
+        "title": "🔍 Pesquisa e Filtro",
+        "description": "Encontre sessões por data, notas, trabalho ao fim de semana, refeições ou horas extras"
+      },
+      "visualStatsCards": {
+        "title": "📈 Cartões de Estatísticas Visuais",
+        "description": "Total de horas, tempo regular, isenção, trabalho extra, hora de almoço e despesas"
+      },
+      "csvExport": {
+        "title": "💾 Exportação CSV",
+        "description": "Descarregue relatórios detalhados para folhas de cálculo, folha de pagamento ou sistemas de contabilidade"
+      },
+      "overworkTracker": {
+        "title": "⏱️ Rastreador de Trabalho Extra",
+        "description": "Monitore horas extras acumuladas com conversão para dias de descanso e histórico de uso"
+      },
+      "expenseReports": {
+        "title": "💰 Relatórios de Despesas",
+        "description": "Rastreie custos de refeições com totais separados de despesas de almoço e jantar"
+      }
+    },
+    "technologyStack": {
+      "title": "Pilha Tecnológica",
+      "description": "Construído com tecnologias modernas e fiáveis para garantir uma experiência rápida, segura e escalável:",
+      "react": "React 18 - Framework de UI moderno com hooks e otimizações de desempenho",
+      "firebase": "Firebase - Base de dados em tempo real e autenticação",
+      "googleCalendar": "Google Calendar API - Integração perfeita de calendário",
+      "openRouter": "OpenRouter API - Encaminhamento multi-modelo IA para Assistente IA (alimentado por OpenRouter)",
+      "vite": "Vite - Ferramenta de construção extremamente rápida com divisão de código",
+      "vercel": "Vercel - Implementação de rede global edge",
+      "optimized": "Otimizado seguindo as melhores práticas React da Vercel para máximo desempenho e experiência do utilizador."
+    },
+    "performanceReliability": {
+      "title": "Desempenho e Fiabilidade",
+      "description": "O Clock In é construído com desempenho e fiabilidade como principais prioridades:",
+      "fastLoading": {
+        "title": "⚡ Carregamento Rápido",
+        "description": "Divisão de código e carregamento preguiçoso reduzem o tempo de carregamento inicial em 30-50%"
+      },
+      "parallelOperations": {
+        "title": "🔄 Operações Paralelas",
+        "description": "O carregamento de dados acontece em paralelo, fazendo as páginas carregarem 50-70% mais rápido"
+      },
+      "smartCaching": {
+        "title": "💾 Cache Inteligente",
+        "description": "Cache inteligente de pedidos previne chamadas de API duplicadas"
+      },
+      "errorRecovery": {
+        "title": "🛡️ Recuperação de Erros",
+        "description": "Limites de erro garantem tratamento gracioso de problemas inesperados"
+      },
+      "optimizedRendering": {
+        "title": "🎯 Renderização Otimizada",
+        "description": "Memoização e otimização de componentes para interações suaves"
+      },
+      "smallerBundles": {
+        "title": "📦 Pacotes Menores",
+        "description": "Divisão de código baseada em rotas reduz o tamanho do pacote em 20-30%"
+      }
+    },
+    "footer": {
+      "version": "Versão 2.2.0 - Janeiro 2026",
+      "copyright": "© 2026 Clock In - Gestor de Tempo Inteligente. Construído para profissionais que valorizam o seu tempo.",
+      "latestUpdate": "Última atualização: Assistente IA com experiência em lei laboral portuguesa, planos Premium AI e sistema de pacotes de chamadas"
+    }
+  }
+}

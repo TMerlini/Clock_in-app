@@ -5,9 +5,12 @@ import { getCachedQuery, invalidateCache } from '../lib/queryCache';
 import { Download, TrendingUp, Clock, AlertTriangle, DollarSign, Coffee, Calendar as CalendarIcon, MinusCircle, UtensilsCrossed, CalendarDays, Trash2, Search, Filter, ArrowUp, ArrowDown } from 'lucide-react';
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfYear, endOfYear, eachDayOfInterval } from 'date-fns';
 import { formatHoursMinutes, calculateUsedIsencaoHours } from '../lib/utils';
+import { useTranslation } from 'react-i18next';
+import { getDateFnsLocale } from '../lib/i18n';
 import './Analytics.css';
 
 export const Analytics = memo(function Analytics({ user }) {
+  const { t } = useTranslation();
   const [sessions, setSessions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [reportType, setReportType] = useState('monthly');
@@ -131,7 +134,7 @@ export const Analytics = memo(function Analytics({ user }) {
     if (searchTerm) {
       const search = searchTerm.toLowerCase();
       filtered = filtered.filter(s => {
-        const date = format(new Date(s.clockIn), 'MMM dd, yyyy').toLowerCase();
+        const date = format(new Date(s.clockIn), 'MMM dd, yyyy', { locale: getDateFnsLocale() }).toLowerCase();
         const notes = (s.notes || '').toLowerCase();
         return date.includes(search) || notes.includes(search);
       });
@@ -325,7 +328,7 @@ export const Analytics = memo(function Analytics({ user }) {
     const hours = isNaN(hoursValue) || hoursValue < 0 ? 0 : hoursValue;
 
     if (days <= 0 && hours <= 0) {
-      alert('Please enter valid days or hours');
+      alert(t('analytics.pleaseEnterValid'));
       return;
     }
 
@@ -352,7 +355,7 @@ export const Analytics = memo(function Analytics({ user }) {
     const epsilon = 0.1;
     
     if (totalHours > (totalAvailable + epsilon)) {
-      alert(`You cannot deduct more hours than available.\n\nRemaining: ${formatHoursMinutes(totalAvailable)} (${overworkStats.remainingDays.toFixed(2)} days)\n  - Days Off: ${overworkStats.remainingDaysOff.toFixed(2)} days\n  - Overwork: ${formatHoursMinutes(overworkStats.remainingOverworkHours)}\nTrying to deduct: ${formatHoursMinutes(totalHours)} (${(totalHours / 8).toFixed(2)} days)`);
+      alert(`${t('analytics.cannotDeductMore')}\n\n${t('analytics.remaining')}: ${formatHoursMinutes(totalAvailable)} (${overworkStats.remainingDays.toFixed(2)} ${t('analytics.days')})\n  - ${t('analytics.daysOff')}: ${overworkStats.remainingDaysOff.toFixed(2)} ${t('analytics.days')}\n  - ${t('analytics.overwork')}: ${formatHoursMinutes(overworkStats.remainingOverworkHours)}\n${t('analytics.tryingToDeduct')}: ${formatHoursMinutes(totalHours)} (${(totalHours / 8).toFixed(2)} ${t('analytics.days')})`);
       return;
     }
     
@@ -385,16 +388,24 @@ export const Analytics = memo(function Analytics({ user }) {
       setDeductionReason('');
       setShowDeductionForm(false);
 
-      // Reload deductions
-      await loadOverworkDeductions();
+      // Reload deductions by invalidating cache and reloading
+      invalidateCache('overworkDeductions', { userId: user.uid });
+      const reloadQuery = query(deductionsRef, where('userId', '==', user.uid));
+      const reloadSnapshot = await getDocs(reloadQuery);
+      const reloadedDeductions = [];
+      reloadSnapshot.forEach((doc) => {
+        reloadedDeductions.push({ id: doc.id, ...doc.data() });
+      });
+      reloadedDeductions.sort((a, b) => b.timestamp - a.timestamp);
+      setOverworkDeductions(reloadedDeductions);
     } catch (error) {
       console.error('Error adding deduction:', error);
-      alert('Failed to add deduction. Please try again.');
+      alert(t('analytics.failedToAdd'));
     }
   };
 
   const handleDeleteDeduction = async (deductionId) => {
-    if (!confirm('Are you sure you want to delete this overwork usage entry?')) {
+    if (!confirm(t('analytics.confirmDelete'))) {
       return;
     }
 
@@ -402,11 +413,20 @@ export const Analytics = memo(function Analytics({ user }) {
       const deductionRef = doc(db, 'overworkDeductions', deductionId);
       await deleteDoc(deductionRef);
 
-      // Reload deductions
-      await loadOverworkDeductions();
+      // Reload deductions by invalidating cache and reloading
+      invalidateCache('overworkDeductions', { userId: user.uid });
+      const deductionsRef = collection(db, 'overworkDeductions');
+      const q = query(deductionsRef, where('userId', '==', user.uid));
+      const querySnapshot = await getDocs(q);
+      const deductions = [];
+      querySnapshot.forEach((doc) => {
+        deductions.push({ id: doc.id, ...doc.data() });
+      });
+      deductions.sort((a, b) => b.timestamp - a.timestamp);
+      setOverworkDeductions(deductions);
     } catch (error) {
       console.error('Error deleting deduction:', error);
-      alert('Failed to delete entry. Please try again.');
+      alert(t('analytics.failedToDelete'));
     }
   };
 
@@ -435,9 +455,9 @@ export const Analytics = memo(function Analytics({ user }) {
     // Header Section
     lines.push(csvRow(['CLOCK IN APP - TIME TRACKING REPORT']));
     lines.push(csvRow([]));
-    lines.push(csvRow(['Period:', `${format(start, 'MMM dd, yyyy')} - ${format(end, 'MMM dd, yyyy')}`]));
+    lines.push(csvRow(['Period:', `${format(start, 'MMM dd, yyyy', { locale: getDateFnsLocale() })} - ${format(end, 'MMM dd, yyyy', { locale: getDateFnsLocale() })}`]));
     lines.push(csvRow(['Report Type:', reportType.charAt(0).toUpperCase() + reportType.slice(1)]));
-    lines.push(csvRow(['Generated:', format(new Date(), 'MMM dd, yyyy HH:mm:ss')]));
+    lines.push(csvRow(['Generated:', format(new Date(), 'MMM dd, yyyy HH:mm:ss', { locale: getDateFnsLocale() })]));
     lines.push(csvRow([]));
 
     // Summary Section
@@ -537,7 +557,7 @@ export const Analytics = memo(function Analytics({ user }) {
   if (loading) {
     return (
       <div className="analytics-container">
-        <div className="loading">Loading analytics...</div>
+        <div className="loading">{t('analytics.loading')}</div>
       </div>
     );
   }
@@ -545,7 +565,7 @@ export const Analytics = memo(function Analytics({ user }) {
   return (
     <div className="analytics-container">
       <div className="analytics-header">
-        <h1>Analytics & Reports</h1>
+        <h1>{t('analytics.title')}</h1>
       </div>
 
       <div className="report-controls">
@@ -554,25 +574,25 @@ export const Analytics = memo(function Analytics({ user }) {
             className={`type-btn ${reportType === 'daily' ? 'active' : ''}`}
             onClick={() => setReportType('daily')}
           >
-            Daily
+            {t('analytics.daily')}
           </button>
           <button
             className={`type-btn ${reportType === 'weekly' ? 'active' : ''}`}
             onClick={() => setReportType('weekly')}
           >
-            Weekly
+            {t('analytics.weekly')}
           </button>
           <button
             className={`type-btn ${reportType === 'monthly' ? 'active' : ''}`}
             onClick={() => setReportType('monthly')}
           >
-            Monthly
+            {t('analytics.monthly')}
           </button>
           <button
             className={`type-btn ${reportType === 'yearly' ? 'active' : ''}`}
             onClick={() => setReportType('yearly')}
           >
-            Yearly
+            {t('analytics.yearly')}
           </button>
         </div>
 
@@ -585,9 +605,9 @@ export const Analytics = memo(function Analytics({ user }) {
       </div>
 
       <div className="period-display">
-        <span className="period-label">Period:</span>
+        <span className="period-label">{t('analytics.period')}:</span>
         <span className="period-value">
-          {format(start, 'MMM dd, yyyy')} - {format(end, 'MMM dd, yyyy')}
+          {format(start, 'MMM dd, yyyy', { locale: getDateFnsLocale() })} - {format(end, 'MMM dd, yyyy', { locale: getDateFnsLocale() })}
         </span>
       </div>
 
@@ -597,9 +617,9 @@ export const Analytics = memo(function Analytics({ user }) {
             <Clock />
           </div>
           <div className="stat-content">
-            <div className="stat-label">Total Hours</div>
+            <div className="stat-label">{t('analytics.totalHours')}</div>
             <div className="stat-value">{formatHoursMinutes(stats.totalHours)}</div>
-            <div className="stat-sublabel">{stats.totalDays} days worked</div>
+            <div className="stat-sublabel">{stats.totalDays} {t('analytics.daysWorked')}</div>
           </div>
         </div>
 
@@ -608,9 +628,9 @@ export const Analytics = memo(function Analytics({ user }) {
             <TrendingUp />
           </div>
           <div className="stat-content">
-            <div className="stat-label">Regular Hours</div>
+            <div className="stat-label">{t('analytics.regularHours')}</div>
             <div className="stat-value">{formatHoursMinutes(stats.regularHours)}</div>
-            <div className="stat-sublabel">Standard work time</div>
+            <div className="stat-sublabel">{t('analytics.standardWorkTime')}</div>
           </div>
         </div>
 
@@ -619,10 +639,10 @@ export const Analytics = memo(function Analytics({ user }) {
             <AlertTriangle />
           </div>
           <div className="stat-content">
-            <div className="stat-label">Isenção (Unpaid)</div>
+            <div className="stat-label">{t('analytics.isencaoUnpaid')}</div>
             <div className="stat-value">{formatHoursMinutes(stats.unpaidHours)}</div>
             <div className="stat-sublabel">
-              {`${formatHoursMinutes(annualIsencaoUsage.used)} / ${annualIsencaoUsage.limit}h (${formatHoursMinutes(annualIsencaoUsage.remaining)} remaining)`}
+              {`${formatHoursMinutes(annualIsencaoUsage.used)} / ${annualIsencaoUsage.limit}h (${formatHoursMinutes(annualIsencaoUsage.remaining)} ${t('analytics.remaining')})`}
             </div>
           </div>
         </div>
@@ -632,9 +652,9 @@ export const Analytics = memo(function Analytics({ user }) {
             <DollarSign />
           </div>
           <div className="stat-content">
-            <div className="stat-label">Overwork (Paid)</div>
+            <div className="stat-label">{t('analytics.overworkPaid')}</div>
             <div className="stat-value">{formatHoursMinutes(stats.paidOvertimeHours)}</div>
-            <div className="stat-sublabel">Over 10 hours</div>
+            <div className="stat-sublabel">{t('analytics.over10Hours')}</div>
           </div>
         </div>
 
@@ -643,9 +663,9 @@ export const Analytics = memo(function Analytics({ user }) {
             <Coffee />
           </div>
           <div className="stat-content">
-            <div className="stat-label">Lunch Time</div>
+            <div className="stat-label">{t('analytics.lunchTime')}</div>
             <div className="stat-value">{formatHoursMinutes(stats.lunchHours)}</div>
-            <div className="stat-sublabel">{stats.sessionsWithLunch} sessions</div>
+            <div className="stat-sublabel">{stats.sessionsWithLunch} {t('analytics.sessions')}</div>
           </div>
         </div>
 
@@ -654,9 +674,9 @@ export const Analytics = memo(function Analytics({ user }) {
             <UtensilsCrossed />
           </div>
           <div className="stat-content">
-            <div className="stat-label">Meal Expenses</div>
+            <div className="stat-label">{t('analytics.mealExpenses')}</div>
             <div className="stat-value">€{stats.totalMealExpenses.toFixed(2)}</div>
-            <div className="stat-sublabel">Lunch + Dinner</div>
+            <div className="stat-sublabel">{t('analytics.lunchDinner')}</div>
           </div>
         </div>
 
@@ -665,12 +685,12 @@ export const Analytics = memo(function Analytics({ user }) {
             <CalendarDays />
           </div>
           <div className="stat-content">
-            <div className="stat-label">Days Off</div>
+            <div className="stat-label">{t('analytics.daysOff')}</div>
             <div className="stat-value">{stats.totalWeekendDaysOff.toFixed(1)}</div>
             <div className="stat-sublabel">
               {stats.totalBenefitSessions > 0 
-                ? `${stats.weekendSessions} weekend${stats.bankHolidaySessions > 0 ? ` + ${stats.bankHolidaySessions} bank holiday` : ''} session${stats.totalBenefitSessions > 1 ? 's' : ''}`
-                : '0 sessions'}
+                ? `${stats.weekendSessions} ${t('analytics.weekendOnly')}${stats.bankHolidaySessions > 0 ? ` + ${stats.bankHolidaySessions} ${t('analytics.bankHoliday', { defaultValue: 'bank holiday' })}` : ''} ${stats.totalBenefitSessions > 1 ? t('analytics.sessions') : t('analytics.sessions', { defaultValue: 'session' })}`
+                : `0 ${t('analytics.sessions')}`}
             </div>
           </div>
         </div>
@@ -680,12 +700,12 @@ export const Analytics = memo(function Analytics({ user }) {
             <DollarSign />
           </div>
           <div className="stat-content">
-            <div className="stat-label">Weekend +</div>
+            <div className="stat-label">{t('analytics.weekendBonus')}</div>
             <div className="stat-value">€{stats.totalWeekendBonus.toFixed(2)}</div>
             <div className="stat-sublabel">
               {stats.totalBenefitSessions > 0 
-                ? `${stats.weekendSessions} weekend${stats.bankHolidaySessions > 0 ? ` + ${stats.bankHolidaySessions} bank holiday` : ''} session${stats.totalBenefitSessions > 1 ? 's' : ''}`
-                : '0 sessions'}
+                ? `${stats.weekendSessions} ${t('analytics.weekendOnly')}${stats.bankHolidaySessions > 0 ? ` + ${stats.bankHolidaySessions} ${t('analytics.bankHoliday', { defaultValue: 'bank holiday' })}` : ''} ${stats.totalBenefitSessions > 1 ? t('analytics.sessions') : t('analytics.sessions', { defaultValue: 'session' })}`
+                : `0 ${t('analytics.sessions')}`}
             </div>
           </div>
         </div>
@@ -697,8 +717,8 @@ export const Analytics = memo(function Analytics({ user }) {
           <div className="header-left">
             <CalendarIcon className="section-icon" />
             <div>
-              <h2>Overwork Details</h2>
-              <p className="section-subtitle">Track your accumulated overwork hours and usage</p>
+              <h2>{t('analytics.overworkDetails')}</h2>
+              <p className="section-subtitle">{t('analytics.trackAccumulated')}</p>
             </div>
           </div>
         </div>
@@ -708,16 +728,16 @@ export const Analytics = memo(function Analytics({ user }) {
                 <div className="overwork-stat-card total-accumulated">
                   <div className="overwork-stat-header">
                     <Clock className="overwork-stat-icon" />
-                    <span className="overwork-stat-label">Total Accumulated</span>
+                    <span className="overwork-stat-label">{t('analytics.totalAccumulated')}</span>
                   </div>
                   <div className="overwork-stat-value">
-                    {overworkStats.totalAvailableDays.toFixed(1)} days
+                    {overworkStats.totalAvailableDays.toFixed(1)} {t('analytics.days')}
                   </div>
                   <div className="overwork-stat-sublabel">
                     {formatHoursMinutes(overworkStats.totalAvailableHours)}
                     <br />
                     <span style={{ fontSize: '0.75rem', opacity: 0.8 }}>
-                      ({overworkStats.totalOverworkDays.toFixed(1)} overwork + {overworkStats.totalDaysOffDays.toFixed(1)} days off)
+                      ({overworkStats.totalOverworkDays.toFixed(1)} {t('analytics.overwork')} + {overworkStats.totalDaysOffDays.toFixed(1)} {t('analytics.daysOffEarned')})
                     </span>
                   </div>
                 </div>
@@ -725,27 +745,27 @@ export const Analytics = memo(function Analytics({ user }) {
                 <div className="overwork-stat-card total-used">
                   <div className="overwork-stat-header">
                     <MinusCircle className="overwork-stat-icon" />
-                    <span className="overwork-stat-label">Total Used</span>
+                    <span className="overwork-stat-label">{t('analytics.totalUsed')}</span>
                   </div>
                   <div className="overwork-stat-value">{formatHoursMinutes(overworkStats.totalDeductedHours)}</div>
                   <div className="overwork-stat-sublabel">
-                    {overworkStats.deductedDays.toFixed(2)} work days
+                    {overworkStats.deductedDays.toFixed(2)} {t('analytics.workDays')}
                   </div>
                 </div>
 
                 <div className="overwork-stat-card days-off">
                   <div className="overwork-stat-header">
                     <CalendarDays className="overwork-stat-icon" />
-                    <span className="overwork-stat-label">Days Off Earned</span>
+                    <span className="overwork-stat-label">{t('analytics.daysOffEarnedTitle')}</span>
                   </div>
                   <div className="overwork-stat-value">{overworkStats.remainingDaysOff.toFixed(1)}</div>
                   <div className="overwork-stat-sublabel">
-                    {overworkStats.totalWeekendDaysOff.toFixed(1)} total - {overworkStats.totalDeductedDaysOff.toFixed(1)} used
+                    {overworkStats.totalWeekendDaysOff.toFixed(1)} {t('analytics.total')} - {overworkStats.totalDeductedDaysOff.toFixed(1)} {t('analytics.used')}
                     <br />
                     <span style={{ fontSize: '0.75rem', opacity: 0.8 }}>
                       {stats.totalBenefitSessions > 0 
-                        ? `${stats.weekendSessions} weekend${stats.bankHolidaySessions > 0 ? ` + ${stats.bankHolidaySessions} bank holiday` : ''} session${stats.totalBenefitSessions > 1 ? 's' : ''}`
-                        : '0 sessions'}
+                        ? `${stats.weekendSessions} ${t('analytics.weekendOnly')}${stats.bankHolidaySessions > 0 ? ` + ${stats.bankHolidaySessions} ${t('analytics.bankHoliday', { defaultValue: 'bank holiday' })}` : ''} ${stats.totalBenefitSessions > 1 ? t('analytics.sessions') : t('analytics.sessions', { defaultValue: 'session' })}`
+                        : `0 ${t('analytics.sessions')}`}
                     </span>
                   </div>
                 </div>
@@ -753,14 +773,14 @@ export const Analytics = memo(function Analytics({ user }) {
                 <div className="overwork-stat-card remaining">
                   <div className="overwork-stat-header">
                     <DollarSign className="overwork-stat-icon" />
-                    <span className="overwork-stat-label">Remaining Available</span>
+                    <span className="overwork-stat-label">{t('analytics.remainingAvailable')}</span>
                   </div>
                   <div className="overwork-stat-value highlight">{formatHoursMinutes(overworkStats.remainingAvailableHours)}</div>
                   <div className="overwork-stat-sublabel">
-                    {overworkStats.remainingDays.toFixed(1)} days available
+                    {overworkStats.remainingDays.toFixed(1)} {t('analytics.daysAvailable')}
                     <br />
                     <span style={{ fontSize: '0.75rem', opacity: 0.8 }}>
-                      ({overworkStats.remainingDaysOff.toFixed(1)} days off + {formatHoursMinutes(overworkStats.remainingOverworkHours)} overwork)
+                      ({overworkStats.remainingDaysOff.toFixed(1)} {t('analytics.daysOffEarned')} + {formatHoursMinutes(overworkStats.remainingOverworkHours)} {t('analytics.overwork')})
                     </span>
                   </div>
                 </div>
@@ -770,12 +790,12 @@ export const Analytics = memo(function Analytics({ user }) {
         {/* Deduction Management Section */}
         <div className="deduction-management">
           <div className="deduction-header">
-            <h3>Use Overwork Hours</h3>
+            <h3>{t('analytics.useOverworkHours')}</h3>
             <button
               className="toggle-form-button"
               onClick={() => setShowDeductionForm(!showDeductionForm)}
             >
-              {showDeductionForm ? 'Cancel' : '+ Add Usage'}
+              {showDeductionForm ? t('analytics.cancel') : t('analytics.addUsage')}
             </button>
           </div>
 
@@ -783,7 +803,7 @@ export const Analytics = memo(function Analytics({ user }) {
             <div className="deduction-form">
               <div className="form-row">
                 <div className="form-group">
-                  <label htmlFor="deductionDays">Days to Use</label>
+                  <label htmlFor="deductionDays">{t('analytics.daysToUse')}</label>
                   <input
                     id="deductionDays"
                     type="number"
@@ -797,7 +817,7 @@ export const Analytics = memo(function Analytics({ user }) {
                 </div>
 
                 <div className="form-group">
-                  <label htmlFor="deductionHours">Hours to Use</label>
+                  <label htmlFor="deductionHours">{t('analytics.hoursToUse')}</label>
                   <input
                     id="deductionHours"
                     type="number"
@@ -811,19 +831,19 @@ export const Analytics = memo(function Analytics({ user }) {
                 </div>
 
                 <div className="form-group reason-group">
-                  <label htmlFor="deductionReason">Reason (optional)</label>
+                  <label htmlFor="deductionReason">{t('analytics.reasonOptional')}</label>
                   <input
                     id="deductionReason"
                     type="text"
                     value={deductionReason}
                     onChange={(e) => setDeductionReason(e.target.value)}
-                    placeholder="e.g., Personal time off, Late arrival compensation"
+                    placeholder={t('analytics.reasonPlaceholder')}
                     className="form-input"
                   />
                 </div>
 
                 <button className="submit-deduction-button" onClick={handleAddDeduction}>
-                  Submit
+                  {t('analytics.submit')}
                 </button>
               </div>
             </div>
@@ -831,16 +851,16 @@ export const Analytics = memo(function Analytics({ user }) {
 
           {/* Deduction History */}
           <div className="deduction-history">
-            <h4>Usage History</h4>
+            <h4>{t('analytics.usageHistory')}</h4>
             {overworkDeductions.length === 0 ? (
-              <p className="no-deductions">No overwork hours used yet</p>
+              <p className="no-deductions">{t('analytics.noOverworkUsed')}</p>
             ) : (
               <div className="deductions-list">
                 {overworkDeductions.map((deduction) => (
                   <div key={deduction.id} className="deduction-item">
                     <div className="deduction-info">
                       <div className="deduction-date">
-                        {format(new Date(deduction.timestamp), 'MMM dd, yyyy HH:mm')}
+                        {format(new Date(deduction.timestamp), 'MMM dd, yyyy HH:mm', { locale: getDateFnsLocale() })}
                       </div>
                       <div className="deduction-reason">{deduction.reason}</div>
                     </div>
@@ -851,7 +871,7 @@ export const Analytics = memo(function Analytics({ user }) {
                     <button
                       className="delete-deduction-button"
                       onClick={() => handleDeleteDeduction(deduction.id)}
-                      title="Delete this entry"
+                      title={t('analytics.deleteEntry')}
                     >
                       <Trash2 />
                     </button>
@@ -865,13 +885,13 @@ export const Analytics = memo(function Analytics({ user }) {
 
       <div className="detailed-table">
         <div className="table-header">
-          <h2>Detailed Sessions</h2>
+          <h2>{t('analytics.detailedSessions')}</h2>
           <div className="search-filter-container">
             <div className="search-box">
               <Search />
               <input
                 type="text"
-                placeholder="Search by date or notes..."
+                placeholder={t('analytics.searchPlaceholder')}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="search-input"
@@ -884,11 +904,11 @@ export const Analytics = memo(function Analytics({ user }) {
                 onChange={(e) => setFilterType(e.target.value)}
                 className="filter-select"
               >
-                <option value="all">All Sessions</option>
-                <option value="weekend">Weekend Only</option>
-                <option value="lunch">With Lunch</option>
-                <option value="meals">With Meals</option>
-                <option value="overtime">Paid Overtime</option>
+                <option value="all">{t('analytics.allSessions')}</option>
+                <option value="weekend">{t('analytics.weekendOnly')}</option>
+                <option value="lunch">{t('analytics.withLunch')}</option>
+                <option value="meals">{t('analytics.withMeals')}</option>
+                <option value="overtime">{t('analytics.paidOvertime')}</option>
               </select>
             </div>
             <div className="filter-dropdown">
@@ -896,18 +916,18 @@ export const Analytics = memo(function Analytics({ user }) {
                 value={sessionLimit || 'all'}
                 onChange={(e) => setSessionLimit(e.target.value === 'all' ? null : parseInt(e.target.value))}
                 className="filter-select"
-                title="Limit number of sessions displayed"
+                title={t('analytics.limitSessions')}
               >
-                <option value="10">Last 10</option>
-                <option value="30">Last 30</option>
-                <option value="60">Last 60</option>
-                <option value="all">All</option>
+                <option value="10">{t('analytics.last10')}</option>
+                <option value="30">{t('analytics.last30')}</option>
+                <option value="60">{t('analytics.last60')}</option>
+                <option value="all">{t('analytics.all')}</option>
               </select>
             </div>
           </div>
         </div>
         {searchAndFilteredSessions.length === 0 ? (
-          <p className="no-data">No sessions found matching your search and filters</p>
+          <p className="no-data">{t('analytics.noSessionsFound')}</p>
         ) : (
           <>
             {(() => {
@@ -918,7 +938,7 @@ export const Analytics = memo(function Analytics({ user }) {
               if (searchTerm) {
                 const search = searchTerm.toLowerCase();
                 filtered = filtered.filter(s => {
-                  const date = format(new Date(s.clockIn), 'MMM dd, yyyy').toLowerCase();
+                  const date = format(new Date(s.clockIn), 'MMM dd, yyyy', { locale: getDateFnsLocale() }).toLowerCase();
                   const notes = (s.notes || '').toLowerCase();
                   return date.includes(search) || notes.includes(search);
                 });
@@ -947,7 +967,7 @@ export const Analytics = memo(function Analytics({ user }) {
               
               return totalCount > displayedCount && (
                 <p className="sessions-count-info" style={{ marginBottom: '1rem', fontSize: '0.9rem', color: 'var(--muted-foreground)' }}>
-                  Showing {displayedCount} of {totalCount} sessions
+                  {t('analytics.showing')} {displayedCount} {t('analytics.of')} {totalCount} {t('analytics.sessions')}
                 </p>
               );
             })()}
@@ -961,7 +981,7 @@ export const Analytics = memo(function Analytics({ user }) {
                     style={{ cursor: 'pointer', userSelect: 'none' }}
                   >
                     <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                      Date
+                      {t('analytics.date')}
                       {dateSortOrder === 'asc' ? (
                         <ArrowUp size={14} />
                       ) : (
@@ -969,21 +989,21 @@ export const Analytics = memo(function Analytics({ user }) {
                       )}
                     </span>
                   </th>
-                  <th>Clock In</th>
-                  <th>Clock Out</th>
-                  <th>Total</th>
-                  <th>Lunch</th>
-                  <th>Meals €</th>
-                  <th>Regular</th>
-                  <th>Isenção</th>
-                  <th>Overwork</th>
+                  <th>{t('analytics.clockIn')}</th>
+                  <th>{t('analytics.clockOut')}</th>
+                  <th>{t('analytics.total')}</th>
+                  <th>{t('analytics.lunch')}</th>
+                  <th>{t('analytics.meals')}</th>
+                  <th>{t('analytics.regular')}</th>
+                  <th>{t('analytics.isencao')}</th>
+                  <th>{t('analytics.overwork')}</th>
                 </tr>
               </thead>
               {searchAndFilteredSessions.length > 0 ? (
                 <tbody>
                   {searchAndFilteredSessions.map((session) => (
                     <tr key={session.id}>
-                      <td>{format(new Date(session.clockIn), 'MMM dd, yyyy')}</td>
+                      <td>{format(new Date(session.clockIn), 'MMM dd, yyyy', { locale: getDateFnsLocale() })}</td>
                       <td>{format(new Date(session.clockIn), 'HH:mm')}</td>
                       <td>{format(new Date(session.clockOut), 'HH:mm')}</td>
                       <td className="bold">{formatHoursMinutes(session.totalHours)}</td>
@@ -999,7 +1019,7 @@ export const Analytics = memo(function Analytics({ user }) {
                 <tbody>
                   <tr>
                     <td colSpan="9" style={{ textAlign: 'center', padding: '2rem' }}>
-                      No sessions found
+                      {t('analytics.noSessionsFoundTable')}
                     </td>
                   </tr>
                 </tbody>
@@ -1011,7 +1031,7 @@ export const Analytics = memo(function Analytics({ user }) {
         <div className="table-footer">
           <button className="export-button" onClick={exportToCSV}>
             <Download />
-            Export CSV
+            {t('analytics.exportCSV')}
           </button>
         </div>
       </div>

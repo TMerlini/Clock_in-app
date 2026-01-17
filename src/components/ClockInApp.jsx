@@ -2,6 +2,7 @@ import { useState, useEffect, Suspense, lazy, useCallback } from 'react';
 import { signOut } from 'firebase/auth';
 import { collection, addDoc, query, where, getDocs, orderBy, doc, setDoc, deleteDoc, onSnapshot, getDoc } from 'firebase/firestore';
 import { auth, db } from '../lib/firebase';
+import i18n from '../lib/i18n';
 import { useGoogleCalendar } from '../hooks/useGoogleCalendar';
 import { Navigation } from './Navigation';
 import { About } from './About';
@@ -182,18 +183,23 @@ export function ClockInApp({ user }) {
     loadSessionDates();
   }, [user]);
 
-  // Load user display name from settings
+  // Load user display name and language from settings
   useEffect(() => {
     if (!user) return;
 
     const settingsRef = doc(db, 'userSettings', user.uid);
-    const unsubscribe = onSnapshot(settingsRef, (docSnap) => {
+    const unsubscribe = onSnapshot(settingsRef, async (docSnap) => {
       if (docSnap.exists()) {
         const settings = docSnap.data();
         if (settings.username) {
           setDisplayName(settings.username);
         } else {
           setDisplayName(null);
+        }
+        
+        // Load language preference
+        if (settings.language && i18n.language !== settings.language) {
+          await i18n.changeLanguage(settings.language);
         }
       }
     });

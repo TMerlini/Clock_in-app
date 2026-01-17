@@ -3,6 +3,8 @@ import { format } from 'date-fns';
 import { Edit2, Trash2, Plus, CheckCircle, AlertTriangle, Info } from 'lucide-react';
 import { formatHoursMinutes } from '../lib/utils';
 import { ActiveSessionCard } from './ActiveSessionCard';
+import { useTranslation } from 'react-i18next';
+import { getDateFnsLocale } from '../lib/i18n';
 import './ClockInApp.css';
 
 // Google Calendar Icon Component
@@ -31,13 +33,15 @@ export const SessionList = memo(function SessionList({
   onSyncSession,
   onCreateSession
 }) {
+  const { t } = useTranslation();
+  
   // Validate selectedDate
   if (!selectedDate || !(selectedDate instanceof Date) || isNaN(selectedDate.getTime())) {
     return (
       <div className="card" style={{ marginTop: '2rem' }}>
         <div className="card-header">
-          <h2 className="card-title">Invalid Date</h2>
-          <p className="card-description">Please select a valid date</p>
+          <h2 className="card-title">{t('sessions.invalidDate')}</h2>
+          <p className="card-description">{t('sessions.selectValidDate')}</p>
         </div>
       </div>
     );
@@ -52,20 +56,20 @@ export const SessionList = memo(function SessionList({
 
   let notificationType = 'normal';
   let notificationIcon = <CheckCircle />;
-  let notificationText = 'Regular work day';
+  let notificationText = t('sessions.regularWorkDay');
 
   if (totalWorkingHours > 10) {
     notificationType = 'overtime';
     notificationIcon = <AlertTriangle />;
-    notificationText = 'Overtime day - Extra paid hours accumulated';
+    notificationText = t('sessions.overtimeDay');
   } else if (totalWorkingHours > 8) {
     notificationType = 'unpaid';
     notificationIcon = <Info />;
-    notificationText = 'Extended hours - Unpaid overtime period';
+    notificationText = t('sessions.extendedHours');
   } else if (totalWorkingHours < 8) {
     notificationType = 'short';
     notificationIcon = <Info />;
-    notificationText = 'Under 8 hours worked';
+    notificationText = t('sessions.under8Hours');
   }
 
   return (
@@ -73,29 +77,29 @@ export const SessionList = memo(function SessionList({
       <div className="card-header">
         <div>
           <h2 className="card-title">
-            Sessions for {format(selectedDate, 'MMM dd, yyyy')}
+            {t('sessions.title')} {format(selectedDate, 'MMM dd, yyyy', { locale: getDateFnsLocale() })}
           </h2>
           <p className="card-description">
-            {sessionsForDate.length} session{sessionsForDate.length !== 1 ? 's' : ''} found
+            {sessionsForDate.length} {sessionsForDate.length !== 1 ? t('sessions.sessionsFound') : t('sessions.sessionFound')}
           </p>
         </div>
         {sessionsForDate.length === 0 ? (
           <button
             className="add-session-button"
             onClick={onCreateSession}
-            title="Add manual session"
+            title={t('sessions.addManualSession')}
           >
             <Plus />
-            Add Session
+            {t('sessions.addSession')}
           </button>
         ) : (
           <button
             className="add-session-button"
             onClick={() => onEditSession(sessionsForDate[0])}
-            title="Edit first session"
+            title={t('sessions.editFirstSession')}
           >
             <Edit2 />
-            Edit Session
+            {t('sessions.editSession')}
           </button>
         )}
       </div>
@@ -106,10 +110,10 @@ export const SessionList = memo(function SessionList({
           <div className="summary-content">
             <div className="summary-text">{notificationText}</div>
             <div className="summary-stats">
-              <span className="stat-item">Working: <strong>{formatHoursMinutes(totalWorkingHours)}</strong></span>
-              {totalRegular > 0 && <span className="stat-item regular">Regular: {formatHoursMinutes(totalRegular)}</span>}
-              {totalUnpaid > 0 && <span className="stat-item unpaid">Unpaid: {formatHoursMinutes(totalUnpaid)}</span>}
-              {totalPaid > 0 && <span className="stat-item paid">Paid OT: {formatHoursMinutes(totalPaid)}</span>}
+              <span className="stat-item">{t('sessions.working')}: <strong>{formatHoursMinutes(totalWorkingHours)}</strong></span>
+              {totalRegular > 0 && <span className="stat-item regular">{t('sessions.regular')}: {formatHoursMinutes(totalRegular)}</span>}
+              {totalUnpaid > 0 && <span className="stat-item unpaid">{t('sessions.unpaid')}: {formatHoursMinutes(totalUnpaid)}</span>}
+              {totalPaid > 0 && <span className="stat-item paid">{t('sessions.paid')} OT: {formatHoursMinutes(totalPaid)}</span>}
             </div>
           </div>
         </div>
@@ -128,55 +132,55 @@ export const SessionList = memo(function SessionList({
         
         {sessionsForDate.length === 0 && !(isClockedIn && selectedDate && selectedDate.toDateString() === new Date().toDateString()) ? (
           <p className="empty-sessions">
-            No sessions recorded for this date
+            {t('sessions.noSessionsRecorded')}
           </p>
         ) : (
           <div className="sessions-list">
             {sessionsForDate.map((session, index) => (
               <div key={session.id} className="session-card">
                 <div className="session-header">
-                  <span className="session-number">Session {sessionsForDate.length - index}</span>
+                  <span className="session-number">{t('sessions.session')} {sessionsForDate.length - index}</span>
                   <div className="session-actions">
                     <span className="session-total">{formatHoursMinutes(session.totalHours)}</span>
                     <button
                       className="sync-session-button"
                       onClick={() => onSyncSession(session)}
-                      title="Sync to Google Calendar"
+                      title={t('sessions.syncToCalendar')}
                     >
                       <GoogleCalendarIcon />
                     </button>
                     <button
                       className="edit-session-button"
                       onClick={() => onEditSession(session)}
-                      title="Edit session"
+                      title={t('sessions.editSessionTitle')}
                     >
                       <Edit2 />
                     </button>
                     <button
                       className="delete-session-button"
                       onClick={() => onDeleteSession(session)}
-                      title="Delete session"
+                      title={t('sessions.deleteSessionTitle')}
                     >
                       <Trash2 />
                     </button>
                   </div>
                 </div>
                 <div className="session-times">
-                  <div>In: {format(new Date(session.clockIn), 'HH:mm:ss')}</div>
-                  <div>Out: {format(new Date(session.clockOut), 'HH:mm:ss')}</div>
+                  <div>{t('sessions.in')}: {format(new Date(session.clockIn), 'HH:mm:ss')}</div>
+                  <div>{t('sessions.out')}: {format(new Date(session.clockOut), 'HH:mm:ss')}</div>
                 </div>
                 <div className="session-breakdown">
                   <span className="breakdown-badge regular">
-                    Regular: {formatHoursMinutes(session.regularHours)}
+                    {t('sessions.regular')}: {formatHoursMinutes(session.regularHours)}
                   </span>
                   {session.unpaidExtraHours > 0 && (
                     <span className="breakdown-badge unpaid">
-                      Unpaid: {formatHoursMinutes(session.unpaidExtraHours)}
+                      {t('sessions.unpaid')}: {formatHoursMinutes(session.unpaidExtraHours)}
                     </span>
                   )}
                   {session.paidExtraHours > 0 && (
                     <span className="breakdown-badge paid">
-                      Paid: {formatHoursMinutes(session.paidExtraHours)}
+                      {t('sessions.paid')}: {formatHoursMinutes(session.paidExtraHours)}
                     </span>
                   )}
                 </div>

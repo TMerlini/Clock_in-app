@@ -1,7 +1,10 @@
 import { Crown, ArrowRight } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import './ClockInApp.css';
 
 export function PremiumPromoBar({ onNavigate }) {
+  const { t } = useTranslation();
+  
   const handleUpgrade = () => {
     if (onNavigate) {
       onNavigate('premium-plus');
@@ -25,8 +28,8 @@ export function PremiumPromoBar({ onNavigate }) {
         <div className="premium-promo-left">
           <Crown className="premium-promo-icon" />
           <div className="premium-promo-text">
-            <span className="premium-promo-title">Unlock Premium Features</span>
-            <span className="premium-promo-subtitle">AI Advisor, Advanced Analytics & More</span>
+            <span className="premium-promo-title">{t('premiumPromo.title')}</span>
+            <span className="premium-promo-subtitle">{t('premiumPromo.subtitle')}</span>
           </div>
         </div>
         <div className="premium-promo-arrow">

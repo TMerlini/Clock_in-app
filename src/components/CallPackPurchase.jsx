@@ -4,9 +4,11 @@ import { db, auth } from '../lib/firebase';
 import { getCallStatus, getCallPacksStatus, addCallPack } from '../lib/tokenManager';
 import { STRIPE_PAYMENT_LINKS, hasPaymentLinks } from '../lib/stripeConfig';
 import { Zap, Check, AlertCircle, Loader, ShoppingCart } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import './CallPackPurchase.css';
 
 export function CallPackPurchase({ onNavigate }) {
+  const { t } = useTranslation();
   const [callStatus, setCallStatus] = useState(null);
   const [packsStatus, setPacksStatus] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -25,7 +27,7 @@ export function CallPackPurchase({ onNavigate }) {
     const packPurchase = urlParams.get('pack_purchase');
 
     if (success && packPurchase === 'true') {
-      setSuccessMessage('Payment successful! Adding call pack to your account...');
+      setSuccessMessage(t('callPackPurchase.paymentSuccess'));
       
       // Get current user
       const currentUser = auth.currentUser;
@@ -33,7 +35,7 @@ export function CallPackPurchase({ onNavigate }) {
         try {
           // Add call pack (50 calls)
           await addCallPack(currentUser.uid, 50);
-          setSuccessMessage('Call pack purchased! +50 calls added to your account.');
+          setSuccessMessage(t('callPackPurchase.packPurchased'));
           
           // Reload status
           await loadCallStatus();
@@ -45,7 +47,7 @@ export function CallPackPurchase({ onNavigate }) {
           }, 3000);
         } catch (error) {
           console.error('Error adding call pack:', error);
-          setSuccessMessage('Payment received, but error adding pack. Please contact support.');
+          setSuccessMessage(t('callPackPurchase.paymentReceivedError'));
         }
       }
     }
@@ -74,7 +76,7 @@ export function CallPackPurchase({ onNavigate }) {
   const handlePurchasePack = async () => {
     const currentUser = auth.currentUser;
     if (!currentUser) {
-      alert('Please log in to purchase call packs.');
+      alert(t('callPackPurchase.pleaseLogin'));
       return;
     }
 
@@ -83,7 +85,7 @@ export function CallPackPurchase({ onNavigate }) {
     const CALL_PACK_PAYMENT_LINK = import.meta.env.VITE_STRIPE_PAYMENT_LINK_CALL_PACK || '';
 
     if (!CALL_PACK_PAYMENT_LINK) {
-      alert('Call pack purchase is not yet configured. Please contact support.');
+      alert(t('callPackPurchase.notConfigured'));
       return;
     }
 
@@ -98,7 +100,7 @@ export function CallPackPurchase({ onNavigate }) {
       window.location.href = checkoutUrl;
     } catch (error) {
       console.error('Error redirecting to payment:', error);
-      alert('Error redirecting to payment. Please try again.');
+      alert(t('callPackPurchase.errorRedirecting'));
       setPurchasing(false);
     }
   };
@@ -108,7 +110,7 @@ export function CallPackPurchase({ onNavigate }) {
       <div className="call-pack-purchase-container">
         <div className="loading">
           <Loader className="spinning" />
-          <span>Loading call status...</span>
+          <span>{t('callPackPurchase.loadingStatus')}</span>
         </div>
       </div>
     );
@@ -119,8 +121,8 @@ export function CallPackPurchase({ onNavigate }) {
       <div className="call-pack-purchase-container">
         <div className="error-state">
           <AlertCircle />
-          <h2>Unable to load call status</h2>
-          <p>Please ensure you have a Premium AI subscription.</p>
+          <h2>{t('callPackPurchase.unableToLoad')}</h2>
+          <p>{t('callPackPurchase.ensureSubscription')}</p>
         </div>
       </div>
     );
@@ -144,81 +146,81 @@ export function CallPackPurchase({ onNavigate }) {
         <div className="header-content">
           <Zap className="header-icon" />
           <div>
-            <h1>AI Call Packs</h1>
-            <p>Purchase additional AI Advisor calls with Portuguese labor law expertise and HR guidance. Get expert compliance analysis, legal limit calculations, and best practice recommendations.</p>
+            <h1>{t('callPackPurchase.title')}</h1>
+            <p>{t('callPackPurchase.subtitle')}</p>
           </div>
         </div>
       </div>
 
       <div className="current-status-card">
-        <h2>Your Current Status</h2>
+        <h2>{t('callPackPurchase.currentStatus')}</h2>
         <div className="status-grid">
           <div className="status-item">
-            <div className="status-label">Base Calls</div>
+            <div className="status-label">{t('callPackPurchase.baseCalls')}</div>
             <div className="status-value">
               {baseRemaining}/{callStatus.callsAllocated}
             </div>
-            <div className="status-sublabel">Resets monthly</div>
+            <div className="status-sublabel">{t('callPackPurchase.resetsMonthly')}</div>
           </div>
           <div className="status-item">
-            <div className="status-label">Call Packs</div>
-            <div className="status-value">{packsRemaining} calls</div>
-            <div className="status-sublabel">Never expire</div>
+            <div className="status-label">{t('callPackPurchase.callPacks')}</div>
+            <div className="status-value">{packsRemaining} {t('callPackPurchase.calls')}</div>
+            <div className="status-sublabel">{t('callPackPurchase.neverExpire')}</div>
           </div>
           <div className="status-item highlight">
-            <div className="status-label">Total Available</div>
-            <div className="status-value">{totalAvailable} calls</div>
-            <div className="status-sublabel">Ready to use</div>
+            <div className="status-label">{t('callPackPurchase.totalAvailable')}</div>
+            <div className="status-value">{totalAvailable} {t('callPackPurchase.calls')}</div>
+            <div className="status-sublabel">{t('callPackPurchase.readyToUse')}</div>
           </div>
         </div>
       </div>
 
       <div className="call-pack-options">
-        <h2>Purchase Call Pack</h2>
+        <h2>{t('callPackPurchase.purchaseCallPack')}</h2>
         <p className="value-proposition">
-          Each call gives you access to AI-powered analysis of your work patterns against Portuguese labor law (Código do Trabalho), helping you stay compliant and make informed decisions about your time.
+          {t('callPackPurchase.valueProposition')}
         </p>
         <div className="pack-card">
           <div className="pack-header">
             <Zap className="pack-icon" />
             <div className="pack-info">
-              <h3>+50 Calls Pack</h3>
-              <p className="pack-description">50 AI Advisor calls with Portuguese labor law & HR expertise. Never expire, perfect for compliance monitoring and professional guidance.</p>
+              <h3>{t('callPackPurchase.packTitle')}</h3>
+              <p className="pack-description">{t('callPackPurchase.packDescription')}</p>
             </div>
-            <div className="pack-price">€4.99</div>
+            <div className="pack-price">{t('callPackPurchase.packPrice')}</div>
           </div>
           <div className="pack-features">
             <div className="feature-item">
               <Check size={18} />
-              <span>50 additional calls</span>
+              <span>{t('callPackPurchase.feature1')}</span>
             </div>
             <div className="feature-item">
               <Check size={18} />
-              <span>Never expire (roll over indefinitely)</span>
+              <span>{t('callPackPurchase.feature2')}</span>
             </div>
             <div className="feature-item">
               <Check size={18} />
-              <span>Used after base allocation is exhausted</span>
+              <span>{t('callPackPurchase.feature3')}</span>
             </div>
             <div className="feature-item">
               <Check size={18} />
-              <span>Portuguese labor law compliance analysis</span>
+              <span>{t('callPackPurchase.feature4')}</span>
             </div>
             <div className="feature-item">
               <Check size={18} />
-              <span>Legal limit calculations (overtime, Isenção, vacation)</span>
+              <span>{t('callPackPurchase.feature5')}</span>
             </div>
             <div className="feature-item">
               <Check size={18} />
-              <span>HR best practices and work-life balance guidance</span>
+              <span>{t('callPackPurchase.feature6')}</span>
             </div>
             <div className="feature-item">
               <Check size={18} />
-              <span>Compliance monitoring and proactive alerts</span>
+              <span>{t('callPackPurchase.feature7')}</span>
             </div>
             <div className="feature-item">
               <Check size={18} />
-              <span>Expert advice on work patterns and productivity</span>
+              <span>{t('callPackPurchase.feature8')}</span>
             </div>
           </div>
           <button
@@ -229,12 +231,12 @@ export function CallPackPurchase({ onNavigate }) {
             {purchasing ? (
               <>
                 <Loader className="spinning" size={16} />
-                <span>Redirecting...</span>
+                <span>{t('callPackPurchase.redirecting')}</span>
               </>
             ) : (
               <>
                 <ShoppingCart size={18} />
-                <span>Purchase +50 Calls for €4.99</span>
+                <span>{t('callPackPurchase.purchaseButton')}</span>
               </>
             )}
           </button>
@@ -243,18 +245,18 @@ export function CallPackPurchase({ onNavigate }) {
 
       {packsStatus && packsStatus.totalPacks > 0 && (
         <div className="packs-history">
-          <h2>Your Call Packs ({packsStatus.totalPacks})</h2>
+          <h2>{t('callPackPurchase.yourCallPacks')} ({packsStatus.totalPacks})</h2>
           <div className="packs-list">
             {packsStatus.packs.map((pack, index) => (
               <div key={pack.id || index} className="pack-item">
                 <div className="pack-item-info">
-                  <div className="pack-item-size">{pack.calls || 50} calls</div>
+                  <div className="pack-item-size">{pack.calls || 50} {t('callPackPurchase.calls')}</div>
                   <div className="pack-item-details">
-                    Purchased: {new Date(pack.purchasedAt?.toDate() || Date.now()).toLocaleDateString()}
+                    {t('callPackPurchase.purchased')}: {new Date(pack.purchasedAt?.toDate() || Date.now()).toLocaleDateString()}
                   </div>
                 </div>
                 <div className="pack-item-remaining">
-                  {pack.remaining || 0} remaining
+                  {pack.remaining || 0} {t('callPackPurchase.remaining')}
                 </div>
               </div>
             ))}

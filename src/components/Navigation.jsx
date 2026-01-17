@@ -1,9 +1,11 @@
 import { useState, useEffect, useRef, memo } from 'react';
 import { Menu, X, Home, Calendar, BarChart3, Info, Settings, HelpCircle, Bot, Crown, Shield } from 'lucide-react';
 import { isAdmin } from '../lib/adminUtils';
+import { useTranslation } from 'react-i18next';
 import './Navigation.css';
 
 export const Navigation = memo(function Navigation({ currentPage, onPageChange, user }) {
+  const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const [buttonPosition, setButtonPosition] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
@@ -12,20 +14,20 @@ export const Navigation = memo(function Navigation({ currentPage, onPageChange, 
   const dragTimeout = useRef(null);
 
   const menuItems = [
-    { id: 'home', label: 'Home', icon: Home },
-    { id: 'calendar', label: 'Calendar', icon: Calendar },
-    { id: 'analytics', label: 'Analytics', icon: BarChart3 },
-    { id: 'ai-advisor', label: 'AI Advisor', icon: Bot },
-    { id: 'premium-plus', label: 'Premium+', icon: Crown },
-    { id: 'settings', label: 'Settings', icon: Settings },
-    { id: 'faq', label: 'Frequent Questions', icon: HelpCircle },
-    { id: 'about', label: 'About', icon: Info }
+    { id: 'home', label: t('navigation.home'), icon: Home },
+    { id: 'calendar', label: t('navigation.calendar'), icon: Calendar },
+    { id: 'analytics', label: t('navigation.analytics'), icon: BarChart3 },
+    { id: 'ai-advisor', label: t('navigation.aiAdvisor'), icon: Bot },
+    { id: 'premium-plus', label: t('navigation.premiumPlus'), icon: Crown },
+    { id: 'settings', label: t('navigation.settings'), icon: Settings },
+    { id: 'faq', label: t('navigation.faq'), icon: HelpCircle },
+    { id: 'about', label: t('navigation.about'), icon: Info }
   ];
 
   // Add Admin menu item if user is admin
   const finalMenuItems = [...menuItems];
   if (user && isAdmin(user)) {
-    finalMenuItems.push({ id: 'admin', label: 'Admin', icon: Shield });
+    finalMenuItems.push({ id: 'admin', label: t('navigation.admin'), icon: Shield });
   }
 
   const handleNavigate = (pageId) => {
@@ -132,7 +134,7 @@ export const Navigation = memo(function Navigation({ currentPage, onPageChange, 
 
       <nav className={`nav-menu ${isOpen ? 'open' : ''}`}>
         <div className="nav-header">
-          <h2>Menu</h2>
+          <h2>{t('common.menu')}</h2>
           <button className="nav-close" onClick={() => setIsOpen(false)}>
             <X />
           </button>

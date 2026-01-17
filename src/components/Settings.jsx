@@ -2,11 +2,14 @@ import { useState, useEffect } from 'react';
 import { doc, getDoc, setDoc, collection, query, where, getDocs, updateDoc } from 'firebase/firestore';
 import { db, auth } from '../lib/firebase';
 import { CalendarAuthButton } from './CalendarAuthButton';
-import { Settings as SettingsIcon, Save, RotateCcw, Clock, Coffee, AlertTriangle, DollarSign, Calendar, CheckCircle, XCircle, AlertCircle, RefreshCw, User, AtSign, Download, Crown } from 'lucide-react';
+import { Settings as SettingsIcon, Save, RotateCcw, Clock, Coffee, AlertTriangle, DollarSign, Calendar, CheckCircle, XCircle, AlertCircle, RefreshCw, User, AtSign, Download, Crown, Globe } from 'lucide-react';
 import { format } from 'date-fns';
+import { useTranslation } from 'react-i18next';
+import i18n from '../lib/i18n';
 import './Settings.css';
 
 export function Settings({ googleCalendar, onUsernameChange, onNavigate }) {
+  const { t } = useTranslation();
   const [username, setUsername] = useState('');
   const [regularHoursThreshold, setRegularHoursThreshold] = useState(8);
   const [enableUnpaidExtra, setEnableUnpaidExtra] = useState(true);
@@ -22,6 +25,7 @@ export function Settings({ googleCalendar, onUsernameChange, onNavigate }) {
   const [bankHolidayApplyDaysOff, setBankHolidayApplyDaysOff] = useState(true);
   const [bankHolidayApplyBonus, setBankHolidayApplyBonus] = useState(true);
   const [isPremium, setIsPremium] = useState(false);
+  const [language, setLanguage] = useState('en');
   const [saved, setSaved] = useState(false);
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
@@ -73,6 +77,7 @@ export function Settings({ googleCalendar, onUsernameChange, onNavigate }) {
         setBankHolidayApplyDaysOff(settings.bankHolidayApplyDaysOff !== undefined ? settings.bankHolidayApplyDaysOff : true);
         setBankHolidayApplyBonus(settings.bankHolidayApplyBonus !== undefined ? settings.bankHolidayApplyBonus : true);
         setIsPremium(settings.isPremium || false);
+        setLanguage(settings.language || 'en');
         
         // Notify parent of username
         if (settings.username && onUsernameChange) {
@@ -259,8 +264,14 @@ export function Settings({ googleCalendar, onUsernameChange, onNavigate }) {
         bankHolidayApplyDaysOff,
         bankHolidayApplyBonus,
         isPremium,
+        language,
         updatedAt: Date.now()
       };
+      
+      // Update i18n language if changed
+      if (i18n.language !== language) {
+        await i18n.changeLanguage(language);
+      }
 
       const settingsRef = doc(db, 'userSettings', user.uid);
       await setDoc(settingsRef, settings);
@@ -294,12 +305,19 @@ export function Settings({ googleCalendar, onUsernameChange, onNavigate }) {
     setBankHolidayApplyDaysOff(true);
     setBankHolidayApplyBonus(true);
     setIsPremium(false);
+    setLanguage('en');
+  };
+
+  const handleLanguageChange = async (newLanguage) => {
+    setLanguage(newLanguage);
+    // Update i18n immediately for instant UI update
+    await i18n.changeLanguage(newLanguage);
   };
 
   if (loading) {
     return (
       <div className="settings-container">
-        <div className="loading">Loading settings...</div>
+        <div className="loading">{t('settings.actions.loadingSettings')}</div>
       </div>
     );
   }
@@ -310,8 +328,8 @@ export function Settings({ googleCalendar, onUsernameChange, onNavigate }) {
         <div className="header-content-settings">
           <SettingsIcon />
           <div>
-            <h1>Settings</h1>
-            <p>Customize your time tracking preferences</p>
+            <h1>{t('settings.title')}</h1>
+            <p>{t('settings.subtitle')}</p>
           </div>
         </div>
       </div>
@@ -320,18 +338,18 @@ export function Settings({ googleCalendar, onUsernameChange, onNavigate }) {
         <section className="settings-section">
           <div className="section-title">
             <User />
-            <h2>Profile</h2>
+            <h2>{t('settings.profile.title')}</h2>
           </div>
           <p className="section-description">
-            Set your display name. This will be shown in the header instead of your email.
+            {t('settings.profile.description')}
           </p>
 
           <div className="setting-item">
             <div className="setting-header">
               <AtSign className="setting-icon" />
               <div>
-                <label htmlFor="username">Username / Alias</label>
-                <p className="setting-description">Your display name (will be shown with @ prefix)</p>
+                <label htmlFor="username">{t('settings.profile.username')}</label>
+                <p className="setting-description">{t('settings.profile.usernameDescription')}</p>
               </div>
             </div>
             <div className="setting-input-group username-input-group">
@@ -342,7 +360,7 @@ export function Settings({ googleCalendar, onUsernameChange, onNavigate }) {
                 value={username}
                 onChange={(e) => setUsername(e.target.value.replace(/^@/, ''))}
                 className="setting-input username-input"
-                placeholder="yourname"
+                placeholder={t('settings.profile.usernamePlaceholder')}
                 maxLength={20}
               />
             </div>
@@ -352,18 +370,18 @@ export function Settings({ googleCalendar, onUsernameChange, onNavigate }) {
         <section className="settings-section">
           <div className="section-title">
             <Crown />
-            <h2>Premium Subscription</h2>
+            <h2>{t('settings.premium.title')}</h2>
           </div>
           <p className="section-description">
-            Enable premium features including AI Advisor access. Premium features unlock advanced capabilities.
+            {t('settings.premium.description')}
           </p>
 
           <div className="setting-item checkbox-setting">
             <div className="setting-header">
               <Crown className="setting-icon premium" />
               <div>
-                <label htmlFor="isPremium">Premium Status</label>
-                <p className="setting-description">Enable premium features (including AI Advisor)</p>
+                <label htmlFor="isPremium">{t('settings.premium.premiumStatus')}</label>
+                <p className="setting-description">{t('settings.premium.premiumDescription')}</p>
               </div>
             </div>
             <label className="toggle-switch">
@@ -380,19 +398,48 @@ export function Settings({ googleCalendar, onUsernameChange, onNavigate }) {
 
         <section className="settings-section">
           <div className="section-title">
-            <Clock />
-            <h2>Hour Thresholds</h2>
+            <Globe />
+            <h2>{t('settings.language.title')}</h2>
           </div>
           <p className="section-description">
-            Configure how your working hours are categorized. These thresholds determine when regular hours end and overtime begins.
+            {t('settings.language.description')}
+          </p>
+
+          <div className="setting-item">
+            <div className="setting-header">
+              <Globe className="setting-icon" />
+              <div>
+                <label htmlFor="language">{t('settings.language.selectLanguage')}</label>
+                <p className="setting-description">{t('settings.language.description')}</p>
+              </div>
+            </div>
+            <select
+              id="language"
+              value={language}
+              onChange={(e) => handleLanguageChange(e.target.value)}
+              className="setting-select"
+            >
+              <option value="en">{t('settings.language.english')}</option>
+              <option value="pt">{t('settings.language.portuguese')}</option>
+            </select>
+          </div>
+        </section>
+
+        <section className="settings-section">
+          <div className="section-title">
+            <Clock />
+            <h2>{t('settings.hourThresholds.title')}</h2>
+          </div>
+          <p className="section-description">
+            {t('settings.hourThresholds.description')}
           </p>
 
           <div className="setting-item">
             <div className="setting-header">
               <Clock className="setting-icon regular" />
               <div>
-                <label htmlFor="regularHours">Regular Hours Threshold</label>
-                <p className="setting-description">Hours up to this value are considered regular work time</p>
+                <label htmlFor="regularHours">{t('settings.hourThresholds.regularHours')}</label>
+                <p className="setting-description">{t('settings.hourThresholds.regularHoursDescription')}</p>
               </div>
             </div>
             <div className="setting-input-group">
@@ -406,7 +453,7 @@ export function Settings({ googleCalendar, onUsernameChange, onNavigate }) {
                 onChange={(e) => setRegularHoursThreshold(parseFloat(e.target.value))}
                 className="setting-input"
               />
-              <span className="input-suffix">hours</span>
+              <span className="input-suffix">{t('settings.units.hours')}</span>
             </div>
           </div>
 
@@ -414,8 +461,8 @@ export function Settings({ googleCalendar, onUsernameChange, onNavigate }) {
             <div className="setting-header">
               <AlertTriangle className="setting-icon unpaid" />
               <div>
-                <label htmlFor="enableUnpaidExtra">Enable Unpaid Extra (Isenção)</label>
-                <p className="setting-description">Track hours between regular and paid overtime as unpaid extra hours</p>
+                <label htmlFor="enableUnpaidExtra">{t('settings.hourThresholds.enableUnpaidExtra')}</label>
+                <p className="setting-description">{t('settings.hourThresholds.enableUnpaidExtraDescription')}</p>
               </div>
             </div>
             <label className="toggle-switch">
@@ -434,8 +481,8 @@ export function Settings({ googleCalendar, onUsernameChange, onNavigate }) {
               <div className="setting-header">
                 <AlertTriangle className="setting-icon unpaid" />
                 <div>
-                  <label htmlFor="unpaidExtraThreshold">Unpaid Extra Threshold</label>
-                  <p className="setting-description">Hours beyond this value are considered paid overtime</p>
+                  <label htmlFor="unpaidExtraThreshold">{t('settings.hourThresholds.unpaidExtraThreshold')}</label>
+                  <p className="setting-description">{t('settings.hourThresholds.unpaidExtraThresholdDescription')}</p>
                 </div>
               </div>
               <div className="setting-input-group">
@@ -449,7 +496,7 @@ export function Settings({ googleCalendar, onUsernameChange, onNavigate }) {
                   onChange={(e) => setUnpaidExtraThreshold(parseFloat(e.target.value))}
                   className="setting-input"
                 />
-                <span className="input-suffix">hours</span>
+                <span className="input-suffix">{t('settings.units.hours')}</span>
               </div>
             </div>
           )}
@@ -459,19 +506,19 @@ export function Settings({ googleCalendar, onUsernameChange, onNavigate }) {
             <div>
               {enableUnpaidExtra ? (
                 <>
-                  <strong>Hour Categories</strong>
+                  <strong>{t('settings.hourThresholds.hourCategories')}</strong>
                   <p>
-                    • Regular: 0h - {regularHoursThreshold}h<br />
-                    • Unpaid Extra (Isenção): {regularHoursThreshold}h - {unpaidExtraThreshold}h<br />
-                    • Paid Overtime: {unpaidExtraThreshold}h+
+                    • {t('settings.hourThresholds.regular')}: 0h - {regularHoursThreshold}h<br />
+                    • {t('settings.hourThresholds.unpaidExtra')}: {regularHoursThreshold}h - {unpaidExtraThreshold}h<br />
+                    • {t('settings.hourThresholds.paidOvertime')}: {unpaidExtraThreshold}h+
                   </p>
                 </>
               ) : (
                 <>
-                  <strong>Hour Categories</strong>
+                  <strong>{t('settings.hourThresholds.hourCategories')}</strong>
                   <p>
-                    • Regular: 0h - {regularHoursThreshold}h<br />
-                    • Paid Overtime: {regularHoursThreshold}h+
+                    • {t('settings.hourThresholds.regular')}: 0h - {regularHoursThreshold}h<br />
+                    • {t('settings.hourThresholds.paidOvertime')}: {regularHoursThreshold}h+
                   </p>
                 </>
               )}
@@ -482,18 +529,18 @@ export function Settings({ googleCalendar, onUsernameChange, onNavigate }) {
         <section className="settings-section">
           <div className="section-title">
             <AlertTriangle className="unpaid" />
-            <h2>Isenção Configuration</h2>
+            <h2>{t('settings.isencao.title')}</h2>
           </div>
           <p className="section-description">
-            Set the annual limit for Isenção (unpaid extra hours). Once the limit is reached, additional hours will be classified as paid overwork.
+            {t('settings.isencao.description')}
           </p>
 
           <div className="setting-item">
             <div className="setting-header">
               <AlertTriangle className="setting-icon unpaid" />
               <div>
-                <label htmlFor="annualIsencaoLimit">Annual Isenção Limit</label>
-                <p className="setting-description">Maximum Isenção hours allowed per calendar year (default: 200 hours)</p>
+                <label htmlFor="annualIsencaoLimit">{t('settings.isencao.annualLimit')}</label>
+                <p className="setting-description">{t('settings.isencao.annualLimitDescription')}</p>
               </div>
             </div>
             <div className="setting-input-group">
@@ -506,7 +553,7 @@ export function Settings({ googleCalendar, onUsernameChange, onNavigate }) {
                 onChange={(e) => setAnnualIsencaoLimit(parseInt(e.target.value) || 0)}
                 className="setting-input"
               />
-              <span className="input-suffix">hours/year</span>
+              <span className="input-suffix">{t('settings.units.hoursPerYear')}</span>
             </div>
           </div>
         </section>
@@ -514,18 +561,18 @@ export function Settings({ googleCalendar, onUsernameChange, onNavigate }) {
         <section className="settings-section">
           <div className="section-title">
             <Coffee />
-            <h2>Break Settings</h2>
+            <h2>{t('settings.breaks.title')}</h2>
           </div>
           <p className="section-description">
-            Configure default break durations. This will be the default deduction when "Include lunch time" is checked.
+            {t('settings.breaks.description')}
           </p>
 
           <div className="setting-item">
             <div className="setting-header">
               <Coffee className="setting-icon lunch" />
               <div>
-                <label htmlFor="lunchHours">Default Lunch Duration</label>
-                <p className="setting-description">Time deducted from working hours when lunch is included</p>
+                <label htmlFor="lunchHours">{t('settings.breaks.lunchDuration')}</label>
+                <p className="setting-description">{t('settings.breaks.lunchDurationDescription')}</p>
               </div>
             </div>
             <div className="setting-input-group lunch-duration-inputs">
@@ -562,18 +609,18 @@ export function Settings({ googleCalendar, onUsernameChange, onNavigate }) {
         <section className="settings-section">
           <div className="section-title">
             <Calendar />
-            <h2>Calendar Settings</h2>
+            <h2>{t('settings.calendar.title')}</h2>
           </div>
           <p className="section-description">
-            Customize how the calendar displays and behaves.
+            {t('settings.calendar.description')}
           </p>
 
           <div className="setting-item">
             <div className="setting-header">
               <Calendar className="setting-icon" />
               <div>
-                <label htmlFor="weekStart">Week Start Day</label>
-                <p className="setting-description">First day of the week in calendar view</p>
+                <label htmlFor="weekStart">{t('settings.calendar.weekStart')}</label>
+                <p className="setting-description">{t('settings.calendar.weekStartDescription')}</p>
               </div>
             </div>
             <select
@@ -582,8 +629,8 @@ export function Settings({ googleCalendar, onUsernameChange, onNavigate }) {
               onChange={(e) => setWeekStartDay(e.target.value)}
               className="setting-select"
             >
-              <option value="sunday">Sunday</option>
-              <option value="monday">Monday</option>
+              <option value="sunday">{t('settings.units.sunday')}</option>
+              <option value="monday">{t('settings.units.monday')}</option>
             </select>
           </div>
         </section>
@@ -591,10 +638,10 @@ export function Settings({ googleCalendar, onUsernameChange, onNavigate }) {
         <section className="settings-section">
           <div className="section-title">
             <DollarSign />
-            <h2>Weekend Work</h2>
+            <h2>{t('settings.weekendWork.title')}</h2>
           </div>
           <p className="section-description">
-            Configure default benefits for working on weekends (Saturday & Sunday) and bank holidays.
+            {t('settings.weekendWork.description')}
           </p>
 
           <div className="settings-grid">
@@ -602,8 +649,8 @@ export function Settings({ googleCalendar, onUsernameChange, onNavigate }) {
               <div className="setting-header">
                 <Calendar className="setting-icon" />
                 <div>
-                  <label htmlFor="weekendDaysOff">Days Off Per Weekend</label>
-                  <p className="setting-description">Days off earned for each weekend work day or bank holiday</p>
+                  <label htmlFor="weekendDaysOff">{t('settings.weekendWork.daysOff')}</label>
+                  <p className="setting-description">{t('settings.weekendWork.daysOffDescription')}</p>
                 </div>
               </div>
               <div className="setting-input-group">
@@ -617,7 +664,7 @@ export function Settings({ googleCalendar, onUsernameChange, onNavigate }) {
                   onChange={(e) => setWeekendDaysOff(parseFloat(e.target.value))}
                   className="setting-input"
                 />
-                <span className="input-suffix">days</span>
+                <span className="input-suffix">{t('settings.units.days')}</span>
               </div>
             </div>
 
@@ -625,8 +672,8 @@ export function Settings({ googleCalendar, onUsernameChange, onNavigate }) {
               <div className="setting-header">
                 <DollarSign className="setting-icon overtime" />
                 <div>
-                  <label htmlFor="weekendBonus">Weekend Bonus</label>
-                  <p className="setting-description">Extra compensation per weekend work day or bank holiday</p>
+                  <label htmlFor="weekendBonus">{t('settings.weekendWork.bonus')}</label>
+                  <p className="setting-description">{t('settings.weekendWork.bonusDescription')}</p>
                 </div>
               </div>
               <div className="setting-input-group">
@@ -648,10 +695,10 @@ export function Settings({ googleCalendar, onUsernameChange, onNavigate }) {
         <section className="settings-section">
           <div className="section-title">
             <Calendar />
-            <h2>Bank Holidays</h2>
+            <h2>{t('settings.bankHolidays.title')}</h2>
           </div>
           <p className="section-description">
-            Configure whether bank holidays should receive the same benefits as weekend work. You can enable days off and bonus independently.
+            {t('settings.bankHolidays.description')}
           </p>
 
           <div className="settings-grid">
@@ -659,8 +706,8 @@ export function Settings({ googleCalendar, onUsernameChange, onNavigate }) {
               <div className="setting-header">
                 <Calendar className="setting-icon" />
                 <div>
-                  <label htmlFor="bankHolidayApplyDaysOff">Apply Days Off to Bank Holidays</label>
-                  <p className="setting-description">When enabled, bank holidays will receive the same days off as weekend work. When disabled, bank holidays will not earn days off.</p>
+                  <label htmlFor="bankHolidayApplyDaysOff">{t('settings.bankHolidays.applyDaysOff')}</label>
+                  <p className="setting-description">{t('settings.bankHolidays.applyDaysOffDescription')}</p>
                 </div>
               </div>
               <div className="setting-input-group">
@@ -675,7 +722,7 @@ export function Settings({ googleCalendar, onUsernameChange, onNavigate }) {
                   <span className="toggle-slider"></span>
                 </label>
                 <span className="toggle-label">
-                  {bankHolidayApplyDaysOff ? 'Enabled' : 'Disabled'}
+                  {bankHolidayApplyDaysOff ? t('settings.bankHolidays.enabled') : t('settings.bankHolidays.disabled')}
                 </span>
               </div>
             </div>
@@ -684,8 +731,8 @@ export function Settings({ googleCalendar, onUsernameChange, onNavigate }) {
               <div className="setting-header">
                 <DollarSign className="setting-icon overtime" />
                 <div>
-                  <label htmlFor="bankHolidayApplyBonus">Apply Bonus to Bank Holidays</label>
-                  <p className="setting-description">When enabled, bank holidays will receive the same bonus as weekend work. When disabled, bank holidays will not earn bonus.</p>
+                  <label htmlFor="bankHolidayApplyBonus">{t('settings.bankHolidays.applyBonus')}</label>
+                  <p className="setting-description">{t('settings.bankHolidays.applyBonusDescription')}</p>
                 </div>
               </div>
               <div className="setting-input-group">
@@ -700,7 +747,7 @@ export function Settings({ googleCalendar, onUsernameChange, onNavigate }) {
                   <span className="toggle-slider"></span>
                 </label>
                 <span className="toggle-label">
-                  {bankHolidayApplyBonus ? 'Enabled' : 'Disabled'}
+                  {bankHolidayApplyBonus ? t('settings.bankHolidays.enabled') : t('settings.bankHolidays.disabled')}
                 </span>
               </div>
             </div>
@@ -711,10 +758,10 @@ export function Settings({ googleCalendar, onUsernameChange, onNavigate }) {
           <section className="settings-section">
             <div className="section-title">
               <Calendar />
-              <h2>Google Calendar Integration</h2>
+              <h2>{t('settings.googleCalendar.title')}</h2>
             </div>
             <p className="section-description">
-              Enable automatic calendar sync to add work sessions to your Google Calendar when you clock out.
+              {t('settings.googleCalendar.description')}
             </p>
             <CalendarAuthButton
               isReady={googleCalendar.isReady}
@@ -725,34 +772,34 @@ export function Settings({ googleCalendar, onUsernameChange, onNavigate }) {
 
             {googleCalendar.isAuthorized && (
               <div className="sync-status-container">
-                <h3 className="sync-status-title">Sync Status</h3>
+                <h3 className="sync-status-title">{t('settings.googleCalendar.syncStatus')}</h3>
                 <div className="sync-stats-grid">
                   <div className="sync-stat-card synced">
                     <CheckCircle className="stat-icon" />
                     <div className="stat-content">
                       <div className="stat-value">{syncStats.syncedSessions}</div>
-                      <div className="stat-label">Synced</div>
+                      <div className="stat-label">{t('settings.googleCalendar.synced')}</div>
                     </div>
                   </div>
                   <div className="sync-stat-card unsynced">
                     <AlertCircle className="stat-icon" />
                     <div className="stat-content">
                       <div className="stat-value">{syncStats.unsyncedSessions}</div>
-                      <div className="stat-label">Pending</div>
+                      <div className="stat-label">{t('settings.googleCalendar.pending')}</div>
                     </div>
                   </div>
                   <div className="sync-stat-card failed">
                     <XCircle className="stat-icon" />
                     <div className="stat-content">
                       <div className="stat-value">{syncStats.failedSessions}</div>
-                      <div className="stat-label">Failed</div>
+                      <div className="stat-label">{t('settings.googleCalendar.failed')}</div>
                     </div>
                   </div>
                 </div>
                 {syncStats.lastSyncAt && (
                   <div className="last-sync-info">
                     <Clock className="last-sync-icon" />
-                    <span>Last synced: {format(new Date(syncStats.lastSyncAt), 'MMM dd, yyyy HH:mm')}</span>
+                    <span>{t('settings.googleCalendar.lastSynced')}: {format(new Date(syncStats.lastSyncAt), 'MMM dd, yyyy HH:mm')}</span>
                   </div>
                 )}
                 {(syncStats.unsyncedSessions > 0 || syncStats.failedSessions > 0) && (
@@ -762,7 +809,7 @@ export function Settings({ googleCalendar, onUsernameChange, onNavigate }) {
                     disabled={syncing}
                   >
                     <RefreshCw className={syncing ? 'spinning' : ''} />
-                    {syncing ? 'Syncing...' : `Sync ${syncStats.unsyncedSessions + syncStats.failedSessions} Session(s)`}
+                    {syncing ? t('settings.googleCalendar.syncing') : `${t('settings.googleCalendar.syncSessions')} ${syncStats.unsyncedSessions + syncStats.failedSessions}`}
                   </button>
                 )}
                 
@@ -772,7 +819,7 @@ export function Settings({ googleCalendar, onUsernameChange, onNavigate }) {
                     onClick={() => onNavigate && onNavigate('calendar-import')}
                   >
                     <Download />
-                    Import from Calendar
+                    {t('settings.googleCalendar.importFromCalendar')}
                   </button>
                 )}
               </div>
@@ -783,17 +830,17 @@ export function Settings({ googleCalendar, onUsernameChange, onNavigate }) {
         <div className="settings-actions">
           <button className="reset-button" onClick={handleReset}>
             <RotateCcw />
-            Reset to Defaults
+            {t('settings.actions.resetToDefaults')}
           </button>
           <button className="save-button" onClick={handleSave}>
             <Save />
-            {saved ? 'Saved!' : 'Save Settings'}
+            {saved ? t('common.saved') : t('settings.actions.saveSettings')}
           </button>
         </div>
 
         {saved && (
           <div className="success-message">
-            Settings saved successfully! Changes will apply to new sessions.
+            {t('settings.actions.settingsSaved')}
           </div>
         )}
       </div>

@@ -1,0 +1,748 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "save": "Save",
+    "cancel": "Cancel",
+    "reset": "Reset",
+    "saved": "Saved!",
+    "error": "Error",
+    "success": "Success",
+    "close": "Close",
+    "menu": "Menu"
+  },
+  "navigation": {
+    "home": "Home",
+    "calendar": "Calendar",
+    "analytics": "Analytics",
+    "aiAdvisor": "AI Advisor",
+    "premiumPlus": "Premium+",
+    "settings": "Settings",
+    "faq": "Frequent Questions",
+    "about": "About",
+    "admin": "Admin"
+  },
+  "settings": {
+    "title": "Settings",
+    "subtitle": "Customize your time tracking preferences",
+    "profile": {
+      "title": "Profile",
+      "description": "Set your display name. This will be shown in the header instead of your email.",
+      "username": "Username / Alias",
+      "usernameDescription": "Your display name (will be shown with @ prefix)",
+      "usernamePlaceholder": "yourname"
+    },
+    "premium": {
+      "title": "Premium Subscription",
+      "description": "Enable premium features including AI Advisor access. Premium features unlock advanced capabilities.",
+      "premiumStatus": "Premium Status",
+      "premiumDescription": "Enable premium features (including AI Advisor)"
+    },
+    "language": {
+      "title": "Language",
+      "description": "Choose your preferred language for the application interface.",
+      "selectLanguage": "Select Language",
+      "english": "English",
+      "portuguese": "Português"
+    },
+    "hourThresholds": {
+      "title": "Hour Thresholds",
+      "description": "Configure how your working hours are categorized. These thresholds determine when regular hours end and overtime begins.",
+      "regularHours": "Regular Hours Threshold",
+      "regularHoursDescription": "Hours up to this value are considered regular work time",
+      "enableUnpaidExtra": "Enable Unpaid Extra (Isenção)",
+      "enableUnpaidExtraDescription": "Track hours between regular and paid overtime as unpaid extra hours",
+      "unpaidExtraThreshold": "Unpaid Extra Threshold",
+      "unpaidExtraThresholdDescription": "Hours beyond this value are considered paid overtime",
+      "hourCategories": "Hour Categories",
+      "regular": "Regular",
+      "unpaidExtra": "Unpaid Extra (Isenção)",
+      "paidOvertime": "Paid Overtime"
+    },
+    "isencao": {
+      "title": "Isenção Configuration",
+      "description": "Set the annual limit for Isenção (unpaid extra hours). Once the limit is reached, additional hours will be classified as paid overwork.",
+      "annualLimit": "Annual Isenção Limit",
+      "annualLimitDescription": "Maximum Isenção hours allowed per calendar year (default: 200 hours)"
+    },
+    "breaks": {
+      "title": "Break Settings",
+      "description": "Configure default break durations. This will be the default deduction when \"Include lunch time\" is checked.",
+      "lunchDuration": "Default Lunch Duration",
+      "lunchDurationDescription": "Time deducted from working hours when lunch is included"
+    },
+    "calendar": {
+      "title": "Calendar Settings",
+      "description": "Customize how the calendar displays and behaves.",
+      "weekStart": "Week Start Day",
+      "weekStartDescription": "First day of the week in calendar view"
+    },
+    "weekendWork": {
+      "title": "Weekend Work",
+      "description": "Configure default benefits for working on weekends (Saturday & Sunday) and bank holidays.",
+      "daysOff": "Days Off Per Weekend",
+      "daysOffDescription": "Days off earned for each weekend work day or bank holiday",
+      "bonus": "Weekend Bonus",
+      "bonusDescription": "Extra compensation per weekend work day or bank holiday"
+    },
+    "bankHolidays": {
+      "title": "Bank Holidays",
+      "description": "Configure whether bank holidays should receive the same benefits as weekend work. You can enable days off and bonus independently.",
+      "applyDaysOff": "Apply Days Off to Bank Holidays",
+      "applyDaysOffDescription": "When enabled, bank holidays will receive the same days off as weekend work. When disabled, bank holidays will not earn days off.",
+      "applyBonus": "Apply Bonus to Bank Holidays",
+      "applyBonusDescription": "When enabled, bank holidays will receive the same bonus as weekend work. When disabled, bank holidays will not earn bonus.",
+      "enabled": "Enabled",
+      "disabled": "Disabled"
+    },
+    "googleCalendar": {
+      "title": "Google Calendar Integration",
+      "description": "Enable automatic calendar sync to add work sessions to your Google Calendar when you clock out.",
+      "syncStatus": "Sync Status",
+      "synced": "Synced",
+      "pending": "Pending",
+      "failed": "Failed",
+      "lastSynced": "Last synced",
+      "syncSessions": "Sync Session(s)",
+      "importFromCalendar": "Import from Calendar",
+      "syncing": "Syncing..."
+    },
+    "actions": {
+      "resetToDefaults": "Reset to Defaults",
+      "saveSettings": "Save Settings",
+      "settingsSaved": "Settings saved successfully! Changes will apply to new sessions.",
+      "loadingSettings": "Loading settings..."
+    },
+    "units": {
+      "hours": "hours",
+      "days": "days",
+      "hoursPerYear": "hours/year",
+      "sunday": "Sunday",
+      "monday": "Monday"
+    }
+  },
+  "home": {
+    "timeTracker": "Time Tracker",
+    "clockIn": "Clock In",
+    "clockOut": "Clock Out",
+    "elapsedTime": "Elapsed Time",
+    "regularHours": "Regular Hours (0-8h)",
+    "unpaidExtra": "Unpaid Extra (8-10h)",
+    "paidExtra": "Paid Extra (10h+)",
+    "hoursDay": "Hours Day",
+    "isencao": "Isenção",
+    "overwork": "Overwork",
+    "lunchTime": "Lunch Time",
+    "expenses": "Expenses",
+    "clockInOut": "Clock In/Out",
+    "noData": "--:--"
+  },
+  "aiAdvisor": {
+    "title": "AI Advisor",
+    "subtitle": "Get intelligent insights and recommendations about your time tracking",
+    "welcome": "Hello! I'm your AI Advisor. I have access to your time tracking data and can help you with questions about your work sessions, analytics, settings, or anything else you need assistance with. How can I help you today?",
+    "placeholder": "Ask me anything about your time tracking...",
+    "send": "Send",
+    "loading": "Loading AI Advisor...",
+    "loadingData": "Loading your data...",
+    "premiumFeature": "Premium Feature",
+    "premiumOnly": "The AI Advisor is available to premium users only.",
+    "premiumBenefits": "Premium Benefits:",
+    "benefit1": "AI Assistant with access to your time tracking data",
+    "benefit2": "Personalized advice and insights",
+    "benefit3": "Help with analytics and settings",
+    "benefit4": "General-purpose AI assistance",
+    "goToSettings": "Go to Settings to Enable Premium",
+    "yourIntelligentAssistant": "Your intelligent assistant for time tracking insights",
+    "suggestions": {
+      "title": "Suggested Questions",
+      "analyzePatterns": "Analyze my work patterns",
+      "complianceCheck": "Check my compliance with labor law",
+      "overtimeStatus": "What's my overtime status?",
+      "workLifeBalance": "Suggest work-life balance improvements",
+      "analyticsInsights": {
+        "title": "Analytics Insights",
+        "description": "Get insights on your work patterns",
+        "prompt": "Analyze my work patterns and provide insights on how I can improve my time management"
+      },
+      "workPatterns": {
+        "title": "Work Patterns",
+        "description": "Discover your productivity trends",
+        "prompt": "What are my work patterns and trends? Show me my most productive times and days"
+      },
+      "isencaoOvertime": {
+        "title": "Isenção & Overtime",
+        "description": "Optimize your hours usage",
+        "prompt": "How can I optimize my Isenção usage and overtime hours? Am I close to my annual limit?"
+      },
+      "settingsReview": {
+        "title": "Settings Review",
+        "description": "Get recommendations for your settings",
+        "prompt": "Review my current settings and suggest optimal thresholds for regular hours, Isenção, and other configurations"
+      }
+    },
+    "calls": {
+      "unlimited": "Unlimited calls (Admin)",
+      "remaining": "calls remaining",
+      "tokensUsed": "tokens used",
+      "buyMore": "Buy More",
+      "buyMoreTitle": "Buy more AI calls"
+    }
+  },
+  "premiumPromo": {
+    "title": "Unlock Premium Features",
+    "subtitle": "AI Advisor, Advanced Analytics & More"
+  },
+  "callPackPurchase": {
+    "title": "AI Call Packs",
+    "subtitle": "Purchase additional AI Advisor calls with Portuguese labor law expertise and HR guidance. Get expert compliance analysis, legal limit calculations, and best practice recommendations.",
+    "loadingStatus": "Loading call status...",
+    "unableToLoad": "Unable to load call status",
+    "ensureSubscription": "Please ensure you have a Premium AI subscription.",
+    "currentStatus": "Your Current Status",
+    "baseCalls": "Base Calls",
+    "resetsMonthly": "Resets monthly",
+    "callPacks": "Call Packs",
+    "calls": "calls",
+    "neverExpire": "Never expire",
+    "totalAvailable": "Total Available",
+    "readyToUse": "Ready to use",
+    "purchaseCallPack": "Purchase Call Pack",
+    "valueProposition": "Each call gives you access to AI-powered analysis of your work patterns against Portuguese labor law (Código do Trabalho), helping you stay compliant and make informed decisions about your time.",
+    "packTitle": "+50 Calls Pack",
+    "packDescription": "50 AI Advisor calls with Portuguese labor law & HR expertise. Never expire, perfect for compliance monitoring and professional guidance.",
+    "packPrice": "€4.99",
+    "feature1": "50 additional calls",
+    "feature2": "Never expire (roll over indefinitely)",
+    "feature3": "Used after base allocation is exhausted",
+    "feature4": "Portuguese labor law compliance analysis",
+    "feature5": "Legal limit calculations (overtime, Isenção, vacation)",
+    "feature6": "HR best practices and work-life balance guidance",
+    "feature7": "Compliance monitoring and proactive alerts",
+    "feature8": "Expert advice on work patterns and productivity",
+    "purchaseButton": "Purchase +50 Calls for €4.99",
+    "redirecting": "Redirecting...",
+    "yourCallPacks": "Your Call Packs",
+    "purchased": "Purchased",
+    "remaining": "remaining",
+    "paymentSuccess": "Payment successful! Adding call pack to your account...",
+    "packPurchased": "Call pack purchased! +50 calls added to your account.",
+    "paymentReceivedError": "Payment received, but error adding pack. Please contact support.",
+    "pleaseLogin": "Please log in to purchase call packs.",
+    "notConfigured": "Call pack purchase is not yet configured. Please contact support.",
+    "errorRedirecting": "Error redirecting to payment. Please try again."
+  },
+  "premiumPlus": {
+    "title": "Premium Plans",
+    "subtitle": "Choose the plan that works best for you",
+    "loadingPlans": "Loading subscription plans...",
+    "paymentSuccessful": "Payment successful! Your subscription is being activated...",
+    "paymentCanceled": "Payment was canceled. You can try again anytime.",
+    "switchedToFree": "Successfully switched to Free plan!",
+    "currentPlan": "Current Plan",
+    "subscribe": "Subscribe",
+    "switchToFree": "Switch to Free",
+    "needMoreCalls": "Need More AI Calls?",
+    "callPackDescription": "Purchase additional call packs that never expire. Perfect for power users!",
+    "buyCallPacks": "Buy Call Packs",
+    "plans": {
+      "mostPopular": "Most Popular",
+      "free": {
+        "name": "Free",
+        "period": "month",
+        "feature1": "Core time tracking",
+        "feature2": "Basic session management",
+        "feature3": "Limited analytics",
+        "feature4": "Basic export"
+      },
+      "basic": {
+        "name": "Basic",
+        "price": "€0.99",
+        "period": "month",
+        "feature1": "Everything in Free",
+        "feature2": "Full analytics",
+        "feature3": "Google Calendar sync",
+        "feature4": "Advanced session management",
+        "feature5": "Export sessions"
+      },
+      "pro": {
+        "name": "Pro",
+        "price": "€4.99",
+        "period": "month",
+        "feature1": "Everything in Basic",
+        "feature2": "Advanced analytics",
+        "feature3": "Detailed reports",
+        "feature4": "Export functionality",
+        "feature5": "Priority support",
+        "feature6": "Custom date ranges"
+      },
+      "premiumAi": {
+        "name": "Premium AI",
+        "price": "€9.99",
+        "period": "month",
+        "feature1": "Everything in Pro",
+        "feature2": "AI Advisor access (75 calls/month base)",
+        "feature3": "Portuguese labor law compliance analysis",
+        "feature4": "Legal limit calculations (overtime, Isenção, vacation)",
+        "feature5": "HR best practices & work-life balance guidance",
+        "feature6": "Compliance monitoring & proactive alerts",
+        "feature7": "Buy additional call packs as needed"
+      }
+    }
+  },
+  "sessionList": {
+    "selectDate": "Select Date",
+    "viewSessionsDate": "View your sessions for any date"
+  },
+  "sessions": {
+    "title": "Sessions for",
+    "invalidDate": "Invalid Date",
+    "selectValidDate": "Please select a valid date",
+    "sessionFound": "session found",
+    "sessionsFound": "sessions found",
+    "addSession": "Add Session",
+    "editSession": "Edit Session",
+    "addManualSession": "Add manual session",
+    "editFirstSession": "Edit first session",
+    "noSessionsRecorded": "No sessions recorded for this date",
+    "session": "Session",
+    "syncToCalendar": "Sync to Google Calendar",
+    "editSessionTitle": "Edit session",
+    "deleteSessionTitle": "Delete session",
+    "in": "In",
+    "out": "Out",
+    "regular": "Regular",
+    "unpaid": "Unpaid",
+    "paid": "Paid",
+    "regularWorkDay": "Regular work day",
+    "overtimeDay": "Overtime day - Extra paid hours accumulated",
+    "extendedHours": "Extended hours - Unpaid overtime period",
+    "under8Hours": "Under 8 hours worked",
+    "working": "Working"
+  },
+  "calendar": {
+    "title": "Google Calendar Events",
+    "description": "View all events from your Google Calendar (read-only)",
+    "refreshEvents": "Refresh Events",
+    "eventsFor": "Events for",
+    "calendarNotConnected": "Calendar Not Connected",
+    "authorizeInSettings": "Please authorize Google Calendar in Settings to view events.",
+    "loadingEvents": "Loading calendar events...",
+    "noEvents": "No events for this date",
+    "fromGoogleCalendar": "From Google Calendar",
+    "location": "Location",
+    "tokenExpired": "Your Google Calendar token has expired. Please click the cloud icon (⚠️) in the header to refresh it, or go to Settings and re-authorize Google Calendar."
+  },
+  "analytics": {
+    "title": "Analytics & Reports",
+    "loading": "Loading analytics...",
+    "daily": "Daily",
+    "weekly": "Weekly",
+    "monthly": "Monthly",
+    "yearly": "Yearly",
+    "period": "Period",
+    "totalHours": "Total Hours",
+    "daysWorked": "days worked",
+    "regularHours": "Regular Hours",
+    "standardWorkTime": "Standard work time",
+    "isencaoUnpaid": "Isenção (Unpaid)",
+    "overworkPaid": "Overwork (Paid)",
+    "over10Hours": "Over 10 hours",
+    "lunchTime": "Lunch Time",
+    "sessions": "sessions",
+    "mealExpenses": "Meal Expenses",
+    "lunchDinner": "Lunch + Dinner",
+    "daysOff": "Days Off",
+    "weekendBonus": "Weekend +",
+    "overworkDetails": "Overwork Details",
+    "trackAccumulated": "Track your accumulated overwork hours and usage",
+    "totalAccumulated": "Total Accumulated",
+    "days": "days",
+    "overwork": "overwork",
+    "daysOffEarned": "days off",
+    "totalUsed": "Total Used",
+    "workDays": "work days",
+    "daysOffEarnedTitle": "Days Off Earned",
+    "total": "total",
+    "used": "used",
+    "remainingAvailable": "Remaining Available",
+    "daysAvailable": "days available",
+    "useOverworkHours": "Use Overwork Hours",
+    "cancel": "Cancel",
+    "addUsage": "+ Add Usage",
+    "daysToUse": "Days to Use",
+    "hoursToUse": "Hours to Use",
+    "reasonOptional": "Reason (optional)",
+    "reasonPlaceholder": "e.g., Personal time off, Late arrival compensation",
+    "submit": "Submit",
+    "usageHistory": "Usage History",
+    "noOverworkUsed": "No overwork hours used yet",
+    "deleteEntry": "Delete this entry",
+    "detailedSessions": "Detailed Sessions",
+    "searchPlaceholder": "Search by date or notes...",
+    "allSessions": "All Sessions",
+    "weekendOnly": "Weekend Only",
+    "withLunch": "With Lunch",
+    "withMeals": "With Meals",
+    "paidOvertime": "Paid Overtime",
+    "last10": "Last 10",
+    "last30": "Last 30",
+    "last60": "Last 60",
+    "all": "All",
+    "limitSessions": "Limit number of sessions displayed",
+    "noSessionsFound": "No sessions found matching your search and filters",
+    "showing": "Showing",
+    "of": "of",
+    "date": "Date",
+    "clockIn": "Clock In",
+    "clockOut": "Clock Out",
+    "total": "Total",
+    "lunch": "Lunch",
+    "meals": "Meals €",
+    "regular": "Regular",
+    "isencao": "Isenção",
+    "overwork": "Overwork",
+    "noSessionsFoundTable": "No sessions found",
+    "exportCSV": "Export CSV",
+    "bankHoliday": "bank holiday",
+    "session": "session",
+    "pleaseEnterValid": "Please enter valid days or hours",
+    "cannotDeductMore": "You cannot deduct more hours than available.",
+    "remaining": "Remaining",
+    "tryingToDeduct": "Trying to deduct",
+    "failedToAdd": "Failed to add deduction. Please try again.",
+    "confirmDelete": "Are you sure you want to delete this overwork usage entry?",
+    "failedToDelete": "Failed to delete entry. Please try again."
+  },
+  "faq": {
+    "title": "Frequent Questions",
+    "subtitle": "Portuguese Labor Law & App Usage",
+    "intro": {
+      "title": "About Portuguese Labor Law",
+      "description": "This FAQ section provides information based on the Portuguese Labor Code (Código do Trabalho) and explains how this app helps you track compliance with working hours, overtime, breaks, and rest period regulations.",
+      "disclaimer": "Disclaimer: This information is for general guidance only and does not constitute legal advice. For specific legal situations, please consult the official Portuguese Labor Code or seek advice from a qualified employment lawyer."
+    },
+    "categories": {
+      "workingHours": "Working Hours",
+      "overtime": "Overtime",
+      "breaksRestPeriods": "Breaks & Rest Periods",
+      "weekendWork": "Weekend Work",
+      "usingThisApp": "Using This App",
+      "legalCompliance": "Legal Compliance"
+    },
+    "additionalResources": "Additional Resources",
+    "resources": {
+      "act": "ACT - Autoridade para as Condições do Trabalho",
+      "laborCode": "Código do Trabalho (Labor Code PDF)",
+      "ministry": "Ministry of Labor, Solidarity and Social Security"
+    },
+    "questions": {
+      "workingHours": {
+        "q1": {
+          "question": "What are the standard working hours in Portugal?",
+          "answer": "According to Portuguese labor law (Código do Trabalho), full-time employment is legally defined as 40 hours per week, typically distributed as 8 hours per day over a five-day workweek. This standard applies across various industries, though specific sectors may have different arrangements through collective bargaining agreements."
+        },
+        "q2": {
+          "question": "What is the maximum daily working time?",
+          "answer": "The standard daily working time is 8 hours per day. With overtime, employees can work up to 10 hours per day (8 regular hours + 2 hours overtime maximum). However, the total overtime is subject to annual limits."
+        },
+        "q3": {
+          "question": "What is Working Time Exemption (Isenção de Horário)?",
+          "answer": "The exemption from working hours (Article 218 of Código do Trabalho) provides greater flexibility in work schedule execution. It requires a written agreement between employee and employer. Workers with this exemption still maintain their rights to rest periods, weekly rest, mandatory holidays, and daily rest of at least 11 hours between working days."
+        }
+      },
+      "overtime": {
+        "q1": {
+          "question": "How much overtime can I work?",
+          "answer": "The maximum overtime is limited to 2 hours per day. Annual caps are: 150 hours for companies with 50+ employees, 175 hours for smaller companies, and up to 200 hours in exceptional cases (force majeure or specific collective agreements)."
+        },
+        "q2": {
+          "question": "How is overtime compensated?",
+          "answer": "Overtime compensation rates:\n• First hour: 125% of regular rate\n• Additional hours: 137.5% of regular rate\n• Weekend/holiday overtime: 150% of regular rate\n\nEmployers must request overtime in advance, and employees can decline for extenuating circumstances."
+        },
+        "q3": {
+          "question": "When can employers request overtime?",
+          "answer": "Employers can only request overtime when there's a temporary increase in work or an indispensable need to prevent damage to the company. Overtime must be requested in advance, and employees have the right to decline for valid reasons."
+        },
+        "q4": {
+          "question": "What does 'Isenção' (Unpaid Extra Hours) mean in this app?",
+          "answer": "In this app, 'Isenção' refers to hours worked between 8-10 hours per day that may not receive overtime compensation if you have a Working Time Exemption agreement (Isenção de Horário). Hours beyond 10 per day are tracked as 'Paid Overtime' as they typically require additional compensation. The app includes an annual Isenção limit (default: 200 hours/year) - once reached, additional hours are automatically classified as paid overwork to ensure compliance."
+        },
+        "q5": {
+          "question": "How does the annual Isenção limit work?",
+          "answer": "The app tracks Isenção hours per calendar year (January 1 - December 31). You can configure the annual limit in Settings (default: 200 hours/year). Once the annual limit is reached, any additional hours beyond 8 per day are automatically classified as paid overwork instead of Isenção. The Analytics page shows your annual usage (e.g., '150 / 200 hours (50 remaining)') to help you monitor your limit throughout the year."
+        }
+      },
+      "breaksRestPeriods": {
+        "q1": {
+          "question": "What breaks am I entitled to during work?",
+          "answer": "For working periods exceeding 5 hours, employees are entitled to a break of between 1 hour and 2 hours. This break cannot be taken at the beginning or end of the working period and is commonly used for lunch."
+        },
+        "q2": {
+          "question": "What is the minimum daily rest period?",
+          "answer": "Employees are entitled to a minimum of 11 consecutive hours of rest between working days. This applies to all workers, including those with Working Time Exemption agreements."
+        },
+        "q3": {
+          "question": "What is the minimum weekly rest period?",
+          "answer": "Employees are entitled to a minimum of 24 consecutive hours of rest per week, typically taken on Sunday. This weekly rest period should ideally be added to the daily rest period of the preceding or following day, resulting in approximately 35 consecutive hours of rest."
+        },
+        "q4": {
+          "question": "Can I work during my lunch break?",
+          "answer": "No. The mandatory break after 5 hours of work (typically lunch) must be taken and cannot be worked through. This is a legal requirement under Portuguese labor law to ensure employee wellbeing."
+        }
+      },
+      "weekendWork": {
+        "q1": {
+          "question": "Can I be required to work on weekends?",
+          "answer": "Weekend work (Saturday and Sunday) is generally subject to special rules and typically requires employee consent. It's compensated at 150% of the regular rate and should respect the weekly rest period of 24 consecutive hours."
+        },
+        "q2": {
+          "question": "How is weekend work compensated?",
+          "answer": "Weekend and public holiday work is paid at 150% of the regular rate. Some collective agreements or company policies may also grant additional benefits such as compensatory time off or bonuses, which can be tracked in this app's Weekend Work settings."
+        },
+        "q3": {
+          "question": "What are my rights if I work on Sunday?",
+          "answer": "If you work on Sunday (the typical weekly rest day), you should receive: overtime compensation at 150% rate, and an alternative rest day during the week to maintain your 24-hour weekly rest entitlement."
+        }
+      },
+      "usingThisApp": {
+        "q1": {
+          "question": "How does this app help me comply with Portuguese labor law?",
+          "answer": "This app helps you:\n• Track if you exceed 8 hours/day (regular hours limit)\n• Monitor daily overtime (max 2h/day)\n• Track total overtime to stay within annual limits (150-200h/year)\n• Record breaks and lunch periods\n• Calculate proper overtime compensation rates\n• Document weekend work and special compensation\n• Export reports for legal compliance records\n\nWith Premium AI, the AI Advisor provides expert compliance analysis, legal limit calculations, and proactive alerts based on Portuguese labor law (Código do Trabalho)."
+        },
+        "q2": {
+          "question": "What is the AI Advisor and what can it do?",
+          "answer": "The AI Advisor (Premium AI feature) is an intelligent assistant with expertise in Portuguese labor law and HR best practices. It can:\n• Analyze your work patterns against Portuguese labor law requirements\n• Calculate compliance percentages (e.g., 'You've used 75% of your Isenção limit')\n• Provide legal limit calculations for overtime, Isenção, and vacation\n• Offer HR best practices and work-life balance guidance\n• Alert you when approaching legal limits\n• Answer questions about your time tracking data, analytics, and settings\n• Provide personalized recommendations based on your actual work patterns\n\nThe AI Advisor uses OpenRouter for multi-model AI routing and has access to your time tracking data for context-aware advice."
+        },
+        "q3": {
+          "question": "What is Premium AI and what does it include?",
+          "answer": "Premium AI (€9.99/month) includes:\n• All Pro plan features (advanced analytics, detailed reports, priority support)\n• AI Advisor access with 75 calls/month base allocation\n• Portuguese labor law compliance analysis\n• Legal limit calculations (overtime, Isenção, vacation)\n• HR best practices & work-life balance guidance\n• Compliance monitoring & proactive alerts\n• Expert advice on work patterns and productivity\n\nYou can purchase additional call packs (+50 calls for €4.99) that never expire, perfect for power users who need more AI assistance."
+        },
+        "q4": {
+          "question": "How do call packs work?",
+          "answer": "Call packs are additional AI Advisor calls you can purchase beyond your monthly base allocation:\n• Each pack adds +50 calls for €4.99\n• Call packs never expire and roll over indefinitely\n• Used after base allocation (75 calls/month) is exhausted\n• Perfect for power users who need more AI assistance\n• Track your usage: 'X/Y calls remaining (Y base + Z packs)'\n• Purchase packs from the AI Advisor page or Premium+ page when you have a Premium AI subscription"
+        },
+        "q5": {
+          "question": "Why does the app separate 'Regular', 'Isenção', and 'Overwork' hours?",
+          "answer": "The app categorizes hours to align with Portuguese law:\n• Regular Hours (0-8h): Standard working time\n• Isenção/Unpaid Extra (8-10h): Hours that may not be compensated if you have Working Time Exemption\n• Paid Overwork (10h+): Hours typically requiring overtime compensation at higher rates\n\nThis helps you and your employer track compliance and proper compensation."
+        },
+        "q6": {
+          "question": "Should I track my lunch breaks in the app?",
+          "answer": "Yes! Tracking lunch breaks ensures compliance with the legal requirement for breaks after 5 hours of work. The app allows you to:\n• Mark when you took a lunch break\n• Record the duration (1-2 hours as per law)\n• Calculate actual working hours excluding breaks\n• Track lunch expenses if applicable"
+        },
+        "q7": {
+          "question": "How can I use the overwork tracking feature?",
+          "answer": "The overwork tracking helps you monitor accumulated overtime:\n• View total overtime hours (converted to work days: 8h = 1 day)\n• Track when overtime is used/compensated\n• Ensure you don't exceed annual limits (150-200h)\n• Record reasons for overtime usage\n• Maintain compliance documentation"
+        }
+      },
+      "legalCompliance": {
+        "q1": {
+          "question": "Are employers required to track working hours?",
+          "answer": "Yes. Employers in Portugal have a legal obligation to maintain accurate records of employees' working hours. This is crucial for demonstrating compliance with maximum working hours, overtime limits, and rest period requirements. This app can serve as your personal tracking tool."
+        },
+        "q2": {
+          "question": "What should I do if I regularly exceed overtime limits?",
+          "answer": "If you regularly exceed the legal overtime limits (2h/day or 150-200h/year), you should:\n1. Document your hours (use this app for records)\n2. Discuss the situation with your employer\n3. Contact the Portuguese labor authority (ACT - Autoridade para as Condições do Trabalho)\n4. Seek advice from a labor union or employment lawyer"
+        },
+        "q3": {
+          "question": "Where can I find official information about Portuguese labor law?",
+          "answer": "Official sources for Portuguese labor law:\n• ACT (Autoridade para as Condições do Trabalho): https://www.act.gov.pt\n• Código do Trabalho (Labor Code): Available on ACT website\n• Ministry of Labor: https://www.mtsss.gov.pt\n• European Labor Authority: https://www.ela.europa.eu\n\nAlways consult official sources or legal professionals for specific legal advice."
+        }
+      }
+    }
+  },
+  "about": {
+    "title": "Clock In",
+    "subtitle": "Intelligent Time Manager",
+    "aboutThisApp": {
+      "title": "About This App",
+      "paragraph1": "Clock In is a comprehensive time tracking solution designed to help professionals manage their work hours with precision and intelligence. Whether you're a freelancer, contractor, remote worker, or full-time employee, Clock In provides powerful tools to track time, analyze patterns, manage expenses, and optimize your productivity.",
+      "paragraph2": "Built with modern web technologies and designed for real-world use, Clock In adapts to your workflow and provides actionable insights into how you spend your time."
+    },
+    "howItWorks": {
+      "title": "How It Works",
+      "step1": {
+        "title": "Clock In",
+        "description": "Click the large button on the home page to start tracking your time."
+      },
+      "step2": {
+        "title": "Work",
+        "description": "The timer runs automatically, showing you real-time breakdowns of your hours."
+      },
+      "step3": {
+        "title": "Clock Out",
+        "description": "Click the button again to stop tracking. Your session is saved automatically."
+      }
+    },
+    "hourCategories": {
+      "title": "Hour Categories",
+      "regularHours": {
+        "title": "Regular Hours",
+        "description": "Your standard work time up to your configured threshold (default: 8 hours). These hours form the foundation of your daily work schedule."
+      },
+      "isencao": {
+        "title": "Isenção - Unpaid Extra (Optional)",
+        "description": "Configure unpaid overtime tracking for hours beyond regular time. Can be enabled/disabled in Settings with custom thresholds. Annual limit (default: 200 hours/year) ensures compliance - once reached, additional hours are classified as paid overwork."
+      },
+      "overwork": {
+        "title": "Overwork - Paid Overtime",
+        "description": "Hours beyond your overtime threshold that are compensated. Accumulated overwork can be tracked and converted to days off (8h = 1 day)."
+      },
+      "lunch": {
+        "title": "Lunch & Break Time",
+        "description": "Track lunch duration with customizable hours and minutes. Set your default lunch time in Settings for quick session creation."
+      }
+    },
+    "keyFeatures": {
+      "title": "Key Features",
+      "realTimeTracking": {
+        "title": "Real-Time Tracking",
+        "description": "Live timer with automatic hour categorization as you work"
+      },
+      "interactiveCalendar": {
+        "title": "Interactive Calendar",
+        "description": "Visual session indicators and quick date navigation"
+      },
+      "advancedAnalytics": {
+        "title": "Advanced Analytics",
+        "description": "Daily, weekly, monthly, and yearly reports with detailed breakdowns"
+      },
+      "googleCalendarIntegration": {
+        "title": "Google Calendar Integration",
+        "description": "One-click sync of work sessions to your calendar"
+      },
+      "flexibleLunchTracking": {
+        "title": "Flexible Lunch Tracking",
+        "description": "Customizable lunch duration with hours and minutes"
+      },
+      "expenseManagement": {
+        "title": "Expense Management",
+        "description": "Track lunch and dinner expenses per session"
+      },
+      "locationNotes": {
+        "title": "Location Notes",
+        "description": "Add work location to sessions (office, home, client site, etc.)"
+      },
+      "weekendWorkBenefits": {
+        "title": "Weekend Work Benefits",
+        "description": "Configure days off earned and bonus compensation for weekend work"
+      },
+      "overworkManagement": {
+        "title": "Overwork Management",
+        "description": "Track accumulated overtime and usage history (8h = 1 day off)"
+      },
+      "customizableThresholds": {
+        "title": "Customizable Thresholds",
+        "description": "Configure regular hours, unpaid extra, and paid overtime limits"
+      },
+      "aiAdvisor": {
+        "title": "AI Advisor (Premium AI)",
+        "description": "AI-powered compliance analysis with Portuguese labor law expertise and HR guidance"
+      },
+      "premiumPlans": {
+        "title": "Premium Plans",
+        "description": "Choose from Basic, Pro, or Premium AI plans with advanced features and AI assistance"
+      }
+    },
+    "aiAdvisorSection": {
+      "title": "AI Advisor - Premium AI Feature",
+      "description": "Premium AI subscribers get access to an intelligent AI Advisor powered by OpenRouter with expertise in Portuguese labor law and HR best practices.",
+      "portugueseLaborLaw": {
+        "title": "🇵🇹 Portuguese Labor Law Expertise",
+        "description": "AI understands Código do Trabalho and provides compliance analysis based on actual Portuguese labor law"
+      },
+      "legalLimitCalculations": {
+        "title": "⚖️ Legal Limit Calculations",
+        "description": "Automatic tracking and calculations for overtime limits, Isenção usage, vacation rights, and compliance percentages"
+      },
+      "hrBestPractices": {
+        "title": "👥 HR Best Practices",
+        "description": "Work-life balance guidance, burnout prevention tips, and productivity optimization recommendations"
+      },
+      "proactiveAlerts": {
+        "title": "🔔 Proactive Alerts",
+        "description": "Early warnings when approaching legal limits, helping you stay compliant before issues arise"
+      },
+      "contextAwareAnalysis": {
+        "title": "📊 Context-Aware Analysis",
+        "description": "AI has access to your sessions, settings, and work patterns for personalized, relevant advice"
+      },
+      "callPackSystem": {
+        "title": "📦 Call Pack System",
+        "description": "75 calls/month included, with option to purchase +50 call packs (€4.99, never expire) for power users"
+      },
+      "poweredBy": "Powered by OpenRouter - Multi-model AI routing ensures optimal performance and reliability."
+    },
+    "analyticsReports": {
+      "title": "Analytics & Reports",
+      "description": "Gain deep insights into your work patterns with comprehensive analytics dashboards:",
+      "multipleReportViews": {
+        "title": "📊 Multiple Report Views",
+        "description": "Daily, weekly, monthly, and yearly time period analysis"
+      },
+      "searchFilter": {
+        "title": "🔍 Search & Filter",
+        "description": "Find sessions by date, notes, weekend work, meals, or overtime"
+      },
+      "visualStatsCards": {
+        "title": "📈 Visual Stats Cards",
+        "description": "Total hours, regular time, isenção, overwork, lunch time, and expenses"
+      },
+      "csvExport": {
+        "title": "💾 CSV Export",
+        "description": "Download detailed reports for spreadsheets, payroll, or accounting systems"
+      },
+      "overworkTracker": {
+        "title": "⏱️ Overwork Tracker",
+        "description": "Monitor accumulated overtime with conversion to days off and usage history"
+      },
+      "expenseReports": {
+        "title": "💰 Expense Reports",
+        "description": "Track meal costs with separate lunch and dinner expense totals"
+      }
+    },
+    "technologyStack": {
+      "title": "Technology Stack",
+      "description": "Built with modern, reliable technologies to ensure a fast, secure, and scalable experience:",
+      "react": "React 18 - Modern UI framework with hooks and performance optimizations",
+      "firebase": "Firebase - Real-time database and authentication",
+      "googleCalendar": "Google Calendar API - Seamless calendar integration",
+      "openRouter": "OpenRouter API - Multi-model AI routing for AI Advisor (powered by OpenRouter)",
+      "vite": "Vite - Lightning-fast build tool with code splitting",
+      "vercel": "Vercel - Global edge network deployment",
+      "optimized": "Optimized following Vercel's React best practices for maximum performance and user experience."
+    },
+    "performanceReliability": {
+      "title": "Performance & Reliability",
+      "description": "Clock In is built with performance and reliability as top priorities:",
+      "fastLoading": {
+        "title": "⚡ Fast Loading",
+        "description": "Code splitting and lazy loading reduce initial load time by 30-50%"
+      },
+      "parallelOperations": {
+        "title": "🔄 Parallel Operations",
+        "description": "Data loading happens in parallel, making pages load 50-70% faster"
+      },
+      "smartCaching": {
+        "title": "💾 Smart Caching",
+        "description": "Intelligent request caching prevents duplicate API calls"
+      },
+      "errorRecovery": {
+        "title": "🛡️ Error Recovery",
+        "description": "Error boundaries ensure graceful handling of unexpected issues"
+      },
+      "optimizedRendering": {
+        "title": "🎯 Optimized Rendering",
+        "description": "Memoization and component optimization for smooth interactions"
+      },
+      "smallerBundles": {
+        "title": "📦 Smaller Bundles",
+        "description": "Route-based code splitting reduces bundle size by 20-30%"
+      }
+    },
+    "footer": {
+      "version": "Version 2.2.0 - January 2026",
+      "copyright": "© 2026 Clock In - Intelligent Time Manager. Built for professionals who value their time.",
+      "latestUpdate": "Latest update: AI Advisor with Portuguese labor law expertise, Premium AI plans, and call pack system"
+    }
+  }
+}

@@ -7,6 +7,7 @@ import { OPENROUTER_DEFAULT_MODEL } from '../lib/openRouterConfig';
 import { getCallStatus, checkAndResetCalls, initializeCalls } from '../lib/tokenManager';
 import { ShoppingCart } from 'lucide-react';
 import { Bot, Crown, Send, AlertCircle, Settings, Loader, BarChart3, TrendingUp, Clock } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import './AIAdvisor.css';
 
 // Helper function to format token count
@@ -20,6 +21,7 @@ function formatTokenCount(tokens) {
 }
 
 export function AIAdvisor({ user, onNavigate }) {
+  const { t } = useTranslation();
   const [isPremium, setIsPremium] = useState(false);
   const [loading, setLoading] = useState(true);
   const [messages, setMessages] = useState([]);
@@ -49,10 +51,10 @@ export function AIAdvisor({ user, onNavigate }) {
       // Initialize with welcome message
       setMessages([{
         role: 'assistant',
-        content: 'Hello! I\'m your AI Advisor. I have access to your time tracking data and can help you with questions about your work sessions, analytics, settings, or anything else you need assistance with. How can I help you today?'
+        content: t('aiAdvisor.welcome')
       }]);
     }
-  }, [isPremium, userContext]);
+  }, [isPremium, userContext, t]);
 
   useEffect(() => {
     scrollToBottom();
@@ -268,30 +270,30 @@ export function AIAdvisor({ user, onNavigate }) {
     {
       id: 'analytics',
       icon: BarChart3,
-      title: 'Analytics Insights',
-      description: 'Get insights on your work patterns',
-      prompt: 'Analyze my work patterns and provide insights on how I can improve my time management'
+      title: t('aiAdvisor.suggestions.analyticsInsights.title'),
+      description: t('aiAdvisor.suggestions.analyticsInsights.description'),
+      prompt: t('aiAdvisor.suggestions.analyticsInsights.prompt')
     },
     {
       id: 'patterns',
       icon: TrendingUp,
-      title: 'Work Patterns',
-      description: 'Discover your productivity trends',
-      prompt: 'What are my work patterns and trends? Show me my most productive times and days'
+      title: t('aiAdvisor.suggestions.workPatterns.title'),
+      description: t('aiAdvisor.suggestions.workPatterns.description'),
+      prompt: t('aiAdvisor.suggestions.workPatterns.prompt')
     },
     {
       id: 'isenção',
       icon: Clock,
-      title: 'Isenção & Overtime',
-      description: 'Optimize your hours usage',
-      prompt: 'How can I optimize my Isenção usage and overtime hours? Am I close to my annual limit?'
+      title: t('aiAdvisor.suggestions.isencaoOvertime.title'),
+      description: t('aiAdvisor.suggestions.isencaoOvertime.description'),
+      prompt: t('aiAdvisor.suggestions.isencaoOvertime.prompt')
     },
     {
       id: 'settings',
       icon: Settings,
-      title: 'Settings Review',
-      description: 'Get recommendations for your settings',
-      prompt: 'Review my current settings and suggest optimal thresholds for regular hours, Isenção, and other configurations'
+      title: t('aiAdvisor.suggestions.settingsReview.title'),
+      description: t('aiAdvisor.suggestions.settingsReview.description'),
+      prompt: t('aiAdvisor.suggestions.settingsReview.prompt')
     }
   ];
 
@@ -382,7 +384,7 @@ export function AIAdvisor({ user, onNavigate }) {
   if (loading) {
     return (
       <div className="ai-advisor-container">
-        <div className="loading">Loading AI Advisor...</div>
+        <div className="loading">{t('aiAdvisor.loading')}</div>
       </div>
     );
   }
@@ -394,15 +396,15 @@ export function AIAdvisor({ user, onNavigate }) {
           <div className="premium-gate-icon">
             <Crown />
           </div>
-          <h2>Premium Feature</h2>
-          <p>The AI Advisor is available to premium users only.</p>
+          <h2>{t('aiAdvisor.premiumFeature')}</h2>
+          <p>{t('aiAdvisor.premiumOnly')}</p>
           <div className="premium-features">
-            <h3>Premium Benefits:</h3>
+            <h3>{t('aiAdvisor.premiumBenefits')}</h3>
             <ul>
-              <li>AI Assistant with access to your time tracking data</li>
-              <li>Personalized advice and insights</li>
-              <li>Help with analytics and settings</li>
-              <li>General-purpose AI assistance</li>
+              <li>{t('aiAdvisor.benefit1')}</li>
+              <li>{t('aiAdvisor.benefit2')}</li>
+              <li>{t('aiAdvisor.benefit3')}</li>
+              <li>{t('aiAdvisor.benefit4')}</li>
             </ul>
           </div>
           <button
@@ -410,7 +412,7 @@ export function AIAdvisor({ user, onNavigate }) {
             onClick={() => onNavigate && onNavigate('settings')}
           >
             <Settings />
-            Go to Settings to Enable Premium
+            {t('aiAdvisor.goToSettings')}
           </button>
         </div>
       </div>
@@ -423,14 +425,14 @@ export function AIAdvisor({ user, onNavigate }) {
         <div className="header-content">
           <Bot className="header-icon" />
           <div>
-            <h1>AI Advisor</h1>
-            <p>Your intelligent assistant for time tracking insights</p>
+            <h1>{t('aiAdvisor.title')}</h1>
+            <p>{t('aiAdvisor.yourIntelligentAssistant')}</p>
           </div>
         </div>
         {contextLoading && (
           <div className="context-loading">
             <Loader className="spinning" />
-            <span>Loading your data...</span>
+            <span>{t('aiAdvisor.loadingData')}</span>
           </div>
         )}
       </div>
@@ -510,7 +512,7 @@ export function AIAdvisor({ user, onNavigate }) {
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             onKeyPress={handleKeyPress}
-            placeholder="Ask me anything about your time tracking, analytics, or general questions..."
+            placeholder={t('aiAdvisor.placeholder')}
             rows={1}
             disabled={isLoading || contextLoading}
           />
@@ -526,7 +528,7 @@ export function AIAdvisor({ user, onNavigate }) {
           <div className="call-counter-container">
             <div className="token-counter-small">
               {callStatus.callsAllocated >= 999999
-                ? `Unlimited calls (Admin)${callStatus.totalTokensUsed > 0 ? ` • ${formatTokenCount(callStatus.totalTokensUsed)} tokens used` : ''}`
+                ? `${t('aiAdvisor.calls.unlimited')}${callStatus.totalTokensUsed > 0 ? ` • ${formatTokenCount(callStatus.totalTokensUsed)} ${t('aiAdvisor.calls.tokensUsed')}` : ''}`
                 : callStatus.totalAvailable !== undefined
                 ? (() => {
                     const baseRemaining = callStatus.callsRemaining || 0;
@@ -537,25 +539,25 @@ export function AIAdvisor({ user, onNavigate }) {
                     return (
                       <>
                         <span>
-                          {totalAvailable}/{callStatus.callsAllocated + (hasPacks ? `+${packsRemaining}` : '')} calls
+                          {totalAvailable}/{callStatus.callsAllocated + (hasPacks ? `+${packsRemaining}` : '')} {t('aiAdvisor.calls.remaining')}
                           {hasPacks && ` (${baseRemaining} base + ${packsRemaining} packs)`}
-                          {callStatus.totalTokensUsed > 0 && ` • ${formatTokenCount(callStatus.totalTokensUsed)} tokens used`}
+                          {callStatus.totalTokensUsed > 0 && ` • ${formatTokenCount(callStatus.totalTokensUsed)} ${t('aiAdvisor.calls.tokensUsed')}`}
                         </span>
                       </>
                     );
                   })()
                 : callStatus.callsAllocated === 0 && !loading
-                ? '75/75 calls remaining'
-                : 'Loading...'}
+                ? `75/75 ${t('aiAdvisor.calls.remaining')}`
+                : t('common.loading')}
             </div>
             {callStatus.callsAllocated < 999999 && (
               <button 
                 className="buy-more-calls-button"
                 onClick={() => onNavigate && onNavigate('call-pack-purchase')}
-                title="Buy more AI calls"
+                title={t('aiAdvisor.calls.buyMoreTitle')}
               >
                 <ShoppingCart size={14} />
-                <span>Buy More</span>
+                <span>{t('aiAdvisor.calls.buyMore')}</span>
               </button>
             )}
           </div>
