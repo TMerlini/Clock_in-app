@@ -171,7 +171,8 @@
 
 .homepage-left .card {
   min-height: fit-content;
-  padding: 2rem 1.5rem;
+  padding: 4.5rem 1.5rem 2rem 1.5rem;
+  overflow: visible;
 }
 
 .homepage-right {
@@ -291,8 +292,14 @@
     margin: 0;
   }
 
+  .homepage-left .card {
+    padding: 0.9rem 0.5rem 0.5rem 0.5rem;
+    overflow: visible;
+  }
+
   .card-content {
     width: 100%;
+    padding: 2rem 0.5rem 0.5rem 0.5rem;
     box-sizing: border-box;
     overflow-x: hidden;
     gap: 0.5rem;

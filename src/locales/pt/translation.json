@@ -532,6 +532,10 @@
         "q7": {
           "question": "Como posso usar a funcionalidade de rastreamento de trabalho extra?",
           "answer": "O rastreamento de trabalho extra ajuda-o a monitorizar horas extras acumuladas:\n• Ver total de horas extras (convertido em dias de trabalho: 8h = 1 dia)\n• Rastrear quando as horas extras são usadas/compensadas\n• Garantir que não excede limites anuais (150-200h)\n• Registar razões para uso de horas extras\n• Manter documentação de conformidade"
+        },
+        "q8": {
+          "question": "Como posso alterar o idioma da aplicação?",
+          "answer": "A aplicação suporta Português e Inglês:\n• Vá para a página Definições\n• Navegue até à secção 'Idioma'\n• Selecione o seu idioma preferido (Português ou English)\n• A interface atualiza imediatamente\n• A sua preferência de idioma é guardada e persiste entre dispositivos\n• Datas do calendário e formatação adaptam-se automaticamente ao idioma selecionado\n\nNota: A aplicação usa Português (pt) como idioma padrão."
         }
       },
       "legalCompliance": {

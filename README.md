@@ -104,6 +104,14 @@ A comprehensive time tracking application for managing work hours, overtime, mea
   - Compliance monitoring & proactive alerts
   - Buy additional call packs as needed (+50 calls for €4.99, never expire)
 
+### 🌍 Internationalization (i18n)
+- **Multi-Language Support** - Full interface translation in Portuguese and English
+- **Portuguese as Default** - App defaults to Portuguese (pt) language
+- **Language Switching** - Change language anytime in Settings page
+- **Persistent Language Preference** - Your language choice is saved and synced across devices
+- **Localized Date Formatting** - Calendar and dates automatically formatted according to selected language
+- **Complete Translation** - All UI elements, menus, buttons, messages, and FAQ translated
+
 ### 🔐 Authentication & User Profile
 - **Firebase Authentication** - Secure user authentication
 - **Google Sign-In** - Easy login with Google account
@@ -117,7 +125,9 @@ A comprehensive time tracking application for managing work hours, overtime, mea
 - **React 18** - UI library with hooks and modern performance optimizations
 - **Vite** - Fast build tool and dev server with code splitting
 - **CSS3** - Custom styling with CSS variables for theming
-- **date-fns** - Date manipulation and formatting
+- **react-i18next** - Internationalization framework for multi-language support
+- **i18next** - Core internationalization library with language detection
+- **date-fns** - Date manipulation and formatting with locale support
 - **react-day-picker** - Interactive calendar component
 - **lucide-react** - Modern icon library
 - **Performance Optimizations** - Following Vercel's React best practices:
@@ -300,6 +310,15 @@ A comprehensive time tracking application for managing work hours, overtime, mea
 3. If not set, email address is shown instead
 4. Hover over username in header to see full email
 
+#### Change Language
+1. Navigate to Settings page
+2. In "Language" section, select your preferred language:
+   - **Português** - Portuguese (default)
+   - **English** - English
+3. Language change applies immediately to the entire interface
+4. Your language preference is saved and will persist across devices
+5. Calendar dates and formatting automatically adapt to selected language
+
 #### Google Calendar Integration
 1. Click "Enable Google Calendar" to authorize
 2. Grant permissions when prompted
@@ -475,6 +494,15 @@ This app is actively maintained with regular updates and new features. For a com
 - ✅ **Context-Aware Analysis** - AI understands your sessions, settings, and work patterns
 - ✅ **Admin Dashboard** - Management interface for user administration and analytics
 
+**Internationalization & UI Improvements (January 2026)**
+- ✅ **Multi-Language Support** - Full Portuguese and English translation with react-i18next
+- ✅ **Portuguese as Default Language** - App defaults to Portuguese (pt) for Portuguese users
+- ✅ **Language Switching** - Easy language selection in Settings page with persistent preference
+- ✅ **Localized Date Formatting** - Calendar and dates formatted according to selected language
+- ✅ **Complete Translation Coverage** - All UI elements, menus, buttons, FAQ, and About pages translated
+- ✅ **Mobile Header Padding Fix** - Fixed header overlap on all pages for mobile devices (640px and below)
+- ✅ **Clock Button Styling** - Improved card padding to fully display button blur effects
+
 **Performance Optimizations (January 2026)**
 - ✅ **Eliminated Async Waterfalls** - Parallel data loading for 50-70% faster page loads
 - ✅ **Code Splitting** - Route-based lazy loading reduces initial bundle size by 20-30%
@@ -508,13 +536,14 @@ This app is actively maintained with regular updates and new features. For a com
 - Onboarding Tutorial - Interactive first-time experience
 - Time Zone Support - Multi-timezone tracking
 - Auto-Sync Calendar - Automatic calendar event creation
+- ✅ Multi-Language Support - Portuguese and English (Spanish planned)
 
 **Phase 3 - Advanced Features (Q3 2026)**
 - Offline Mode - Work without internet connection
 - Invoice Generation - Create professional invoices
 - Project Time Tracking - Track hours by project/client
 - Advanced Visualizations - Charts and graphs
-- Multi-Language Support - Portuguese, Spanish, English
+- Spanish Language Support - Additional language option
 
 **Phase 4 - Integrations (Q4 2026)**
 - Team Features - Multi-user workspaces
