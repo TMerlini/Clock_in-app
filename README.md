@@ -471,6 +471,32 @@ The app is configured for automatic deployment to Vercel:
   - `lastResetDate`: timestamp
 - `userType`: string ('regular' | 'guest') - Optional: tracks if account was created by admin
 - `createdBy`: string (optional, admin user ID for guest accounts)
+- `financeSettings`: object (optional, Finance calculation settings)
+  - `hourlyRate`: number - Base hourly rate (€)
+  - `isencaoRate`: number - Isenção rate as percentage of hourly rate (%), e.g., 25 for 25% (used when calculationMethod is 'percentage')
+  - `isencaoCalculationMethod`: string - 'percentage' | 'fixed' (default: 'percentage') - Method for calculating IHT
+  - `isencaoFixedAmount`: number - Fixed monthly IHT amount (€) when calculationMethod is 'fixed'
+  - `taxDeductionType`: string - 'irs', 'social_security', 'custom', 'both'
+  - `irsRate`: number - IRS percentage (0-100) - Legacy: single rate used if separate rates are not set
+  - `irsBaseSalaryRate`: number - IRS percentage on base salary only (0-100)
+  - `irsIhtRate`: number - IRS percentage on IHT earnings only (0-100)
+  - `irsOvertimeRate`: number - IRS percentage on overtime earnings only (0-100)
+  - `socialSecurityRate`: number - Social Security percentage (typically 11%)
+  - `customTaxRate`: number - Custom tax percentage (0-100)
+  - `mealAllowanceIncluded`: boolean - Include meal allowances in calculations
+  - `overtimeFirstHourRate`: number - Overtime first hour multiplier (default: 1.25 = 125%)
+  - `overtimeSubsequentRate`: number - Overtime subsequent hours multiplier (default: 1.50 = 150%)
+  - `weekendOvertimeRate`: number - Weekend overtime multiplier (default: 1.50 = 150%)
+  - `holidayOvertimeRate`: number - Holiday overtime multiplier (default: 2.00 = 200%)
+  - `fixedBonus`: number - Fixed monthly/periodic bonus amount (€), also known as "Ajudas de Custo"
+  - `dailyMealSubsidy`: number - Fixed daily meal subsidy amount (€), "Subsídio de Alimentação" for contracted workers
+  - `mealCardDeduction`: number - Meal card deduction amount (€) - deducted from gross salary (typically offsets meal subsidy)
+  
+  **Important Tax Calculation Notes:**
+  - Social Security is calculated on **Base Salary + IHT only** (excludes meal subsidy, bonus, overtime)
+  - IRS can have separate rates for base salary, IHT, and overtime (more accurate to Portuguese tax system)
+  - If separate IRS rates are not set, the legacy `irsRate` is used as a single rate on total gross
+  - Meal card deduction is subtracted from gross salary separately (does not affect Social Security base)
 
 **overworkDeductions** - Overwork usage tracking
 - `userId`: string

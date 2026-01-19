@@ -26,6 +26,26 @@ export function Settings({ googleCalendar, onUsernameChange, onNavigate }) {
   const [bankHolidayApplyBonus, setBankHolidayApplyBonus] = useState(true);
   const [isPremium, setIsPremium] = useState(false);
   const [language, setLanguage] = useState('en');
+  // Finance settings
+  const [hourlyRate, setHourlyRate] = useState(0);
+  const [isencaoRate, setIsencaoRate] = useState(0);
+  const [isencaoCalculationMethod, setIsencaoCalculationMethod] = useState('percentage');
+  const [isencaoFixedAmount, setIsencaoFixedAmount] = useState(0);
+  const [taxDeductionType, setTaxDeductionType] = useState('both');
+  const [irsRate, setIrsRate] = useState(0); // Legacy: single IRS rate
+  const [irsBaseSalaryRate, setIrsBaseSalaryRate] = useState(0);
+  const [irsIhtRate, setIrsIhtRate] = useState(0);
+  const [irsOvertimeRate, setIrsOvertimeRate] = useState(0);
+  const [socialSecurityRate, setSocialSecurityRate] = useState(11);
+  const [customTaxRate, setCustomTaxRate] = useState(0);
+  const [mealAllowanceIncluded, setMealAllowanceIncluded] = useState(false);
+  const [overtimeFirstHourRate, setOvertimeFirstHourRate] = useState(1.25);
+  const [overtimeSubsequentRate, setOvertimeSubsequentRate] = useState(1.50);
+  const [weekendOvertimeRate, setWeekendOvertimeRate] = useState(1.50);
+  const [holidayOvertimeRate, setHolidayOvertimeRate] = useState(2.00);
+  const [fixedBonus, setFixedBonus] = useState(0);
+  const [dailyMealSubsidy, setDailyMealSubsidy] = useState(0);
+  const [mealCardDeduction, setMealCardDeduction] = useState(0);
   const [saved, setSaved] = useState(false);
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
@@ -78,6 +98,28 @@ export function Settings({ googleCalendar, onUsernameChange, onNavigate }) {
         setBankHolidayApplyBonus(settings.bankHolidayApplyBonus !== undefined ? settings.bankHolidayApplyBonus : true);
         setIsPremium(settings.isPremium || false);
         setLanguage(settings.language || 'en');
+        
+        // Load finance settings
+        const financeSettings = settings.financeSettings || {};
+        setHourlyRate(financeSettings.hourlyRate || 0);
+        setIsencaoRate(financeSettings.isencaoRate || 0);
+        setIsencaoCalculationMethod(financeSettings.isencaoCalculationMethod || 'percentage');
+        setIsencaoFixedAmount(financeSettings.isencaoFixedAmount || 0);
+        setTaxDeductionType(financeSettings.taxDeductionType || 'both');
+        setIrsRate(financeSettings.irsRate || 0); // Legacy
+        setIrsBaseSalaryRate(financeSettings.irsBaseSalaryRate || 0);
+        setIrsIhtRate(financeSettings.irsIhtRate || 0);
+        setIrsOvertimeRate(financeSettings.irsOvertimeRate || 0);
+        setSocialSecurityRate(financeSettings.socialSecurityRate !== undefined ? financeSettings.socialSecurityRate : 11);
+        setCustomTaxRate(financeSettings.customTaxRate || 0);
+        setMealAllowanceIncluded(financeSettings.mealAllowanceIncluded !== undefined ? financeSettings.mealAllowanceIncluded : false);
+        setOvertimeFirstHourRate(financeSettings.overtimeFirstHourRate !== undefined ? financeSettings.overtimeFirstHourRate : 1.25);
+        setOvertimeSubsequentRate(financeSettings.overtimeSubsequentRate !== undefined ? financeSettings.overtimeSubsequentRate : 1.50);
+        setWeekendOvertimeRate(financeSettings.weekendOvertimeRate !== undefined ? financeSettings.weekendOvertimeRate : 1.50);
+        setHolidayOvertimeRate(financeSettings.holidayOvertimeRate !== undefined ? financeSettings.holidayOvertimeRate : 2.00);
+        setFixedBonus(financeSettings.fixedBonus || 0);
+        setDailyMealSubsidy(financeSettings.dailyMealSubsidy || 0);
+        setMealCardDeduction(financeSettings.mealCardDeduction || 0);
         
         // Notify parent of username
         if (settings.username && onUsernameChange) {
@@ -265,6 +307,27 @@ export function Settings({ googleCalendar, onUsernameChange, onNavigate }) {
         bankHolidayApplyBonus,
         isPremium,
         language,
+        financeSettings: {
+          hourlyRate,
+          isencaoRate,
+          isencaoCalculationMethod,
+          isencaoFixedAmount,
+          taxDeductionType,
+          irsRate, // Legacy: single IRS rate
+          irsBaseSalaryRate,
+          irsIhtRate,
+          irsOvertimeRate,
+          socialSecurityRate,
+          customTaxRate,
+          mealAllowanceIncluded,
+          overtimeFirstHourRate,
+          overtimeSubsequentRate,
+          weekendOvertimeRate,
+          holidayOvertimeRate,
+          fixedBonus,
+          dailyMealSubsidy,
+          mealCardDeduction
+        },
         updatedAt: Date.now()
       };
       
@@ -306,6 +369,26 @@ export function Settings({ googleCalendar, onUsernameChange, onNavigate }) {
     setBankHolidayApplyBonus(true);
     setIsPremium(false);
     setLanguage('en');
+    // Reset finance settings
+    setHourlyRate(0);
+    setIsencaoRate(0);
+    setIsencaoCalculationMethod('percentage');
+    setIsencaoFixedAmount(0);
+    setTaxDeductionType('both');
+    setIrsRate(0); // Legacy
+    setIrsBaseSalaryRate(0);
+    setIrsIhtRate(0);
+    setIrsOvertimeRate(0);
+    setSocialSecurityRate(11);
+    setCustomTaxRate(0);
+    setMealAllowanceIncluded(false);
+    setOvertimeFirstHourRate(1.25);
+    setOvertimeSubsequentRate(1.50);
+    setWeekendOvertimeRate(1.50);
+    setHolidayOvertimeRate(2.00);
+    setFixedBonus(0);
+    setDailyMealSubsidy(0);
+    setMealCardDeduction(0);
   };
 
   const handleLanguageChange = async (newLanguage) => {
@@ -422,6 +505,460 @@ export function Settings({ googleCalendar, onUsernameChange, onNavigate }) {
               <option value="en">{t('settings.language.english')}</option>
               <option value="pt">{t('settings.language.portuguese')}</option>
             </select>
+          </div>
+        </section>
+
+        <section className="settings-section">
+          <div className="section-title">
+            <DollarSign />
+            <h2>{t('settings.finance.title')}</h2>
+          </div>
+          <p className="section-description">
+            {t('settings.finance.description')}
+          </p>
+
+          <div className="setting-item">
+            <div className="setting-header">
+              <DollarSign className="setting-icon" />
+              <div>
+                <label htmlFor="hourlyRate">{t('settings.finance.hourlyRate')}</label>
+                <p className="setting-description">{t('settings.finance.hourlyRateDescription')}</p>
+              </div>
+            </div>
+            <div className="setting-input-group">
+              <input
+                id="hourlyRate"
+                type="number"
+                min="0"
+                step="0.01"
+                value={hourlyRate}
+                onChange={(e) => setHourlyRate(parseFloat(e.target.value) || 0)}
+                className="setting-input"
+              />
+              <span className="input-suffix">€</span>
+            </div>
+          </div>
+
+          <div className="setting-item">
+            <div className="setting-header">
+              <AlertTriangle className="setting-icon unpaid" />
+              <div>
+                <label htmlFor="isencaoCalculationMethod">{t('settings.finance.isencaoCalculationMethod')}</label>
+                <p className="setting-description">{t('settings.finance.isencaoCalculationMethodDescription')}</p>
+              </div>
+            </div>
+            <select
+              id="isencaoCalculationMethod"
+              value={isencaoCalculationMethod}
+              onChange={(e) => setIsencaoCalculationMethod(e.target.value)}
+              className="setting-select"
+            >
+              <option value="percentage">{t('settings.finance.isencaoCalculationMethodPercentage')}</option>
+              <option value="fixed">{t('settings.finance.isencaoCalculationMethodFixed')}</option>
+            </select>
+          </div>
+
+          {isencaoCalculationMethod === 'percentage' && (
+            <div className="setting-item indented">
+              <div className="setting-header">
+                <AlertTriangle className="setting-icon unpaid" />
+                <div>
+                  <label htmlFor="isencaoRate">{t('settings.finance.isencaoRate')}</label>
+                  <p className="setting-description">{t('settings.finance.isencaoRateDescription')}</p>
+                </div>
+              </div>
+              <div className="setting-input-group">
+                <input
+                  id="isencaoRate"
+                  type="number"
+                  min="0"
+                  max="100"
+                  step="0.1"
+                  value={isencaoRate}
+                  onChange={(e) => setIsencaoRate(parseFloat(e.target.value) || 0)}
+                  className="setting-input"
+                />
+                <span className="input-suffix">%</span>
+              </div>
+            </div>
+          )}
+
+          {isencaoCalculationMethod === 'fixed' && (
+            <div className="setting-item indented">
+              <div className="setting-header">
+                <AlertTriangle className="setting-icon unpaid" />
+                <div>
+                  <label htmlFor="isencaoFixedAmount">{t('settings.finance.isencaoFixedAmount')}</label>
+                  <p className="setting-description">{t('settings.finance.isencaoFixedAmountDescription')}</p>
+                </div>
+              </div>
+              <div className="setting-input-group">
+                <input
+                  id="isencaoFixedAmount"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={isencaoFixedAmount}
+                  onChange={(e) => setIsencaoFixedAmount(parseFloat(e.target.value) || 0)}
+                  className="setting-input"
+                />
+                <span className="input-suffix">€</span>
+              </div>
+            </div>
+          )}
+
+          <div className="setting-item">
+            <div className="setting-header">
+              <DollarSign className="setting-icon" />
+              <div>
+                <label htmlFor="taxDeductionType">{t('settings.finance.taxDeductionType')}</label>
+                <p className="setting-description">{t('settings.finance.taxDeductionTypeDescription')}</p>
+              </div>
+            </div>
+            <select
+              id="taxDeductionType"
+              value={taxDeductionType}
+              onChange={(e) => setTaxDeductionType(e.target.value)}
+              className="setting-select"
+            >
+              <option value="irs">{t('settings.finance.taxTypeIrs')}</option>
+              <option value="social_security">{t('settings.finance.taxTypeSocialSecurity')}</option>
+              <option value="custom">{t('settings.finance.taxTypeCustom')}</option>
+              <option value="both">{t('settings.finance.taxTypeBoth')}</option>
+            </select>
+          </div>
+
+          {(taxDeductionType === 'irs' || taxDeductionType === 'both') && (
+            <>
+              <div className="setting-item indented">
+                <div className="setting-header">
+                  <DollarSign className="setting-icon" />
+                  <div>
+                    <label htmlFor="irsBaseSalaryRate">{t('settings.finance.irsBaseSalaryRate')}</label>
+                    <p className="setting-description">{t('settings.finance.irsBaseSalaryRateDescription')}</p>
+                  </div>
+                </div>
+                <div className="setting-input-group">
+                  <input
+                    id="irsBaseSalaryRate"
+                    type="number"
+                    min="0"
+                    max="100"
+                    step="0.1"
+                    value={irsBaseSalaryRate}
+                    onChange={(e) => setIrsBaseSalaryRate(parseFloat(e.target.value) || 0)}
+                    className="setting-input"
+                  />
+                  <span className="input-suffix">%</span>
+                </div>
+              </div>
+
+              <div className="setting-item indented">
+                <div className="setting-header">
+                  <DollarSign className="setting-icon" />
+                  <div>
+                    <label htmlFor="irsIhtRate">{t('settings.finance.irsIhtRate')}</label>
+                    <p className="setting-description">{t('settings.finance.irsIhtRateDescription')}</p>
+                  </div>
+                </div>
+                <div className="setting-input-group">
+                  <input
+                    id="irsIhtRate"
+                    type="number"
+                    min="0"
+                    max="100"
+                    step="0.1"
+                    value={irsIhtRate}
+                    onChange={(e) => setIrsIhtRate(parseFloat(e.target.value) || 0)}
+                    className="setting-input"
+                  />
+                  <span className="input-suffix">%</span>
+                </div>
+              </div>
+
+              <div className="setting-item indented">
+                <div className="setting-header">
+                  <DollarSign className="setting-icon" />
+                  <div>
+                    <label htmlFor="irsOvertimeRate">{t('settings.finance.irsOvertimeRate')}</label>
+                    <p className="setting-description">{t('settings.finance.irsOvertimeRateDescription')}</p>
+                  </div>
+                </div>
+                <div className="setting-input-group">
+                  <input
+                    id="irsOvertimeRate"
+                    type="number"
+                    min="0"
+                    max="100"
+                    step="0.1"
+                    value={irsOvertimeRate}
+                    onChange={(e) => setIrsOvertimeRate(parseFloat(e.target.value) || 0)}
+                    className="setting-input"
+                  />
+                  <span className="input-suffix">%</span>
+                </div>
+              </div>
+
+              {/* Legacy: Single IRS rate (fallback if separate rates are not set) */}
+              <div className="setting-item indented" style={{ opacity: 0.6, marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid var(--border)' }}>
+                <div className="setting-header">
+                  <DollarSign className="setting-icon" />
+                  <div>
+                    <label htmlFor="irsRate">{t('settings.finance.irsRate')} ({t('settings.finance.legacy')})</label>
+                    <p className="setting-description">{t('settings.finance.irsRateDescription')}</p>
+                  </div>
+                </div>
+                <div className="setting-input-group">
+                  <input
+                    id="irsRate"
+                    type="number"
+                    min="0"
+                    max="100"
+                    step="0.1"
+                    value={irsRate}
+                    onChange={(e) => setIrsRate(parseFloat(e.target.value) || 0)}
+                    className="setting-input"
+                  />
+                  <span className="input-suffix">%</span>
+                </div>
+              </div>
+            </>
+          )}
+
+          {(taxDeductionType === 'social_security' || taxDeductionType === 'both') && (
+            <div className="setting-item indented">
+              <div className="setting-header">
+                <DollarSign className="setting-icon" />
+                <div>
+                  <label htmlFor="socialSecurityRate">{t('settings.finance.socialSecurityRate')}</label>
+                  <p className="setting-description">{t('settings.finance.socialSecurityRateDescription')}</p>
+                </div>
+              </div>
+              <div className="setting-input-group">
+                <input
+                  id="socialSecurityRate"
+                  type="number"
+                  min="0"
+                  max="100"
+                  step="0.1"
+                  value={socialSecurityRate}
+                  onChange={(e) => setSocialSecurityRate(parseFloat(e.target.value) || 0)}
+                  className="setting-input"
+                />
+                <span className="input-suffix">%</span>
+              </div>
+            </div>
+          )}
+
+          {taxDeductionType === 'custom' && (
+            <div className="setting-item indented">
+              <div className="setting-header">
+                <DollarSign className="setting-icon" />
+                <div>
+                  <label htmlFor="customTaxRate">{t('settings.finance.customTaxRate')}</label>
+                  <p className="setting-description">{t('settings.finance.customTaxRateDescription')}</p>
+                </div>
+              </div>
+              <div className="setting-input-group">
+                <input
+                  id="customTaxRate"
+                  type="number"
+                  min="0"
+                  max="100"
+                  step="0.1"
+                  value={customTaxRate}
+                  onChange={(e) => setCustomTaxRate(parseFloat(e.target.value) || 0)}
+                  className="setting-input"
+                />
+                <span className="input-suffix">%</span>
+              </div>
+            </div>
+          )}
+
+          <div className="setting-item checkbox-setting">
+            <div className="setting-header">
+              <Coffee className="setting-icon" />
+              <div>
+                <label htmlFor="mealAllowanceIncluded">{t('settings.finance.mealAllowanceIncluded')}</label>
+                <p className="setting-description">{t('settings.finance.mealAllowanceIncludedDescription')}</p>
+              </div>
+            </div>
+            <label className="toggle-switch">
+              <input
+                id="mealAllowanceIncluded"
+                type="checkbox"
+                checked={mealAllowanceIncluded}
+                onChange={(e) => setMealAllowanceIncluded(e.target.checked)}
+              />
+              <span className="toggle-slider"></span>
+            </label>
+          </div>
+
+          <div className="setting-item">
+            <div className="setting-header">
+              <DollarSign className="setting-icon" />
+              <div>
+                <label htmlFor="fixedBonus">{t('settings.finance.fixedBonus')}</label>
+                <p className="setting-description">{t('settings.finance.fixedBonusDescription')}</p>
+              </div>
+            </div>
+            <div className="setting-input-group">
+              <input
+                id="fixedBonus"
+                type="number"
+                min="0"
+                step="0.01"
+                value={fixedBonus}
+                onChange={(e) => setFixedBonus(parseFloat(e.target.value) || 0)}
+                className="setting-input"
+              />
+              <span className="input-suffix">€</span>
+            </div>
+          </div>
+
+          <div className="setting-item">
+            <div className="setting-header">
+              <Coffee className="setting-icon" />
+              <div>
+                <label htmlFor="dailyMealSubsidy">{t('settings.finance.dailyMealSubsidy')}</label>
+                <p className="setting-description">{t('settings.finance.dailyMealSubsidyDescription')}</p>
+              </div>
+            </div>
+            <div className="setting-input-group">
+              <input
+                id="dailyMealSubsidy"
+                type="number"
+                min="0"
+                step="0.01"
+                value={dailyMealSubsidy}
+                onChange={(e) => setDailyMealSubsidy(parseFloat(e.target.value) || 0)}
+                className="setting-input"
+              />
+              <span className="input-suffix">€</span>
+            </div>
+          </div>
+
+          <div className="setting-item">
+            <div className="setting-header">
+              <Coffee className="setting-icon" />
+              <div>
+                <label htmlFor="mealCardDeduction">{t('settings.finance.mealCardDeduction')}</label>
+                <p className="setting-description">{t('settings.finance.mealCardDeductionDescription')}</p>
+              </div>
+            </div>
+            <div className="setting-input-group">
+              <input
+                id="mealCardDeduction"
+                type="number"
+                min="0"
+                step="0.01"
+                value={mealCardDeduction}
+                onChange={(e) => setMealCardDeduction(parseFloat(e.target.value) || 0)}
+                className="setting-input"
+              />
+              <span className="input-suffix">€</span>
+            </div>
+          </div>
+
+          <div className="info-box">
+            <DollarSign />
+            <div>
+              <strong>{t('settings.finance.overtimeRates')}</strong>
+              <p>{t('settings.finance.overtimeRatesDescription')}</p>
+              <div style={{ marginTop: '1rem' }}>
+                <div className="setting-item">
+                  <div className="setting-header">
+                    <Clock className="setting-icon" />
+                    <div>
+                      <label htmlFor="overtimeFirstHourRate">{t('settings.finance.overtimeFirstHourRate')}</label>
+                      <p className="setting-description">{t('settings.finance.overtimeFirstHourRateDescription')}</p>
+                    </div>
+                  </div>
+                  <div className="setting-input-group">
+                    <input
+                      id="overtimeFirstHourRate"
+                      type="number"
+                      min="1"
+                      max="5"
+                      step="0.01"
+                      value={overtimeFirstHourRate}
+                      onChange={(e) => setOvertimeFirstHourRate(parseFloat(e.target.value) || 1.25)}
+                      className="setting-input"
+                    />
+                    <span className="input-suffix">×</span>
+                  </div>
+                </div>
+
+                <div className="setting-item">
+                  <div className="setting-header">
+                    <Clock className="setting-icon" />
+                    <div>
+                      <label htmlFor="overtimeSubsequentRate">{t('settings.finance.overtimeSubsequentRate')}</label>
+                      <p className="setting-description">{t('settings.finance.overtimeSubsequentRateDescription')}</p>
+                    </div>
+                  </div>
+                  <div className="setting-input-group">
+                    <input
+                      id="overtimeSubsequentRate"
+                      type="number"
+                      min="1"
+                      max="5"
+                      step="0.01"
+                      value={overtimeSubsequentRate}
+                      onChange={(e) => setOvertimeSubsequentRate(parseFloat(e.target.value) || 1.50)}
+                      className="setting-input"
+                    />
+                    <span className="input-suffix">×</span>
+                  </div>
+                </div>
+
+                <div className="setting-item">
+                  <div className="setting-header">
+                    <Calendar className="setting-icon" />
+                    <div>
+                      <label htmlFor="weekendOvertimeRate">{t('settings.finance.weekendOvertimeRate')}</label>
+                      <p className="setting-description">{t('settings.finance.weekendOvertimeRateDescription')}</p>
+                    </div>
+                  </div>
+                  <div className="setting-input-group">
+                    <input
+                      id="weekendOvertimeRate"
+                      type="number"
+                      min="1"
+                      max="5"
+                      step="0.01"
+                      value={weekendOvertimeRate}
+                      onChange={(e) => setWeekendOvertimeRate(parseFloat(e.target.value) || 1.50)}
+                      className="setting-input"
+                    />
+                    <span className="input-suffix">×</span>
+                  </div>
+                </div>
+
+                <div className="setting-item">
+                  <div className="setting-header">
+                    <Calendar className="setting-icon" />
+                    <div>
+                      <label htmlFor="holidayOvertimeRate">{t('settings.finance.holidayOvertimeRate')}</label>
+                      <p className="setting-description">{t('settings.finance.holidayOvertimeRateDescription')}</p>
+                    </div>
+                  </div>
+                  <div className="setting-input-group">
+                    <input
+                      id="holidayOvertimeRate"
+                      type="number"
+                      min="1"
+                      max="5"
+                      step="0.01"
+                      value={holidayOvertimeRate}
+                      onChange={(e) => setHolidayOvertimeRate(parseFloat(e.target.value) || 2.00)}
+                      className="setting-input"
+                    />
+                    <span className="input-suffix">×</span>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </section>
 
