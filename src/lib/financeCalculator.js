@@ -3,6 +3,22 @@
  * Calculates salary, overtime, and deductions based on Portuguese labor law
  */
 
+import { 
+  startOfDay, 
+  endOfDay, 
+  startOfWeek, 
+  endOfWeek, 
+  startOfMonth, 
+  endOfMonth,
+  startOfYear,
+  endOfYear,
+  eachDayOfInterval,
+  eachWeekOfInterval,
+  eachMonthOfInterval,
+  eachYearOfInterval,
+  format
+} from 'date-fns';
+
 /**
  * Calculate base salary from regular hours
  * @param {number} regularHours - Regular hours worked
@@ -421,4 +437,148 @@ export function calculatePeriodFinance(sessions, dateRange, settings) {
       }));
     })()
   };
+}
+
+/**
+ * Aggregate finance data by time periods for chart display
+ * @param {Array} sessions - Array of session objects
+ * @param {Object} dateRange - { start: Date, end: Date }
+ * @param {string} reportType - 'daily' | 'weekly' | 'monthly' | 'yearly'
+ * @param {Object} settings - Finance settings
+ * @param {Object} locale - date-fns locale for date formatting
+ * @returns {Array} Array of data points with date, grossIncome, netIncome, taxes
+ */
+export function aggregateFinanceByPeriod(sessions, dateRange, reportType, settings, locale = null) {
+  if (!sessions.length) return [];
+
+  const { start, end } = dateRange;
+  const dataPoints = [];
+
+  const localeOptions = locale ? { locale } : {};
+
+  let periods = [];
+
+  try {
+    switch (reportType) {
+      case 'daily':
+        // For daily, show each day in the range
+        periods = eachDayOfInterval({ start, end }).map(day => ({
+          start: startOfDay(day),
+          end: endOfDay(day),
+          dateObj: day
+        }));
+        break;
+      
+      case 'weekly':
+        // For weekly, show each week in the range
+        periods = eachWeekOfInterval({ start, end }, { weekStartsOn: 1 }).map(week => ({
+          start: startOfWeek(week, { weekStartsOn: 1 }),
+          end: endOfWeek(week, { weekStartsOn: 1 }),
+          dateObj: week
+        }));
+        break;
+      
+      case 'monthly':
+        // For monthly, show each month in the range
+        periods = eachMonthOfInterval({ start, end }).map(month => ({
+          start: startOfMonth(month),
+          end: endOfMonth(month),
+          dateObj: month
+        }));
+        break;
+      
+      case 'yearly':
+        // For yearly, show each year in the range
+        periods = eachYearOfInterval({ start, end }).map(year => ({
+          start: startOfYear(year),
+          end: endOfYear(year),
+          dateObj: year
+        }));
+        break;
+      
+      default:
+        return [];
+    }
+
+    // Calculate finance for each period
+    periods.forEach(period => {
+      try {
+        const periodFinance = calculatePeriodFinance(sessions, period, settings);
+        
+        // Format date label based on report type
+        let dateLabel;
+        switch (reportType) {
+          case 'daily':
+            dateLabel = format(period.dateObj, 'MMM dd, yyyy', localeOptions);
+            break;
+          case 'weekly':
+            dateLabel = format(period.dateObj, 'MMM dd, yyyy', localeOptions);
+            break;
+          case 'monthly':
+            dateLabel = format(period.dateObj, 'MMM yyyy', localeOptions);
+            break;
+          case 'yearly':
+            dateLabel = format(period.dateObj, 'yyyy', localeOptions);
+            break;
+          default:
+            dateLabel = format(period.dateObj, 'MMM dd, yyyy', localeOptions);
+        }
+        
+        // Always add data point, even if periodFinance is null or has zero values
+        if (periodFinance) {
+          const totalDeductions = periodFinance.deductions.total + (periodFinance.deductions.mealCardDeduction || 0);
+          
+          dataPoints.push({
+            date: dateLabel,
+            grossIncome: periodFinance.earnings.grossSalary || 0,
+            netIncome: periodFinance.netSalary || 0,
+            taxes: totalDeductions || 0
+          });
+        } else {
+          // Add zero values for periods with no sessions
+          dataPoints.push({
+            date: dateLabel,
+            grossIncome: 0,
+            netIncome: 0,
+            taxes: 0
+          });
+        }
+      } catch (error) {
+        console.error('Error calculating finance for period:', error, period);
+        // Still add a data point with zero values if there's an error
+        let dateLabel;
+        try {
+          switch (reportType) {
+            case 'daily':
+              dateLabel = format(period.dateObj, 'MMM dd, yyyy', localeOptions);
+              break;
+            case 'weekly':
+              dateLabel = format(period.dateObj, 'MMM dd, yyyy', localeOptions);
+              break;
+            case 'monthly':
+              dateLabel = format(period.dateObj, 'MMM yyyy', localeOptions);
+              break;
+            case 'yearly':
+              dateLabel = format(period.dateObj, 'yyyy', localeOptions);
+              break;
+            default:
+              dateLabel = format(period.dateObj, 'MMM dd, yyyy', localeOptions);
+          }
+          dataPoints.push({
+            date: dateLabel,
+            grossIncome: 0,
+            netIncome: 0,
+            taxes: 0
+          });
+        } catch (formatError) {
+          console.error('Error formatting date label:', formatError);
+        }
+      }
+    });
+  } catch (error) {
+    console.error('Error aggregating finance by period:', error);
+    return [];
+  }
+
+  return dataPoints;
 }

@@ -6,7 +6,8 @@ import { Download, DollarSign, TrendingUp, Clock, AlertTriangle, Coffee, Calenda
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfYear, endOfYear } from 'date-fns';
 import { useTranslation } from 'react-i18next';
 import { getDateFnsLocale } from '../lib/i18n';
-import { calculatePeriodFinance } from '../lib/financeCalculator';
+import { calculatePeriodFinance, aggregateFinanceByPeriod } from '../lib/financeCalculator';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import './Finance.css';
 
 export const Finance = memo(function Finance({ user, onNavigate }) {
@@ -17,6 +18,7 @@ export const Finance = memo(function Finance({ user, onNavigate }) {
   const [reportType, setReportType] = useState('monthly');
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [dateSortOrder, setDateSortOrder] = useState('desc');
+  const [chartScale, setChartScale] = useState('linear');
 
   useEffect(() => {
     if (!user) return;
@@ -143,6 +145,28 @@ export const Finance = memo(function Finance({ user, onNavigate }) {
     });
     return sorted;
   }, [financeData, dateSortOrder]);
+
+  // Calculate chart data
+  const chartData = useMemo(() => {
+    if (!sessions.length || !settings) {
+      console.log('Chart data: No sessions or settings', { sessionsLength: sessions.length, hasSettings: !!settings });
+      return [];
+    }
+    
+    try {
+      const data = aggregateFinanceByPeriod(sessions, dateRange, reportType, financeSettings, getDateFnsLocale());
+      console.log('Chart data calculated:', { 
+        dataPoints: data.length, 
+        reportType, 
+        dateRange: { start: dateRange.start, end: dateRange.end },
+        sampleData: data[0] 
+      });
+      return data;
+    } catch (error) {
+      console.error('Error calculating chart data:', error);
+      return [];
+    }
+  }, [sessions, dateRange, reportType, financeSettings, settings]);
 
   const handleExportCSV = () => {
     if (!financeData) return;
@@ -666,6 +690,108 @@ export const Finance = memo(function Finance({ user, onNavigate }) {
           </div>
         </div>
       </div>
+
+      {chartData.length > 0 ? (
+        <div className="finance-chart-section">
+          <div className="chart-header">
+            <div className="chart-title-section">
+              <TrendingUp className="chart-icon" />
+              <div>
+                <h2>{t('finance.chart.title')}</h2>
+                <p className="chart-subtitle">{t('finance.chart.subtitle')}</p>
+              </div>
+            </div>
+            <div className="chart-controls">
+              <button
+                className={`scale-toggle ${chartScale === 'linear' ? 'active' : ''}`}
+                onClick={() => setChartScale('linear')}
+              >
+                {t('finance.chart.scaleLinear')}
+              </button>
+              <button
+                className={`scale-toggle ${chartScale === 'log' ? 'active' : ''}`}
+                onClick={() => setChartScale('log')}
+              >
+                {t('finance.chart.scaleLog')}
+              </button>
+            </div>
+          </div>
+          <div className="chart-container">
+            <ResponsiveContainer width="100%" height={400}>
+              <LineChart data={chartData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+                <XAxis 
+                  dataKey="date" 
+                  stroke="var(--muted-foreground)"
+                  style={{ fontSize: '12px' }}
+                />
+                <YAxis 
+                  scale={chartScale === 'log' ? 'log' : 'linear'}
+                  domain={chartScale === 'log' ? ['auto', 'auto'] : [0, 'auto']}
+                  allowDataOverflow={false}
+                  stroke="var(--muted-foreground)"
+                  style={{ fontSize: '12px' }}
+                  tickFormatter={(value) => {
+                    if (value <= 0) return '€0';
+                    return `€${value.toFixed(0)}`;
+                  }}
+                />
+                <Tooltip 
+                  contentStyle={{
+                    backgroundColor: 'var(--card)',
+                    border: '1px solid var(--border)',
+                    borderRadius: '8px',
+                    color: 'var(--foreground)'
+                  }}
+                  formatter={(value) => `€${value.toFixed(2)}`}
+                />
+                <Legend 
+                  wrapperStyle={{ paddingTop: '20px' }}
+                />
+                <Line 
+                  type="monotone" 
+                  dataKey="grossIncome" 
+                  stroke="var(--primary)" 
+                  strokeWidth={2}
+                  name={t('finance.chart.grossIncome')}
+                  dot={{ r: 4 }}
+                  activeDot={{ r: 6 }}
+                />
+                <Line 
+                  type="monotone" 
+                  dataKey="netIncome" 
+                  stroke="#10b981" 
+                  strokeWidth={2}
+                  name={t('finance.chart.netIncome')}
+                  dot={{ r: 4 }}
+                  activeDot={{ r: 6 }}
+                />
+                <Line 
+                  type="monotone" 
+                  dataKey="taxes" 
+                  stroke="#ef4444" 
+                  strokeWidth={2}
+                  name={t('finance.chart.taxes')}
+                  dot={{ r: 4 }}
+                  activeDot={{ r: 6 }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      ) : financeData && (
+        <div className="finance-chart-section">
+          <div className="chart-header">
+            <div className="chart-title-section">
+              <TrendingUp className="chart-icon" />
+              <div>
+                <h2>{t('finance.chart.title')}</h2>
+                <p className="chart-subtitle">{t('finance.chart.noData')}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {sortedSessions.length > 0 && (
         <div className="finance-sessions-section">

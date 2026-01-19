@@ -514,6 +514,16 @@
     "ofBaseSalaryIht": "of base salary + IHT",
     "ofIht": "of IHT",
     "ofOvertime": "of overtime",
+    "chart": {
+      "title": "Income & Taxes Over Time",
+      "subtitle": "Visualize gross income, net income (liquid), and taxes trends",
+      "grossIncome": "Gross Income",
+      "netIncome": "Net Income (Liquid)",
+      "taxes": "Taxes",
+      "scaleLinear": "Linear Scale",
+      "scaleLog": "Logarithmic Scale",
+      "noData": "No data available for chart"
+    },
     "sessionsBreakdown": "Sessions Breakdown",
     "sessionsBreakdownDescription": "Detailed earnings breakdown by session",
     "sortByDate": "Sort by Date",

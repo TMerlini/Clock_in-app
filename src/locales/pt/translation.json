@@ -514,6 +514,16 @@
     "ofBaseSalaryIht": "do salário base + IHT",
     "ofIht": "do IHT",
     "ofOvertime": "das horas extraordinarias",
+    "chart": {
+      "title": "Rendimentos e Impostos ao Longo do Tempo",
+      "subtitle": "Visualize tendências de rendimento bruto, rendimento líquido e impostos",
+      "grossIncome": "Rendimento Bruto",
+      "netIncome": "Rendimento Líquido",
+      "taxes": "Impostos",
+      "scaleLinear": "Escala Linear",
+      "scaleLog": "Escala Logarítmica",
+      "noData": "Não há dados disponíveis para o gráfico"
+    },
     "sessionsBreakdown": "Análise por Sessão",
     "sessionsBreakdownDescription": "Análise detalhada de ganhos por sessão",
     "sortByDate": "Ordenar por Data",

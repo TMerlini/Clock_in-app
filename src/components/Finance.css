@@ -347,6 +347,84 @@
   line-height: 1.4;
 }
 
+.finance-chart-section {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 2rem;
+  margin-top: 2rem;
+}
+
+.chart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.chart-title-section {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.chart-icon {
+  width: 24px;
+  height: 24px;
+  color: var(--primary);
+}
+
+.chart-title-section h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--foreground);
+  margin: 0;
+}
+
+.chart-subtitle {
+  font-size: 0.875rem;
+  color: var(--muted-foreground);
+  margin: 0.25rem 0 0 0;
+}
+
+.chart-controls {
+  display: flex;
+  gap: 0.5rem;
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.25rem;
+}
+
+.scale-toggle {
+  padding: 0.5rem 1rem;
+  border: none;
+  background: transparent;
+  color: var(--muted-foreground);
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.scale-toggle:hover {
+  background: var(--muted);
+  color: var(--foreground);
+}
+
+.scale-toggle.active {
+  background: var(--primary);
+  color: white;
+}
+
+.chart-container {
+  width: 100%;
+  min-height: 400px;
+}
+
 .finance-sessions-section {
   background: var(--card);
   border: 1px solid var(--border);
@@ -547,6 +625,19 @@
 
   .finance-card-value.highlight {
     font-size: 1.75rem;
+  }
+
+  .finance-chart-section {
+    padding: 1rem;
+  }
+
+  .chart-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .chart-container {
+    min-height: 300px;
   }
 
   .finance-sessions-section {
