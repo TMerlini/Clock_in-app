@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, memo } from 'react';
-import { Menu, X, Home, Calendar, BarChart3, Info, Settings, HelpCircle, Bot, Crown, Shield } from 'lucide-react';
+import { Menu, X, Home, Calendar, BarChart3, Info, Settings, HelpCircle, Bot, Crown, Shield, DollarSign } from 'lucide-react';
 import { isAdmin } from '../lib/adminUtils';
 import { useTranslation } from 'react-i18next';
 import './Navigation.css';
@@ -17,6 +17,7 @@ export const Navigation = memo(function Navigation({ currentPage, onPageChange, 
     { id: 'home', label: t('navigation.home'), icon: Home },
     { id: 'calendar', label: t('navigation.calendar'), icon: Calendar },
     { id: 'analytics', label: t('navigation.analytics'), icon: BarChart3 },
+    { id: 'finance', label: t('navigation.finance'), icon: DollarSign },
     { id: 'ai-advisor', label: t('navigation.aiAdvisor'), icon: Bot },
     { id: 'premium-plus', label: t('navigation.premiumPlus'), icon: Crown },
     { id: 'settings', label: t('navigation.settings'), icon: Settings },
