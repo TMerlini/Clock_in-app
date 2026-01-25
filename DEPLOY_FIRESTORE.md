@@ -66,13 +66,17 @@ firebase projects:list
 
 ```bash
 cd path\to\Clock_in_app
-# Deploy both rules and indexes
-firebase deploy --only firestore
+# Deploy both rules and indexes (use your project ID)
+firebase deploy --only firestore --project <your-project-id>
 
-# Or deploy separately:
-firebase deploy --only firestore:rules
-firebase deploy --only firestore:indexes
+# Or deploy only rules (e.g. after rule changes):
+npx firebase-tools deploy --only firestore:rules --project clock-in-app-e6bfc
+
+# Or deploy only indexes:
+firebase deploy --only firestore:indexes --project <your-project-id>
 ```
+
+Replace `clock-in-app-e6bfc` with your Firebase **Project ID** if different (same as `VITE_FIREBASE_PROJECT_ID` in `.env`).
 
 Indexes may take a few minutes to build. Check status in **Firestore → Indexes** in the console.
 

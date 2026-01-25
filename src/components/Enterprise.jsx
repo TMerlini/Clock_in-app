@@ -6,12 +6,13 @@ import {
   createInvite,
   listMembers,
   listPendingInvites,
-  getEnterprise
+  getEnterprise,
+  removeMember
 } from '../lib/enterpriseHelpers';
 import { calculatePeriodFinance } from '../lib/financeCalculator';
 import { startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfYear, endOfYear, format } from 'date-fns';
 import { getDateFnsLocale } from '../lib/i18n';
-import { Building2, UserPlus, Users, Loader, AlertCircle, Crown, ArrowRight, ArrowLeft, Eye, BarChart3, DollarSign, Clock, Download } from 'lucide-react';
+import { Building2, UserPlus, Users, Loader, AlertCircle, Crown, ArrowRight, ArrowLeft, Eye, BarChart3, DollarSign, Clock, Download, Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { EnterpriseAISection } from './EnterpriseAISection';
 import './Enterprise.css';
@@ -46,6 +47,7 @@ export function Enterprise({ user, onNavigate }) {
   const [error, setError] = useState(null);
   const [creating, setCreating] = useState(false);
   const [inviting, setInviting] = useState(false);
+  const [removingMemberId, setRemovingMemberId] = useState(null);
   const [selectedMember, setSelectedMember] = useState(null);
   const [memberDetailTab, setMemberDetailTab] = useState('sessions');
   const [memberSessions, setMemberSessions] = useState([]);
@@ -151,6 +153,28 @@ export function Enterprise({ user, onNavigate }) {
       setError(err.message === 'Invite already pending for this email' ? t('enterprise.inviteError') : err.message);
     } finally {
       setInviting(false);
+    }
+  };
+
+  const handleRemoveMember = async (m) => {
+    if (!enterprise || !enterpriseId || removingMemberId) return;
+    if (m.id === enterprise.createdBy) return;
+    if (m.id === user?.uid) return;
+    const name = getMemberDisplayName(m);
+    if (!window.confirm(t('enterprise.removeConfirm', { name }))) return;
+    setRemovingMemberId(m.id);
+    setError(null);
+    setSuccess(null);
+    try {
+      await removeMember(m.id);
+      const mems = await listMembers(enterpriseId);
+      setMembers(mems);
+      setSuccess(t('enterprise.removeSuccess'));
+      setTimeout(() => setSuccess(null), 3000);
+    } catch (err) {
+      setError(err?.message || t('common.error'));
+    } finally {
+      setRemovingMemberId(null);
     }
   };
 
@@ -652,23 +676,41 @@ export function Enterprise({ user, onNavigate }) {
             <p className="enterprise-empty">{t('enterprise.noMembers')}</p>
           ) : (
             <ul className="enterprise-members-list">
-              {members.map((m) => (
-                <li key={m.id}>
-                  <span>{getMemberDisplayName(m)}</span>
-                  <div className="enterprise-member-actions">
-                    <span className="enterprise-role-badge">{m.enterpriseRole === 'admin' ? t('enterprise.admin') : t('enterprise.member')}</span>
-                    <button
-                      type="button"
-                      className="enterprise-view-btn"
-                      onClick={() => setSelectedMember(m)}
-                      title={t('enterprise.monitor')}
-                    >
-                      <Eye size={14} />
-                      <span>{t('enterprise.viewMember')}</span>
-                    </button>
-                  </div>
-                </li>
-              ))}
+              {members.map((m) => {
+                const isCreator = enterprise?.createdBy === m.id;
+                const isSelf = m.id === user?.uid;
+                const canRemove = !isCreator && !isSelf;
+                const isRemoving = removingMemberId === m.id;
+                return (
+                  <li key={m.id}>
+                    <span>{getMemberDisplayName(m)}</span>
+                    <div className="enterprise-member-actions">
+                      <span className="enterprise-role-badge">{m.enterpriseRole === 'admin' ? t('enterprise.admin') : t('enterprise.member')}</span>
+                      <button
+                        type="button"
+                        className="enterprise-view-btn"
+                        onClick={() => setSelectedMember(m)}
+                        title={t('enterprise.monitor')}
+                      >
+                        <Eye size={14} />
+                        <span>{t('enterprise.viewMember')}</span>
+                      </button>
+                      {canRemove && (
+                        <button
+                          type="button"
+                          className="enterprise-remove-btn"
+                          onClick={() => handleRemoveMember(m)}
+                          disabled={isRemoving}
+                          title={t('enterprise.removeMember')}
+                        >
+                          {isRemoving ? <Loader size={14} className="spinning" /> : <Trash2 size={14} />}
+                          <span>{t('enterprise.remove')}</span>
+                        </button>
+                      )}
+                    </div>
+                  </li>
+                );
+              })}
             </ul>
           )}
         </div>

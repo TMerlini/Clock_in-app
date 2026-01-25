@@ -37,6 +37,7 @@ service cloud.firestore {
       allow read, write: if isAuth() && userId == request.auth.uid;
       allow read: if isAuth() && (isAppAdmin() || sameOrgAsViewer(userId));
       allow write: if isAuth() && isAppAdmin();
+      allow update: if isAuth() && sameOrgAsViewer(userId);
     }
 
     match /enterprises/{enterpriseId} {

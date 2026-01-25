@@ -217,3 +217,13 @@ export async function declineInvite(inviteId, userEmail) {
 
   await updateDoc(inviteRef, { status: 'declined' });
 }
+
+/**
+ * Remove a member from the enterprise by clearing their enterpriseId and enterpriseRole.
+ * Caller must ensure the user is not the org creator and not the current user.
+ * @param {string} userId - User id of the member to remove
+ */
+export async function removeMember(userId) {
+  const settingsRef = doc(db, USER_SETTINGS, userId);
+  await updateDoc(settingsRef, { enterpriseId: null, enterpriseRole: null });
+}
