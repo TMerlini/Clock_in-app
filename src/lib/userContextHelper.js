@@ -176,6 +176,9 @@ When the user asks questions or you analyze their data:
    - Identify concerning patterns (excessive hours, insufficient rest)
    - Suggest preventive measures
 
+6. RESPONSE FORMAT:
+   - Format your replies using Markdown: headings, bullet/numbered lists, **bold**, \`code\`, blockquotes, etc., for clarity and readability.
+
 Always be helpful, accurate, and provide context-specific advice based on the user's actual data patterns.`;
 
     return context;

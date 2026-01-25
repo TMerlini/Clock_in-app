@@ -563,22 +563,16 @@ export function Settings({ googleCalendar, onUsernameChange, onNavigate }) {
               <div className="setting-header">
                 <AlertTriangle className="setting-icon unpaid" />
                 <div>
-                  <label htmlFor="isencaoRate">{t('settings.finance.isencaoRate')}</label>
+                  <label>{t('settings.finance.isencaoRate')}</label>
                   <p className="setting-description">{t('settings.finance.isencaoRateDescription')}</p>
                 </div>
               </div>
-              <div className="setting-input-group">
-                <input
-                  id="isencaoRate"
-                  type="number"
-                  min="0"
-                  max="100"
-                  step="0.1"
-                  value={isencaoRate}
-                  onChange={(e) => setIsencaoRate(parseFloat(e.target.value) || 0)}
-                  className="setting-input"
-                />
-                <span className="input-suffix">%</span>
+              <div className="info-box" style={{ marginTop: '0.5rem' }}>
+                <AlertTriangle />
+                <div>
+                  <strong>{t('settings.finance.ihtFormula')}</strong>
+                  <p>{t('settings.finance.ihtFormulaDescription')}</p>
+                </div>
               </div>
             </div>
           )}

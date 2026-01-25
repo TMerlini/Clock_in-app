@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { db, auth } from '../lib/firebase';
-import { STRIPE_PRICE_IDS, STRIPE_PAYMENT_LINKS, PLAN_NAMES, isStripeConfigured, hasPaymentLinks } from '../lib/stripeConfig';
+import { STRIPE_PRICE_IDS, STRIPE_PAYMENT_LINKS, PLAN_NAMES, isStripeConfigured } from '../lib/stripeConfig';
 import { initializeCalls } from '../lib/tokenManager';
-import { Crown, Check, Sparkles, Zap, AlertCircle, Loader, ShoppingCart } from 'lucide-react';
+import { Crown, Check, Sparkles, Zap, AlertCircle, Loader, ShoppingCart, Building2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import './PremiumPlus.css';
 
@@ -37,7 +37,7 @@ export function PremiumPlus({ user, onNavigate }) {
             if (settingsDoc.exists()) {
               const settings = settingsDoc.data();
               const plan = (settings.subscriptionPlan || settings.plan || '').toLowerCase();
-              if (plan === 'premium_ai') {
+              if (plan === 'premium_ai' || plan === 'enterprise') {
                 await initializeCalls(currentUser.uid);
               }
             }
@@ -77,8 +77,9 @@ export function PremiumPlus({ user, onNavigate }) {
         const plan = settings.subscriptionPlan || settings.plan || null;
         setCurrentPlan(plan);
         
-        // Initialize calls if user has Premium AI subscription but calls aren't initialized
-        if (plan && plan.toLowerCase() === 'premium_ai') {
+        // Initialize calls if user has Premium AI or Enterprise subscription but calls aren't initialized
+        const planLower = plan && plan.toLowerCase();
+        if (planLower === 'premium_ai' || planLower === 'enterprise') {
           const aiUsage = settings.aiUsage;
           if (!aiUsage || !aiUsage.callsAllocated) {
             try {
@@ -120,8 +121,8 @@ export function PremiumPlus({ user, onNavigate }) {
       return;
     }
 
-        // Initialize calls for Premium AI plan
-        if (planId === 'PREMIUM_AI') {
+        // Initialize calls for Premium AI plan (Enterprise includes Premium AI benefits)
+        if (planId === 'PREMIUM_AI' || planId === 'ENTERPRISE') {
           const currentUser = auth.currentUser;
           if (currentUser) {
             try {
@@ -144,16 +145,19 @@ export function PremiumPlus({ user, onNavigate }) {
 
     try {
       // Option 1: Use Stripe Payment Links (simplest, no backend needed)
-      if (hasPaymentLinks()) {
-        const paymentLink = STRIPE_PAYMENT_LINKS[planId];
-        if (paymentLink) {
-          // Get current user ID for metadata (can be added to Payment Link as query param)
-          const currentUser = auth.currentUser;
-          const userId = currentUser?.uid || '';
-          const checkoutUrl = paymentLink + (userId ? `?client_reference_id=${userId}` : '');
-          window.location.href = checkoutUrl;
-          return;
-        }
+      const paymentLink = STRIPE_PAYMENT_LINKS[planId];
+      if (paymentLink) {
+        const currentUser = auth.currentUser;
+        const userId = currentUser?.uid || '';
+        const checkoutUrl = paymentLink + (userId ? `?client_reference_id=${userId}` : '');
+        window.location.href = checkoutUrl;
+        setRedirecting(false);
+        return;
+      }
+      if (planId === 'ENTERPRISE') {
+        setRedirecting(false);
+        alert(t('premiumPlus.plans.enterprise.feature7') || 'Contact sales for Enterprise pricing.');
+        return;
       }
 
       // Option 2: Create Checkout Session via backend API
@@ -259,6 +263,23 @@ export function PremiumPlus({ user, onNavigate }) {
         t('premiumPlus.plans.premiumAi.feature7')
       ],
       color: 'gold'
+    },
+    {
+      id: 'ENTERPRISE',
+      name: t('premiumPlus.plans.enterprise.name'),
+      price: t('premiumPlus.plans.enterprise.price'),
+      period: t('premiumPlus.plans.enterprise.period', { defaultValue: 'month' }),
+      icon: Building2,
+      features: [
+        t('premiumPlus.plans.enterprise.feature1'),
+        t('premiumPlus.plans.enterprise.feature2'),
+        t('premiumPlus.plans.enterprise.feature3'),
+        t('premiumPlus.plans.enterprise.feature4'),
+        t('premiumPlus.plans.enterprise.feature5'),
+        t('premiumPlus.plans.enterprise.feature6'),
+        t('premiumPlus.plans.enterprise.feature7')
+      ],
+      color: 'indigo'
     }
   ];
 
@@ -275,7 +296,7 @@ export function PremiumPlus({ user, onNavigate }) {
       return t('premiumPlus.subscribe');
     }
     
-    const planHierarchy = { FREE: 0, BASIC: 1, PRO: 2, PREMIUM_AI: 3 };
+    const planHierarchy = { FREE: 0, BASIC: 1, PRO: 2, PREMIUM_AI: 3, ENTERPRISE: 4 };
     const currentLevel = planHierarchy[currentPlan.toUpperCase()] || 0;
     const targetLevel = planHierarchy[planId] || 0;
 

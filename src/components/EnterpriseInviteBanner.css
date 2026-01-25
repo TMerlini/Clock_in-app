@@ -1,0 +1,82 @@
+.enterprise-invite-banner {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem 1.25rem;
+  background: rgba(139, 92, 246, 0.1);
+  border: 1px solid rgba(139, 92, 246, 0.3);
+  border-radius: 8px;
+  margin: 0 1rem 1rem;
+  flex-wrap: wrap;
+}
+
+.enterprise-invite-banner-icon {
+  color: var(--primary);
+  flex-shrink: 0;
+}
+
+.enterprise-invite-banner-text {
+  flex: 1;
+  font-size: 0.95rem;
+  color: var(--foreground);
+}
+
+.enterprise-invite-banner-text strong {
+  color: var(--primary);
+}
+
+.enterprise-invite-banner-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.enterprise-invite-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.4rem 0.85rem;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.enterprise-invite-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.enterprise-invite-btn.accept {
+  background: #22c55e;
+  color: white;
+}
+
+.enterprise-invite-btn.accept:hover:not(:disabled) {
+  background: #16a34a;
+}
+
+.enterprise-invite-btn.decline {
+  background: var(--secondary);
+  color: var(--foreground);
+  border: 1px solid var(--border);
+}
+
+.enterprise-invite-btn.decline:hover:not(:disabled) {
+  background: var(--muted);
+}
+
+@media (max-width: 640px) {
+  .enterprise-invite-banner {
+    margin: 0 0.5rem 1rem;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .enterprise-invite-banner-actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+}

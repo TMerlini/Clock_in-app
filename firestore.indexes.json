@@ -1,0 +1,21 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "enterpriseInvites",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "email", "order": "ASCENDING" },
+        { "fieldPath": "status", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "enterpriseInvites",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "enterpriseId", "order": "ASCENDING" },
+        { "fieldPath": "status", "order": "ASCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

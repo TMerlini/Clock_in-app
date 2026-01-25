@@ -165,7 +165,7 @@ export function Admin({ user, onNavigate }) {
       });
 
       // Initialize calls if Premium AI
-      if (newGuestPlan === 'premium_ai') {
+      if (newGuestPlan === 'premium_ai' || newGuestPlan === 'enterprise') {
         // Note: We need the actual user ID (Firebase Auth UID), not email
         // This will be set when user signs in
         // For now, just set the subscription plan
@@ -258,7 +258,7 @@ export function Admin({ user, onNavigate }) {
     );
   }
 
-  const plans = ['free', 'basic', 'pro', 'premium_ai'];
+  const plans = ['free', 'basic', 'pro', 'premium_ai', 'enterprise'];
 
   return (
     <div className="admin-container">
@@ -375,6 +375,7 @@ export function Admin({ user, onNavigate }) {
                   <option value="basic">Basic (€0.99/month)</option>
                   <option value="pro">Pro (€4.99/month)</option>
                   <option value="premium_ai">Premium AI (€9.99/month)</option>
+                  <option value="enterprise">Enterprise (Custom)</option>
                 </select>
               </div>
               <div className="form-actions">

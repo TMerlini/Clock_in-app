@@ -5,9 +5,11 @@ import { useOpenRouter } from '../hooks/useOpenRouter';
 import { getUserContext } from '../lib/userContextHelper';
 import { OPENROUTER_DEFAULT_MODEL } from '../lib/openRouterConfig';
 import { getCallStatus, checkAndResetCalls, initializeCalls } from '../lib/tokenManager';
-import { ShoppingCart } from 'lucide-react';
+import { ShoppingCart, Download } from 'lucide-react';
 import { Bot, Crown, Send, AlertCircle, Settings, Loader, BarChart3, TrendingUp, Clock } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import './AIAdvisor.css';
 
 // Helper function to format token count
@@ -18,6 +20,21 @@ function formatTokenCount(tokens) {
     return `${(tokens / 1000).toFixed(1)}k`;
   }
   return tokens.toString();
+}
+
+const LOADING_MESSAGE_KEYS = ['consultingHr', 'readingWorkLaw', 'analyzingData', 'preparingRecommendations', 'pleaseWait'];
+
+function downloadAsMd(content, index) {
+  const d = new Date();
+  const ts = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}-${String(d.getHours()).padStart(2, '0')}${String(d.getMinutes()).padStart(2, '0')}`;
+  const filename = `ai-advisor-response-${ts}-${index + 1}.md`;
+  const blob = new Blob([content], { type: 'text/markdown;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
 }
 
 export function AIAdvisor({ user, onNavigate }) {
@@ -39,8 +56,21 @@ export function AIAdvisor({ user, onNavigate }) {
   });
   const [isPremiumAI, setIsPremiumAI] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [loadingMessageIndex, setLoadingMessageIndex] = useState(0);
+  const [streamingContent, setStreamingContent] = useState('');
   const messagesEndRef = useRef(null);
-  const { sendMessage, isLoading, error } = useOpenRouter();
+  const { sendMessageStreaming, isLoading, error } = useOpenRouter();
+
+  useEffect(() => {
+    if (!isLoading) {
+      setLoadingMessageIndex(0);
+      return;
+    }
+    const interval = setInterval(() => {
+      setLoadingMessageIndex((i) => (i + 1) % LOADING_MESSAGE_KEYS.length);
+    }, 2000);
+    return () => clearInterval(interval);
+  }, [isLoading]);
 
   useEffect(() => {
     loadPremiumStatus();
@@ -58,7 +88,7 @@ export function AIAdvisor({ user, onNavigate }) {
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages]);
+  }, [messages, streamingContent]);
 
   // Debug effect to log call status
   useEffect(() => {
@@ -86,7 +116,7 @@ export function AIAdvisor({ user, onNavigate }) {
         // Admin always has Premium AI access
         const premiumAI = adminCheck || subscriptionPlan === 'premium_ai';
         // Premium is true if user has any paid plan (including premium_ai), isPremium flag, or is admin
-        const premium = adminCheck || settings.isPremium || premiumAI || subscriptionPlan === 'basic' || subscriptionPlan === 'pro';
+        const premium = adminCheck || settings.isPremium || premiumAI || subscriptionPlan === 'basic' || subscriptionPlan === 'pro' || subscriptionPlan === 'enterprise';
         
         setIsPremium(premium);
         setIsPremiumAI(premiumAI);
@@ -182,62 +212,68 @@ export function AIAdvisor({ user, onNavigate }) {
     const userMessage = inputValue.trim();
     setInputValue('');
 
-    // Add user message to messages
-    const newMessages = [...messages, { role: 'user', content: userMessage }];
+    const newMessages = [...messages, { role: 'user', content: userMessage }, { role: 'assistant', content: '', streaming: true }];
     setMessages(newMessages);
+    setStreamingContent('');
+
+    const apiMessages = [];
+    if (userContext) {
+      apiMessages.push({ role: 'system', content: userContext });
+    }
+    const conversationSoFar = [...messages, { role: 'user', content: userMessage }];
+    const recentMessages = conversationSoFar.slice(-10);
+    apiMessages.push(...recentMessages.map(m => ({ role: m.role, content: m.content })));
+
+    const replacePlaceholderWith = (content, streaming = false) => {
+      setMessages(prev => {
+        const next = [...prev];
+        const last = next[next.length - 1];
+        if (last?.role === 'assistant' && last?.streaming) {
+          next[next.length - 1] = { role: 'assistant', content, streaming };
+          return next;
+        }
+        return prev;
+      });
+      setStreamingContent('');
+    };
 
     try {
-      // Prepare messages for API (include system context if available)
-      const apiMessages = [];
-      
-      if (userContext) {
-        apiMessages.push({
-          role: 'system',
-          content: userContext
-        });
-      }
-
-      // Add conversation history (last 10 messages to avoid token limits)
-      const recentMessages = newMessages.slice(-10);
-      apiMessages.push(...recentMessages.map(m => ({
-        role: m.role,
-        content: m.content
-      })));
-
-      // Send to OpenRouter with default model (mistralai/mistral-large)
-      // This model should work with your allowed providers (Mistral is in your allowed list)
-      const response = await sendMessage(apiMessages);
-
-      // Add AI response
-      setMessages([...newMessages, { role: 'assistant', content: response }]);
-      
-      // Update call status after successful message (for Premium AI users)
-      if (isPremiumAI) {
-        const currentUser = auth.currentUser;
-        if (currentUser) {
-          try {
-            const status = await getCallStatus(currentUser.uid);
-            // For admin, keep unlimited calls display but update token count
-            if (isAdmin) {
-              setCallStatus({ 
-                callsAllocated: 999999, 
-                callsUsed: status.callsUsed || 0, 
-                callsRemaining: 999999, 
-                totalTokensUsed: status.totalTokensUsed || 0 
-              });
-            } else {
-              setCallStatus(status);
+      await sendMessageStreaming(apiMessages, {
+        onChunk: (accumulated) => setStreamingContent(accumulated),
+        onDone: ({ fullContent }) => {
+          replacePlaceholderWith(fullContent, false);
+          if (isPremiumAI) {
+            const currentUser = auth.currentUser;
+            if (currentUser) {
+              getCallStatus(currentUser.uid).then((status) => {
+                if (isAdmin) {
+                  setCallStatus({ callsAllocated: 999999, callsUsed: status.callsUsed || 0, callsRemaining: 999999, totalTokensUsed: status.totalTokensUsed || 0 });
+                } else {
+                  setCallStatus(status);
+                }
+              }).catch((err) => console.error('Error updating call status:', err));
             }
-          } catch (error) {
-            console.error('Error updating call status:', error);
           }
+        },
+        onError: (err) => {
+          let errorMessage = err?.message || 'Unknown error';
+          if (errorMessage.includes('No allowed providers')) {
+            errorMessage = `OpenRouter Routing Issue: No providers are enabled for your default model in your routing settings.\n\n` +
+              `To fix this:\n` +
+              `1. Go to https://openrouter.ai/settings/routing\n` +
+              `2. Configure your default model (or enable Auto Router)\n` +
+              `3. Ensure at least one provider is enabled/allowed for your default model\n` +
+              `4. The app uses your OpenRouter default model (omitting the model parameter per API docs)\n\n` +
+              `See: https://openrouter.ai/docs/api-reference/overview for details on using your default model.`;
+          } else if (errorMessage.includes('calls') || errorMessage.includes('used all your')) {
+            /* already formatted */
+          }
+          replacePlaceholderWith(`Sorry, I encountered an error:\n\n${errorMessage}\n\nPlease check your OpenRouter routing settings and try again.`, false);
         }
-      }
+      });
     } catch (error) {
       console.error('Error sending message:', error);
-      
-      // Provide more helpful error messages
-      let errorMessage = error.message;
+      let errorMessage = error?.message || 'Unknown error';
       if (errorMessage.includes('No allowed providers')) {
         errorMessage = `OpenRouter Routing Issue: No providers are enabled for your default model in your routing settings.\n\n` +
           `To fix this:\n` +
@@ -247,14 +283,9 @@ export function AIAdvisor({ user, onNavigate }) {
           `4. The app uses your OpenRouter default model (omitting the model parameter per API docs)\n\n` +
           `See: https://openrouter.ai/docs/api-reference/overview for details on using your default model.`;
       } else if (errorMessage.includes('calls') || errorMessage.includes('used all your')) {
-        // Call limit error - already formatted in useOpenRouter
-        errorMessage = errorMessage;
+        /* already formatted */
       }
-      
-      setMessages([...newMessages, {
-        role: 'assistant',
-        content: `Sorry, I encountered an error:\n\n${errorMessage}\n\nPlease check your OpenRouter routing settings and try again.`
-      }]);
+      replacePlaceholderWith(`Sorry, I encountered an error:\n\n${errorMessage}\n\nPlease check your OpenRouter routing settings and try again.`, false);
     }
   };
 
@@ -299,65 +330,72 @@ export function AIAdvisor({ user, onNavigate }) {
 
   const handleSuggestionClick = async (prompt) => {
     if (isLoading || contextLoading || !prompt.trim()) return;
-    
+
     const userMessage = prompt.trim();
     setInputValue('');
 
-    // Add user message to messages
-    const newMessages = [...messages, { role: 'user', content: userMessage }];
+    const newMessages = [...messages, { role: 'user', content: userMessage }, { role: 'assistant', content: '', streaming: true }];
     setMessages(newMessages);
+    setStreamingContent('');
+
+    const apiMessages = [];
+    if (userContext) {
+      apiMessages.push({ role: 'system', content: userContext });
+    }
+    const conversationSoFar = [...messages, { role: 'user', content: userMessage }];
+    const recentMessages = conversationSoFar.slice(-10);
+    apiMessages.push(...recentMessages.map(m => ({ role: m.role, content: m.content })));
+
+    const replacePlaceholderWith = (content, streaming = false) => {
+      setMessages(prev => {
+        const next = [...prev];
+        const last = next[next.length - 1];
+        if (last?.role === 'assistant' && last?.streaming) {
+          next[next.length - 1] = { role: 'assistant', content, streaming };
+          return next;
+        }
+        return prev;
+      });
+      setStreamingContent('');
+    };
 
     try {
-      // Prepare messages for API (include system context if available)
-      const apiMessages = [];
-      
-      if (userContext) {
-        apiMessages.push({
-          role: 'system',
-          content: userContext
-        });
-      }
-
-      // Add conversation history (last 10 messages to avoid token limits)
-      const recentMessages = newMessages.slice(-10);
-      apiMessages.push(...recentMessages.map(m => ({
-        role: m.role,
-        content: m.content
-      })));
-
-      // Send to OpenRouter with default model (mistralai/mistral-large)
-      const response = await sendMessage(apiMessages);
-
-      // Add AI response
-      setMessages([...newMessages, { role: 'assistant', content: response }]);
-      
-      // Update call status after successful message (for Premium AI users)
-      if (isPremiumAI) {
-        const currentUser = auth.currentUser;
-        if (currentUser) {
-          try {
-            const status = await getCallStatus(currentUser.uid);
-            // For admin, keep unlimited calls display but update token count
-            if (isAdmin) {
-              setCallStatus({ 
-                callsAllocated: 999999, 
-                callsUsed: status.callsUsed || 0, 
-                callsRemaining: 999999, 
-                totalTokensUsed: status.totalTokensUsed || 0 
-              });
-            } else {
-              setCallStatus(status);
+      await sendMessageStreaming(apiMessages, {
+        onChunk: (accumulated) => setStreamingContent(accumulated),
+        onDone: ({ fullContent }) => {
+          replacePlaceholderWith(fullContent, false);
+          if (isPremiumAI) {
+            const currentUser = auth.currentUser;
+            if (currentUser) {
+              getCallStatus(currentUser.uid).then((status) => {
+                if (isAdmin) {
+                  setCallStatus({ callsAllocated: 999999, callsUsed: status.callsUsed || 0, callsRemaining: 999999, totalTokensUsed: status.totalTokensUsed || 0 });
+                } else {
+                  setCallStatus(status);
+                }
+              }).catch((err) => console.error('Error updating call status:', err));
             }
-          } catch (error) {
-            console.error('Error updating call status:', error);
           }
+        },
+        onError: (err) => {
+          let errorMessage = err?.message || 'Unknown error';
+          if (errorMessage.includes('No allowed providers')) {
+            errorMessage = `OpenRouter Routing Issue: No providers are enabled for your default model in your routing settings.\n\n` +
+              `To fix this:\n` +
+              `1. Go to https://openrouter.ai/settings/routing\n` +
+              `2. Configure your default model (or enable Auto Router)\n` +
+              `3. Ensure at least one provider is enabled/allowed for your default model\n` +
+              `4. The app uses your OpenRouter default model (omitting the model parameter per API docs)\n\n` +
+              `See: https://openrouter.ai/docs/api-reference/overview for details on using your default model.`;
+          } else if (errorMessage.includes('calls') || errorMessage.includes('used all your')) {
+            /* already formatted */
+          }
+          replacePlaceholderWith(`Sorry, I encountered an error:\n\n${errorMessage}\n\nPlease check your OpenRouter routing settings and try again.`, false);
         }
-      }
+      });
     } catch (error) {
       console.error('Error sending message:', error);
-      
-      // Provide more helpful error messages
-      let errorMessage = error.message;
+      let errorMessage = error?.message || 'Unknown error';
       if (errorMessage.includes('No allowed providers')) {
         errorMessage = `OpenRouter Routing Issue: No providers are enabled for your default model in your routing settings.\n\n` +
           `To fix this:\n` +
@@ -367,14 +405,9 @@ export function AIAdvisor({ user, onNavigate }) {
           `4. The app uses your OpenRouter default model (omitting the model parameter per API docs)\n\n` +
           `See: https://openrouter.ai/docs/api-reference/overview for details on using your default model.`;
       } else if (errorMessage.includes('calls') || errorMessage.includes('used all your')) {
-        // Call limit error - already formatted in useOpenRouter
-        errorMessage = errorMessage;
+        /* already formatted */
       }
-      
-      setMessages([...newMessages, {
-        role: 'assistant',
-        content: `Sorry, I encountered an error:\n\n${errorMessage}\n\nPlease check your OpenRouter routing settings and try again.`
-      }]);
+      replacePlaceholderWith(`Sorry, I encountered an error:\n\n${errorMessage}\n\nPlease check your OpenRouter routing settings and try again.`, false);
     }
   };
 
@@ -473,26 +506,59 @@ export function AIAdvisor({ user, onNavigate }) {
                   </div>
                 )}
                 <div className="message-text">
-                  {message.content.split('\n').map((line, i) => (
-                    <span key={i}>
-                      {line}
-                      {i < message.content.split('\n').length - 1 && <br />}
-                    </span>
-                  ))}
+                  {message.role === 'assistant' ? (
+                    message.streaming ? (
+                      (streamingContent || '').split('\n').map((line, i) => (
+                        <span key={i}>
+                          {line}
+                          {i < (streamingContent || '').split('\n').length - 1 && <br />}
+                        </span>
+                      ))
+                    ) : (
+                      <>
+                        <ReactMarkdown remarkPlugins={[remarkGfm]} className="markdown-body">
+                          {message.content}
+                        </ReactMarkdown>
+                        <div className="message-actions">
+                          <button
+                            type="button"
+                            className="download-md-btn"
+                            onClick={() => downloadAsMd(message.content, index)}
+                            title={t('aiAdvisor.downloadMdTitle')}
+                          >
+                            <Download size={14} />
+                            <span>{t('aiAdvisor.downloadMd')}</span>
+                          </button>
+                        </div>
+                      </>
+                    )
+                  ) : (
+                    (message.content || '').split('\n').map((line, i) => (
+                      <span key={i}>
+                        {line}
+                        {i < (message.content || '').split('\n').length - 1 && <br />}
+                      </span>
+                    ))
+                  )}
                 </div>
               </div>
             </div>
           ))}
-          {isLoading && (
+          {isLoading && !streamingContent && (
             <div className="message assistant">
               <div className="message-content">
                 <div className="message-avatar">
                   <Bot size={20} />
                 </div>
-                <div className="message-text loading-dots">
-                  <span>.</span>
-                  <span>.</span>
-                  <span>.</span>
+                <div className="message-text loading-state">
+                  <div className="loading-dots">
+                    <span>.</span>
+                    <span>.</span>
+                    <span>.</span>
+                  </div>
+                  <p className="loading-message">
+                    {t(`aiAdvisor.loadingMessages.${LOADING_MESSAGE_KEYS[loadingMessageIndex]}`)}
+                  </p>
                 </div>
               </div>
             </div>

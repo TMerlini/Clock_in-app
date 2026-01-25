@@ -1,0 +1,333 @@
+.enterprise-ai-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  margin-bottom: 1.5rem;
+  overflow: hidden;
+}
+
+.enterprise-ai-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 1rem 1.25rem;
+  background: var(--secondary);
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.2s ease;
+}
+
+.enterprise-ai-header:hover {
+  background: var(--muted);
+}
+
+.enterprise-ai-header-left {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.enterprise-ai-icon {
+  color: var(--primary);
+  flex-shrink: 0;
+}
+
+.enterprise-ai-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--foreground);
+  margin: 0;
+}
+
+.enterprise-ai-desc {
+  font-size: 0.85rem;
+  color: var(--muted-foreground);
+  margin: 0.25rem 0 0 0;
+}
+
+.enterprise-ai-chevron {
+  color: var(--muted-foreground);
+  flex-shrink: 0;
+}
+
+.enterprise-ai-body {
+  padding: 1rem 1.25rem;
+  border-top: 1px solid var(--border);
+  background: var(--card);
+}
+
+.enterprise-ai-suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.enterprise-ai-suggestion-btn {
+  padding: 0.4rem 0.75rem;
+  font-size: 0.85rem;
+  background: var(--secondary);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--foreground);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.enterprise-ai-suggestion-btn:hover {
+  background: var(--muted);
+  border-color: var(--primary);
+}
+
+.enterprise-ai-messages {
+  max-height: 280px;
+  overflow-y: auto;
+  margin-bottom: 1rem;
+  padding-right: 0.25rem;
+  background: var(--card);
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) var(--card);
+}
+
+.enterprise-ai-messages::-webkit-scrollbar {
+  width: 8px;
+}
+
+.enterprise-ai-messages::-webkit-scrollbar-track {
+  background: var(--card);
+  border-radius: 4px;
+}
+
+.enterprise-ai-messages::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 4px;
+  border: 2px solid var(--card);
+}
+
+.enterprise-ai-messages::-webkit-scrollbar-thumb:hover {
+  background: var(--primary);
+}
+
+.enterprise-ai-msg {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+  font-size: 0.9rem;
+}
+
+.enterprise-ai-msg--user {
+  flex-direction: row-reverse;
+}
+
+.enterprise-ai-msg--user .enterprise-ai-msg-text {
+  background: rgba(139, 92, 246, 0.15);
+  border: 1px solid rgba(139, 92, 246, 0.3);
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
+}
+
+.enterprise-ai-msg-icon {
+  color: var(--primary);
+  flex-shrink: 0;
+  margin-top: 0.2rem;
+}
+
+.enterprise-ai-msg-text {
+  flex: 1;
+  min-width: 0;
+  color: var(--foreground);
+}
+
+.enterprise-ai-markdown {
+  font-size: 0.9rem;
+  line-height: 1.5;
+  width: 100%;
+  white-space: normal;
+  word-wrap: break-word;
+  box-sizing: border-box;
+}
+
+.enterprise-ai-markdown > *:last-child {
+  margin-bottom: 0;
+}
+
+.enterprise-ai-markdown p {
+  margin: 0 0 0.75em 0;
+}
+
+.enterprise-ai-markdown p:last-child {
+  margin-bottom: 0;
+}
+
+.enterprise-ai-markdown h1,
+.enterprise-ai-markdown h2,
+.enterprise-ai-markdown h3,
+.enterprise-ai-markdown h4,
+.enterprise-ai-markdown h5,
+.enterprise-ai-markdown h6 {
+  font-weight: 600;
+  margin: 1em 0 0.5em 0;
+  color: var(--foreground);
+  line-height: 1.3;
+}
+
+.enterprise-ai-markdown h1 { font-size: 1.35em; }
+.enterprise-ai-markdown h2 { font-size: 1.2em; }
+.enterprise-ai-markdown h3 { font-size: 1.1em; }
+.enterprise-ai-markdown h4,
+.enterprise-ai-markdown h5,
+.enterprise-ai-markdown h6 { font-size: 1em; }
+
+.enterprise-ai-markdown ul,
+.enterprise-ai-markdown ol {
+  margin: 0.5em 0;
+  padding-left: 1.5em;
+}
+
+.enterprise-ai-markdown li {
+  margin: 0.25em 0;
+}
+
+.enterprise-ai-markdown code {
+  background: rgba(0, 0, 0, 0.15);
+  padding: 0.15em 0.4em;
+  border-radius: 4px;
+  font-size: 0.9em;
+  font-family: ui-monospace, monospace;
+}
+
+.enterprise-ai-markdown pre {
+  margin: 0.75em 0;
+  padding: 1rem;
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: 8px;
+  overflow-x: auto;
+  border: 1px solid var(--border);
+}
+
+.enterprise-ai-markdown pre code {
+  background: none;
+  padding: 0;
+  font-size: 0.85em;
+}
+
+.enterprise-ai-markdown blockquote {
+  margin: 0.75em 0;
+  padding-left: 1rem;
+  border-left: 4px solid var(--primary);
+  color: var(--muted-foreground);
+}
+
+.enterprise-ai-markdown a {
+  color: var(--primary);
+  text-decoration: underline;
+}
+
+.enterprise-ai-markdown a:hover {
+  opacity: 0.9;
+}
+
+.enterprise-ai-markdown strong {
+  font-weight: 600;
+}
+
+.enterprise-ai-markdown em {
+  font-style: italic;
+}
+
+.enterprise-ai-markdown table {
+  width: 100%;
+  margin: 0.75em 0;
+  border-collapse: collapse;
+  font-size: 0.9em;
+}
+
+.enterprise-ai-markdown th,
+.enterprise-ai-markdown td {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--border);
+  text-align: left;
+}
+
+.enterprise-ai-markdown th {
+  font-weight: 600;
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.enterprise-ai-markdown tbody tr:nth-child(even) {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.enterprise-ai-input-wrap {
+  display: flex;
+  gap: 0.5rem;
+  align-items: flex-end;
+}
+
+.enterprise-ai-input {
+  flex: 1;
+  padding: 0.6rem 0.75rem;
+  font-size: 0.9rem;
+  background: var(--secondary);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--foreground);
+  resize: none;
+  font-family: inherit;
+  min-height: 44px;
+}
+
+.enterprise-ai-input:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+
+.enterprise-ai-input::placeholder {
+  color: var(--muted-foreground);
+}
+
+.enterprise-ai-send {
+  padding: 0.6rem 1rem;
+  background: linear-gradient(135deg, var(--primary), var(--accent));
+  border: none;
+  border-radius: 8px;
+  color: white;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+  flex-shrink: 0;
+}
+
+.enterprise-ai-send:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.enterprise-ai-send:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.enterprise-ai-spin {
+  animation: enterprise-ai-spin 0.8s linear infinite;
+}
+
+@keyframes enterprise-ai-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@media (max-width: 640px) {
+  .enterprise-ai-suggestions {
+    flex-direction: column;
+  }
+
+  .enterprise-ai-suggestion-btn {
+    width: 100%;
+    text-align: left;
+  }
+
+  .enterprise-ai-messages {
+    max-height: 220px;
+  }
+}

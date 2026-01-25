@@ -1,0 +1,72 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isAuth() {
+      return request.auth != null;
+    }
+
+    // App admin: must match getAdminEmail() in adminUtils.js. Uses matches() (rules have no toLowerCase).
+    function isAppAdmin() {
+      return isAuth() && request.auth.token.email != null
+        && request.auth.token.email.matches('(?i)^merloproductions@gmail\\.com$');
+    }
+
+    function viewerSettings() {
+      let snap = get(/databases/$(database)/documents/userSettings/$(request.auth.uid));
+      return snap.data != null ? snap.data : {};
+    }
+
+    function isEnterpriseAdmin() {
+      return isAuth() && viewerSettings().enterpriseRole == 'admin' && viewerSettings().enterpriseId != null;
+    }
+
+    function sameOrgAsViewer(userId) {
+      let snap = get(/databases/$(database)/documents/userSettings/$(userId));
+      let target = snap.data != null ? snap.data : {};
+      return isEnterpriseAdmin() && target.enterpriseId == viewerSettings().enterpriseId;
+    }
+
+    match /sessions/{sessionId} {
+      allow create: if isAuth() && request.resource.data.userId == request.auth.uid;
+      allow read, update, delete: if isAuth() && resource.data.userId == request.auth.uid;
+      allow read: if isAuth() && (isAppAdmin() || sameOrgAsViewer(resource.data.userId));
+    }
+
+    match /userSettings/{userId} {
+      allow read, write: if isAuth() && userId == request.auth.uid;
+      allow read: if isAuth() && (isAppAdmin() || sameOrgAsViewer(userId));
+      allow write: if isAuth() && isAppAdmin();
+    }
+
+    match /enterprises/{enterpriseId} {
+      allow create: if isAuth() && request.resource.data.createdBy == request.auth.uid;
+      allow read, update, delete: if isAuth() && resource.data.createdBy == request.auth.uid;
+      allow read: if isAuth() && viewerSettings().enterpriseId == enterpriseId;
+    }
+
+    match /enterpriseInvites/{inviteId} {
+      allow create: if isAuth();
+      allow read: if isAuth();
+      allow update: if isAuth() && (
+        resource.data.invitedBy == request.auth.uid ||
+        (resource.data.email != null && request.auth.token.email != null &&
+         resource.data.email == request.auth.token.email)
+      );
+      allow delete: if false;
+    }
+
+    match /activeClockIns/{userId} {
+      allow read, write: if isAuth() && userId == request.auth.uid;
+    }
+
+    match /overworkDeductions/{deductionId} {
+      allow create: if isAuth() && request.resource.data.userId == request.auth.uid;
+      allow read, update, delete: if isAuth() && resource.data.userId == request.auth.uid;
+    }
+
+    match /calendarTokens/{userId} {
+      allow read, write: if isAuth() && userId == request.auth.uid;
+    }
+  }
+}

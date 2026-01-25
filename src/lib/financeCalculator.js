@@ -31,25 +31,28 @@ export function calculateBaseSalary(regularHours, hourlyRate) {
 
 /**
  * Calculate Isenção salary (IHT - Isenção de Horário de Trabalho)
- * Can be calculated as percentage-based (per working day) or fixed monthly amount
+ * Can be calculated using Portuguese labor law formula (percentage-based) or fixed monthly amount
  * @param {number} hourlyRate - Base hourly rate in €
- * @param {number} isencaoRate - Isenção rate (percentage if method is 'percentage', or fixed amount if method is 'fixed')
+ * @param {number} isencaoRate - Not used for percentage method (kept for backward compatibility). For fixed method, this is the fixed monthly amount
  * @param {number} workingDays - Number of unique working days (used only for percentage method)
  * @param {string} calculationMethod - 'percentage' or 'fixed' (default: 'percentage')
  * @returns {number} Isenção earnings in €
  */
 export function calculateIsencaoSalary(hourlyRate, isencaoRate, workingDays, calculationMethod = 'percentage') {
-  if (isencaoRate === 0) return 0;
-  
   if (calculationMethod === 'fixed') {
     // For fixed amount, return the fixed monthly amount directly
+    if (isencaoRate === 0) return 0;
     return isencaoRate;
   }
   
-  // Percentage method: (Hourly rate × Isenção percentage / 100) × Working days
-  if (workingDays === 0) return 0;
-  const hourlySupplement = hourlyRate * (isencaoRate / 100);
-  return hourlySupplement * workingDays;
+  // Percentage method: IHT = (Salário base / 30 dias) × 25%
+  // Where Salário base = hourly rate × 160 hours (standard full-time month)
+  // Daily IHT = (hourlyRate × 160 / 30) × 0.25 = hourlyRate × 4 / 3
+  // Total IHT = Daily IHT × Working Days
+  if (workingDays === 0 || hourlyRate === 0) return 0;
+  const monthlyBaseSalary = hourlyRate * 160; // Standard full-time: 8h/day × 20 days = 160h/month
+  const dailyIHT = (monthlyBaseSalary / 30) * 0.25; // 25% of daily base salary
+  return dailyIHT * workingDays;
 }
 
 /**
@@ -378,8 +381,9 @@ export function calculatePeriodFinance(sessions, dateRange, settings) {
         // or prorate based on working days
         dailyIsencaoSupplement = totalWorkingDays > 0 ? (isencaoFixedAmount / totalWorkingDays) : 0;
       } else {
-        // Percentage method: hourly supplement per day
-        dailyIsencaoSupplement = isencaoRate > 0 ? hourlyRate * (isencaoRate / 100) : 0;
+        // Percentage method: IHT = (Salário base / 30 dias) × 25%
+        // Daily IHT = (hourlyRate × 160 / 30) × 0.25 = hourlyRate × 4 / 3
+        dailyIsencaoSupplement = hourlyRate > 0 ? (hourlyRate * 160 / 30) * 0.25 : 0;
       }
       
       return filteredSessions.map(s => {
@@ -397,10 +401,12 @@ export function calculatePeriodFinance(sessions, dateRange, settings) {
         // Isenção (IHT) is paid for ALL working days, regardless of whether Isenção hours were worked
         // This is a fixed supplement per working day for being in IHT regime
         let isencaoEarnings = 0;
-        if ((isencaoRate > 0 || isencaoFixedAmount > 0) && !isencaoDatesProcessed.has(dateKey)) {
-          // Count Isenção earnings once per working day (for any working day, not just days with Isenção hours)
-          isencaoEarnings = dailyIsencaoSupplement;
-          isencaoDatesProcessed.add(dateKey);
+        if ((isencaoCalculationMethod === 'percentage' && hourlyRate > 0) || (isencaoCalculationMethod === 'fixed' && isencaoFixedAmount > 0)) {
+          if (!isencaoDatesProcessed.has(dateKey)) {
+            // Count Isenção earnings once per working day (for any working day, not just days with Isenção hours)
+            isencaoEarnings = dailyIsencaoSupplement;
+            isencaoDatesProcessed.add(dateKey);
+          }
         }
         
         return {

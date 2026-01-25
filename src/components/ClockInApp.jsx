@@ -11,6 +11,7 @@ import { Calendar } from './ui/calendar';
 import { GoogleCalendarSync } from './GoogleCalendarSync';
 import { ActiveSessionCard } from './ActiveSessionCard';
 import { SyncStatusIndicator } from './SyncStatusIndicator';
+import { EnterpriseInviteBanner } from './EnterpriseInviteBanner';
 import { Loader } from './Loader';
 import { ErrorBoundary } from './ErrorBoundary';
 import { HomePage } from './HomePage';
@@ -25,6 +26,7 @@ const AIAdvisor = lazy(() => import('./AIAdvisor').then(module => ({ default: mo
 const PremiumPlus = lazy(() => import('./PremiumPlus').then(module => ({ default: module.PremiumPlus })));
 const CallPackPurchase = lazy(() => import('./CallPackPurchase').then(module => ({ default: module.CallPackPurchase })));
 const Admin = lazy(() => import('./Admin').then(module => ({ default: module.Admin })));
+const Enterprise = lazy(() => import('./Enterprise').then(module => ({ default: module.Enterprise })));
 const CalendarImport = lazy(() => import('./CalendarImport').then(module => ({ default: module.CalendarImport })));
 const CalendarView = lazy(() => import('./CalendarView').then(module => ({ default: module.CalendarView })));
 
@@ -736,6 +738,14 @@ export function ClockInApp({ user }) {
             </Suspense>
           </ErrorBoundary>
         );
+      case 'enterprise':
+        return (
+          <ErrorBoundary>
+            <Suspense fallback={<Loader />}>
+              <Enterprise user={user} onNavigate={handlePageChange} />
+            </Suspense>
+          </ErrorBoundary>
+        );
       case 'faq':
         return <FAQ />;
       case 'settings':
@@ -844,6 +854,8 @@ export function ClockInApp({ user }) {
           </div>
         </div>
       </div>
+
+      <EnterpriseInviteBanner user={user} />
 
       {renderContent()}
 

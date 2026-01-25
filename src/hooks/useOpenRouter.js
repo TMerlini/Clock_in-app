@@ -54,7 +54,7 @@ export function useOpenRouter() {
         if (settingsDoc.exists()) {
           const settings = settingsDoc.data();
           const subscriptionPlan = (settings.subscriptionPlan || settings.plan || '').toLowerCase();
-          isPremiumAI = subscriptionPlan === 'premium_ai';
+          isPremiumAI = subscriptionPlan === 'premium_ai' || subscriptionPlan === 'enterprise';
           
           if (isPremiumAI) {
             // Check call availability (need at least 1 call)
@@ -230,8 +230,130 @@ export function useOpenRouter() {
     }
   };
 
+  const sendMessageStreaming = async (messages, { onChunk, onDone, onError }, model = null) => {
+    setIsLoading(true);
+    setError(null);
+
+    let currentUser = auth.currentUser;
+    let isPremiumAI = false;
+    let isAdmin = false;
+
+    try {
+      const client = getOpenRouterClient();
+
+      const ADMIN_EMAIL = 'merloproductions@gmail.com';
+      isAdmin = currentUser?.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase();
+
+      if (currentUser && !isAdmin) {
+        const settingsRef = doc(db, 'userSettings', currentUser.uid);
+        const settingsDoc = await getDoc(settingsRef);
+        if (settingsDoc.exists()) {
+          const settings = settingsDoc.data();
+          const subscriptionPlan = (settings.subscriptionPlan || settings.plan || '').toLowerCase();
+          isPremiumAI = subscriptionPlan === 'premium_ai' || subscriptionPlan === 'enterprise';
+          if (isPremiumAI) {
+            const hasCalls = await checkCallAvailability(currentUser.uid);
+            if (!hasCalls) {
+              const status = await getCallStatus(currentUser.uid);
+              throw new Error(`You've used all your calls for this subscription period (${status.callsUsed}/${status.callsAllocated}). Your calls will reset on your next subscription renewal.`);
+            }
+          }
+        }
+      } else if (isAdmin) {
+        isPremiumAI = true;
+      }
+
+      const modelToUse = model || OPENROUTER_DEFAULT_MODEL;
+      const requestBody = {
+        model: modelToUse,
+        messages,
+        temperature: 0.7,
+        max_tokens: 1000,
+        stream: true,
+        provider: { allowFallbacks: true },
+      };
+
+      console.log('Sending streaming request to OpenRouter:', {
+        model: modelToUse,
+        messageCount: messages.length,
+        hasApiKey: !!OPENROUTER_API_KEY,
+        isPremiumAI,
+        isAdmin,
+      });
+
+      const stream = await client.chat.send(requestBody);
+      let accumulated = '';
+      let usage = null;
+
+      for await (const chunk of stream) {
+        if (chunk?.error) {
+          const errMsg = chunk.error?.message || 'Stream error';
+          onError?.(new Error(errMsg));
+          return;
+        }
+        const finishReason = chunk?.choices?.[0]?.finish_reason ?? chunk?.choices?.[0]?.finishReason;
+        if (finishReason === 'error') {
+          const errMsg = chunk?.error?.message || 'Stream ended with error';
+          onError?.(new Error(errMsg));
+          return;
+        }
+
+        const delta = chunk?.choices?.[0]?.delta?.content;
+        if (typeof delta === 'string') {
+          accumulated += delta;
+          onChunk?.(accumulated);
+        }
+        if (chunk?.usage) {
+          usage = chunk.usage;
+        }
+      }
+
+      const promptTokens = usage?.prompt_tokens || 0;
+      const completionTokens = usage?.completion_tokens || 0;
+      const actualTokens = promptTokens + completionTokens;
+      if (actualTokens > 0) {
+        console.log('Stream token usage:', { promptTokens, completionTokens, total: actualTokens });
+      }
+
+      if (isPremiumAI && currentUser) {
+        try {
+          if (!isAdmin) {
+            await deductCall(currentUser.uid, actualTokens);
+          } else if (actualTokens > 0) {
+            const settingsRef = doc(db, 'userSettings', currentUser.uid);
+            const settingsDoc = await getDoc(settingsRef);
+            if (settingsDoc.exists()) {
+              const settings = settingsDoc.data();
+              const aiUsage = settings.aiUsage || { totalTokensUsed: 0 };
+              const currentTotalTokens = aiUsage.totalTokensUsed || 0;
+              await setDoc(settingsRef, {
+                aiUsage: {
+                  ...aiUsage,
+                  totalTokensUsed: currentTotalTokens + actualTokens,
+                },
+              }, { merge: true });
+            }
+          }
+        } catch (callError) {
+          console.error('Error updating call/token status:', callError);
+        }
+      }
+
+      onDone?.({ fullContent: accumulated, usage });
+    } catch (err) {
+      const errorMessage = err.message || 'Failed to send message to AI';
+      setError(errorMessage);
+      console.error('OpenRouter streaming error:', err);
+      onError?.(err);
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return {
     sendMessage,
+    sendMessageStreaming,
     isLoading,
     error,
     listAvailableModels

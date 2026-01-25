@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef, memo } from 'react';
-import { Menu, X, Home, Calendar, BarChart3, Info, Settings, HelpCircle, Bot, Crown, Shield, DollarSign } from 'lucide-react';
+import { doc, getDoc } from 'firebase/firestore';
+import { db } from '../lib/firebase';
+import { Menu, X, Home, Calendar, BarChart3, Info, Settings, HelpCircle, Bot, Crown, Shield, DollarSign, Building2 } from 'lucide-react';
 import { isAdmin } from '../lib/adminUtils';
 import { useTranslation } from 'react-i18next';
 import './Navigation.css';
@@ -10,8 +12,31 @@ export const Navigation = memo(function Navigation({ currentPage, onPageChange, 
   const [buttonPosition, setButtonPosition] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const [showEnterprise, setShowEnterprise] = useState(false);
   const buttonRef = useRef(null);
   const dragTimeout = useRef(null);
+
+  useEffect(() => {
+    if (!user) {
+      const tid = setTimeout(() => setShowEnterprise(false), 0);
+      return () => clearTimeout(tid);
+    }
+    let cancelled = false;
+    const check = async () => {
+      try {
+        const snap = await getDoc(doc(db, 'userSettings', user.uid));
+        if (cancelled) return;
+        const d = snap.exists() ? snap.data() : {};
+        const plan = (d.subscriptionPlan || d.plan || '').toLowerCase();
+        const eid = d.enterpriseId || null;
+        setShowEnterprise(plan === 'enterprise' || !!eid);
+      } catch {
+        if (!cancelled) setShowEnterprise(false);
+      }
+    };
+    check();
+    return () => { cancelled = true; };
+  }, [user]);
 
   const menuItems = [
     { id: 'home', label: t('navigation.home'), icon: Home },
@@ -25,8 +50,10 @@ export const Navigation = memo(function Navigation({ currentPage, onPageChange, 
     { id: 'about', label: t('navigation.about'), icon: Info }
   ];
 
-  // Add Admin menu item if user is admin
   const finalMenuItems = [...menuItems];
+  if (showEnterprise) {
+    finalMenuItems.push({ id: 'enterprise', label: t('navigation.enterprise'), icon: Building2 });
+  }
   if (user && isAdmin(user)) {
     finalMenuItems.push({ id: 'admin', label: t('navigation.admin'), icon: Shield });
   }

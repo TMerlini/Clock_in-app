@@ -72,8 +72,8 @@ export async function checkAndResetCalls(userId) {
     const settings = settingsDoc.data();
     const subscriptionPlan = (settings.subscriptionPlan || settings.plan || '').toLowerCase();
     
-    // Only reset calls for Premium AI users
-    if (subscriptionPlan !== 'premium_ai') return;
+    // Only reset calls for Premium AI or Enterprise users
+    if (subscriptionPlan !== 'premium_ai' && subscriptionPlan !== 'enterprise') return;
     
     const subscriptionStartDate = settings.subscriptionStartDate;
     const aiUsage = settings.aiUsage || {};

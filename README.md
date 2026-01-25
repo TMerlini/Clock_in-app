@@ -447,7 +447,7 @@ The app is configured for automatic deployment to Vercel:
 
 **userSettings** - User preferences
 - `username`: string (optional, display name)
-- `subscriptionPlan`: string ('free' | 'basic' | 'pro' | 'premium_ai')
+- `subscriptionPlan`: string ('free' | 'basic' | 'pro' | 'premium_ai' | 'enterprise')
 - `subscriptionStartDate`: timestamp
 - `regularHoursThreshold`: number
 - `enableUnpaidExtra`: boolean (default: true)
@@ -471,6 +471,8 @@ The app is configured for automatic deployment to Vercel:
   - `lastResetDate`: timestamp
 - `userType`: string ('regular' | 'guest') - Optional: tracks if account was created by admin
 - `createdBy`: string (optional, admin user ID for guest accounts)
+- `enterpriseId`: string (optional, null) - Enterprise org id when user is in an organization
+- `enterpriseRole`: string ('admin' | 'member') - Role within the enterprise (admin = creator)
 - `financeSettings`: object (optional, Finance calculation settings)
   - `hourlyRate`: number - Base hourly rate (€)
   - `isencaoRate`: number - Isenção rate as percentage of hourly rate (%), e.g., 25 for 25% (used when calculationMethod is 'percentage')
@@ -504,6 +506,23 @@ The app is configured for automatic deployment to Vercel:
 - `reason`: string
 - `timestamp`: number
 - `createdAt`: string (ISO date)
+
+**enterprises** - Enterprise organizations (Enterprise plan)
+- `id`: string (document id)
+- `name`: string
+- `createdAt`: timestamp
+- `createdBy`: string (admin user id)
+
+**enterpriseInvites** - Pending/accepted/declined invites
+- `enterpriseId`: string
+- `email`: string (lowercase)
+- `invitedBy`: string (admin user id)
+- `invitedAt`: timestamp
+- `status`: 'pending' | 'accepted' | 'declined'
+
+**Firestore indexes for Enterprise:** `enterpriseInvites` composite (email + status, enterpriseId + status). See [firestore.indexes.json](firestore.indexes.json). `userSettings.enterpriseId` is single-field; use **Indexes → Single field** only if Firebase prompts for it.
+
+**Firestore security rules:** See [firestore.rules](firestore.rules) for Enterprise-aware rules. **Deploy rules and indexes:** follow **[DEPLOY_FIRESTORE.md](DEPLOY_FIRESTORE.md)** (Firebase Console or Firebase CLI).
 
 ## Future Development
 

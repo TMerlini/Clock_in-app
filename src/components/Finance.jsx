@@ -445,7 +445,7 @@ export const Finance = memo(function Finance({ user, onNavigate }) {
           </div>
         </div>
 
-        {(financeSettings.isencaoRate > 0 || financeSettings.isencaoFixedAmount > 0) && (
+        {(financeSettings.isencaoCalculationMethod === 'percentage' && financeSettings.hourlyRate > 0) || (financeSettings.isencaoCalculationMethod === 'fixed' && financeSettings.isencaoFixedAmount > 0) ? (
           <div className="finance-card isencao-salary">
             <div className="finance-card-icon">
               <AlertTriangle />
@@ -461,19 +461,17 @@ export const Finance = memo(function Finance({ user, onNavigate }) {
                 ) : financeData.workingDays > 0 ? (
                   t('finance.isencaoCalculation', {
                     days: financeData.workingDays,
-                    percentage: financeSettings.isencaoRate,
                     hourlyRate: formatCurrency(financeSettings.hourlyRate || 0)
                   })
                 ) : (
                   t('finance.isencaoNoWorkingDays', {
-                    percentage: financeSettings.isencaoRate,
                     hourlyRate: formatCurrency(financeSettings.hourlyRate || 0)
                   })
                 )}
               </div>
             </div>
           </div>
-        )}
+        ) : null}
 
         <div className="finance-card overtime-salary">
           <div className="finance-card-icon">
@@ -821,7 +819,7 @@ export const Finance = memo(function Finance({ user, onNavigate }) {
                   <th>{t('finance.isencaoHours')}</th>
                   <th>{t('finance.overtimeHours')}</th>
                   <th>{t('finance.baseEarnings')}</th>
-                  {(financeSettings.isencaoRate > 0 || financeSettings.isencaoFixedAmount > 0) && <th>{t('finance.isencaoEarnings')}</th>}
+                  {((financeSettings.isencaoCalculationMethod === 'percentage' && financeSettings.hourlyRate > 0) || (financeSettings.isencaoCalculationMethod === 'fixed' && financeSettings.isencaoFixedAmount > 0)) && <th>{t('finance.isencaoEarnings')}</th>}
                   <th>{t('finance.overtimeEarnings')}</th>
                   <th>{t('finance.weekendBonus')}</th>
                   {financeSettings.mealAllowanceIncluded && <th>{t('finance.meals')}</th>}
@@ -836,7 +834,7 @@ export const Finance = memo(function Finance({ user, onNavigate }) {
                     <td>{s.isencaoHours.toFixed(2)}h</td>
                     <td>{s.paidExtraHours.toFixed(2)}h</td>
                     <td>{formatCurrency(s.baseEarnings)}</td>
-                    {(financeSettings.isencaoRate > 0 || financeSettings.isencaoFixedAmount > 0) && <td>{formatCurrency(s.isencaoEarnings)}</td>}
+                    {((financeSettings.isencaoCalculationMethod === 'percentage' && financeSettings.hourlyRate > 0) || (financeSettings.isencaoCalculationMethod === 'fixed' && financeSettings.isencaoFixedAmount > 0)) && <td>{formatCurrency(s.isencaoEarnings)}</td>}
                     <td>{formatCurrency(s.overtimeEarnings)}</td>
                     <td>{formatCurrency(s.weekendBonus)}</td>
                     {financeSettings.mealAllowanceIncluded && <td>{formatCurrency(s.mealEarnings)}</td>}
@@ -849,7 +847,7 @@ export const Finance = memo(function Finance({ user, onNavigate }) {
                   <td><strong>{financeData.hours.isencao.toFixed(2)}h</strong></td>
                   <td><strong>{financeData.hours.paidExtra.toFixed(2)}h</strong></td>
                   <td><strong>{formatCurrency(financeData.earnings.baseSalary)}</strong></td>
-                  {(financeSettings.isencaoRate > 0 || financeSettings.isencaoFixedAmount > 0) && <td><strong>{formatCurrency(financeData.earnings.isencaoSalary)}</strong></td>}
+                  {((financeSettings.isencaoCalculationMethod === 'percentage' && financeSettings.hourlyRate > 0) || (financeSettings.isencaoCalculationMethod === 'fixed' && financeSettings.isencaoFixedAmount > 0)) && <td><strong>{formatCurrency(financeData.earnings.isencaoSalary)}</strong></td>}
                   <td><strong>{formatCurrency(financeData.earnings.overtimeSalary)}</strong></td>
                   <td><strong>{formatCurrency(financeData.earnings.weekendBonus)}</strong></td>
                   {financeSettings.mealAllowanceIncluded && <td><strong>{formatCurrency(financeData.earnings.mealAllowances)}</strong></td>}
