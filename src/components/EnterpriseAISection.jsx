@@ -2,11 +2,24 @@ import { useState, useRef, useEffect, forwardRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { Bot, Send, Loader, ChevronDown, ChevronUp } from 'lucide-react';
+import { Bot, Send, Loader, ChevronDown, ChevronUp, Download } from 'lucide-react';
 import { useOpenRouter } from '../hooks/useOpenRouter';
 import { getEnterpriseAIContext } from '../lib/enterpriseAIContext';
 import { getEnterpriseMembersContext } from '../lib/enterpriseMembersContext';
 import './EnterpriseAISection.css';
+
+function downloadAsMd(content, index) {
+  const d = new Date();
+  const ts = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}-${String(d.getHours()).padStart(2, '0')}${String(d.getMinutes()).padStart(2, '0')}`;
+  const filename = `enterprise-ai-response-${ts}-${index + 1}.md`;
+  const blob = new Blob([content], { type: 'text/markdown;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
 
 export const EnterpriseAISection = forwardRef(function EnterpriseAISection(
   { enterpriseId, members = [], triggerPrompt = null, onTriggerConsumed },
@@ -218,9 +231,22 @@ export const EnterpriseAISection = forwardRef(function EnterpriseAISection(
                         </span>
                       ))
                     ) : (
-                      <ReactMarkdown remarkPlugins={[remarkGfm]} className="enterprise-ai-markdown">
-                        {msg.content}
-                      </ReactMarkdown>
+                      <>
+                        <ReactMarkdown remarkPlugins={[remarkGfm]} className="enterprise-ai-markdown">
+                          {msg.content}
+                        </ReactMarkdown>
+                        <div className="enterprise-ai-msg-actions">
+                          <button
+                            type="button"
+                            className="enterprise-ai-download-md-btn"
+                            onClick={() => downloadAsMd(msg.content, i)}
+                            title={t('enterprise.ai.downloadMdTitle') || t('aiAdvisor.downloadMdTitle')}
+                          >
+                            <Download size={14} />
+                            <span>{t('enterprise.ai.downloadMd') || t('aiAdvisor.downloadMd')}</span>
+                          </button>
+                        </div>
+                      </>
                     )
                   ) : (
                     msg.content

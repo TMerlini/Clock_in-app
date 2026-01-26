@@ -493,7 +493,9 @@
         "warnings": "Workarounds when Isenção or overtime approach limits",
         "law": "Key Portuguese employer obligations (Código do Trabalho)"
       },
-      "loadingData": "Loading team data..."
+      "loadingData": "Loading team data...",
+      "downloadMd": "Download .md",
+      "downloadMdTitle": "Download response as Markdown file"
     }
   },
   "enterpriseInvite": {
@@ -730,6 +732,7 @@
       "breaksRestPeriods": "Breaks & Rest Periods",
       "weekendWork": "Weekend Work",
       "usingThisApp": "Using This App",
+      "enterprise": "Enterprise",
       "legalCompliance": "Legal Compliance"
     },
     "additionalResources": "Additional Resources",
@@ -818,11 +821,11 @@
         },
         "q3": {
           "question": "What is Premium AI and what does it include?",
-          "answer": "Premium AI (€9.99/month) includes:\n• All Pro plan features (advanced analytics, detailed reports, priority support)\n• AI Advisor access with 75 calls/month base allocation\n• Portuguese labor law compliance analysis\n• Legal limit calculations (overtime, Isenção, vacation)\n• HR best practices & work-life balance guidance\n• Compliance monitoring & proactive alerts\n• Expert advice on work patterns and productivity\n\nYou can purchase additional call packs (+50 calls for €4.99) that never expire, perfect for power users who need more AI assistance."
+          "answer": "Premium AI (€9.99/month) includes:\n• All Pro plan features (advanced analytics, detailed reports, priority support)\n• AI Advisor access with 75 calls/month base allocation\n• Portuguese labor law compliance analysis\n• Legal limit calculations (overtime, Isenção, vacation)\n• HR best practices & work-life balance guidance\n• Compliance monitoring & proactive alerts\n• Expert advice on work patterns and productivity\n\nYou can purchase additional call packs (+50 calls for €4.99) that never expire. Call packs are also available for Pro and Enterprise plans."
         },
         "q4": {
           "question": "How do call packs work?",
-          "answer": "Call packs are additional AI Advisor calls you can purchase beyond your monthly base allocation:\n• Each pack adds +50 calls for €4.99\n• Call packs never expire and roll over indefinitely\n• Used after base allocation (75 calls/month) is exhausted\n• Perfect for power users who need more AI assistance\n• Track your usage: 'X/Y calls remaining (Y base + Z packs)'\n• Purchase packs from the AI Advisor page or Premium+ page when you have a Premium AI subscription"
+          "answer": "Call packs are additional AI Advisor calls you can purchase beyond your monthly base allocation:\n• Each pack adds +50 calls for €4.99\n• Call packs never expire and roll over indefinitely\n• Used after base allocation is exhausted (75 calls/month for Premium AI, 225 for Enterprise)\n• Available for Pro, Premium AI, and Enterprise plans\n• Perfect for power users who need more AI assistance\n• Track your usage: 'X/Y calls remaining (Y base + Z packs)'\n• Purchase packs from the AI Advisor page or Premium+ page"
         },
         "q5": {
           "question": "Why does the app separate 'Regular', 'Isenção', and 'Overwork' hours?",
@@ -853,6 +856,32 @@
         "q3": {
           "question": "Where can I find official information about Portuguese labor law?",
           "answer": "Official sources for Portuguese labor law:\n• ACT (Autoridade para as Condições do Trabalho): https://www.act.gov.pt\n• Código do Trabalho (Labor Code): Available on ACT website\n• Ministry of Labor: https://www.mtsss.gov.pt\n• European Labor Authority: https://www.ela.europa.eu\n\nAlways consult official sources or legal professionals for specific legal advice."
+        }
+      },
+      "enterprise": {
+        "q1": {
+          "question": "What is the Enterprise plan and what does it include?",
+          "answer": "The Enterprise plan (€199/month) is designed for teams and organizations:\n• Everything in Premium AI\n• 225 AI calls/month (150 additional + 75 base)\n• Up to 10 team members get Premium AI included automatically\n• Create organization and invite team members\n• Centralized team dashboard\n• Monitor sessions, analytics & finance per member\n• Team warnings system (Isenção limits, weekly hours, annual overtime)\n• Overwork details tracking with visual charts\n• Export per-member CSV reports\n• In-app invite & accept flow"
+        },
+        "q2": {
+          "question": "How does the Premium AI member perk work?",
+          "answer": "When you invite team members to your Enterprise organization:\n• The first 10 members automatically receive Premium AI access\n• Each member gets 75 AI calls/month\n• Members have full Premium AI features (compliance analysis, legal calculations, HR guidance)\n• If a member is removed from the organization, they revert to the free plan\n• The 10-member limit is enforced - you'll see a warning if you try to invite when the limit is reached"
+        },
+        "q3": {
+          "question": "What happens when a member is removed from Enterprise?",
+          "answer": "When a member is removed from your Enterprise organization:\n• If they had Premium AI from Enterprise, they revert to the free plan\n• Their AI usage data is cleared\n• They lose access to Enterprise features\n• They can still use the app with free plan features\n• Their session history remains in the app (personal data)"
+        },
+        "q4": {
+          "question": "How many AI calls does Enterprise get?",
+          "answer": "Enterprise account holders receive:\n• 225 AI calls per month (150 additional + 75 base)\n• This is significantly more than Premium AI (75 calls/month)\n• Perfect for organizations that need extensive compliance analysis and HR guidance\n• You can purchase additional call packs (+50 calls for €4.99) that never expire"
+        },
+        "q5": {
+          "question": "Can Pro plan users buy AI packs?",
+          "answer": "Yes! AI call packs are available for:\n• Pro plan (€4.99/month)\n• Premium AI plan (€9.99/month)\n• Enterprise plan (€199/month)\n\nEach pack adds +50 calls for €4.99 and never expires. This allows Pro users to access AI Advisor features even though Pro doesn't include AI by default."
+        },
+        "q6": {
+          "question": "What are team warnings?",
+          "answer": "The team warnings system automatically monitors your team members for compliance issues:\n• Isenção limit warnings: Alerts when members approach (90%) or exceed their annual Isenção limit (200h default)\n• Weekly hours warnings: Alerts when members work 35h+ in a week (approaching 40h limit)\n• Annual overtime warnings: Alerts when members approach (90%) or exceed their annual overtime cap (150h)\n\nWarnings help you proactively manage compliance and prevent legal issues before they occur."
         }
       }
     }
@@ -975,9 +1004,43 @@
       },
       "callPackSystem": {
         "title": "📦 Call Pack System",
-        "description": "75 calls/month included, with option to purchase +50 call packs (€4.99, never expire) for power users"
+        "description": "75 calls/month included (225 for Enterprise), with option to purchase +50 call packs (€4.99, never expire) for Pro, Premium AI, and Enterprise plans. Perfect for power users who need more AI assistance."
       },
       "poweredBy": "Powered by OpenRouter - Multi-model AI routing ensures optimal performance and reliability."
+    },
+    "enterpriseSection": {
+      "title": "Enterprise Plan",
+      "description": "The Enterprise plan (€199/month) is designed for teams and organizations that need comprehensive time tracking, team management, and compliance monitoring. Perfect for HR departments, project managers, and businesses managing multiple employees.",
+      "features": {
+        "teamManagement": {
+          "title": "Team Management",
+          "description": "Create your organization, invite team members by email, and manage roles (admin/member). In-app invite and accept flow for seamless onboarding."
+        },
+        "premiumAiMembers": {
+          "title": "Premium AI for Team Members",
+          "description": "Up to 10 team members automatically receive Premium AI access when they join your organization. Members get 75 AI calls/month. If a member is removed, they revert to the free plan."
+        },
+        "aiCalls": {
+          "title": "225 AI Calls/Month",
+          "description": "Enterprise account holders receive 225 AI calls per month (150 additional + 75 base), providing extensive access to AI Advisor for compliance analysis and HR guidance."
+        },
+        "centralizedDashboard": {
+          "title": "Centralized Team Dashboard",
+          "description": "Monitor all team members' sessions, analytics, and finance data from a single dashboard. View team-wide statistics including total wage costs, taxes, and net pay."
+        },
+        "teamWarnings": {
+          "title": "Team Warnings System",
+          "description": "Automatically detect and alert about team members approaching or exceeding legal limits: Isenção limits (90% threshold), weekly hours (35h+ approaching 40h), and annual overtime caps (90% threshold)."
+        },
+        "overworkDetails": {
+          "title": "Overwork Details Tracking",
+          "description": "Visual bar chart comparing each team member's paid overtime and Isenção hours. Summary cards show total paid OT, total Isenção, and members over/approaching limits."
+        },
+        "memberAnalytics": {
+          "title": "Per-Member Analytics & Finance",
+          "description": "View detailed analytics, finance calculations, and session history for each team member. Export per-member CSV reports for payroll and compliance documentation."
+        }
+      }
     },
     "analyticsReports": {
       "title": "Analytics & Reports",

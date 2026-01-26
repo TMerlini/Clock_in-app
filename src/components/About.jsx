@@ -1,4 +1,4 @@
-import { Clock, Coffee, AlertTriangle, DollarSign, TrendingUp, Calendar, BarChart3, Info, UtensilsCrossed, MapPin, Globe, Bot, Crown } from 'lucide-react';
+import { Clock, Coffee, AlertTriangle, DollarSign, TrendingUp, Calendar, BarChart3, Info, UtensilsCrossed, MapPin, Globe, Bot, Crown, Building2, Users, Shield } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import './About.css';
 
@@ -234,6 +234,46 @@ export function About() {
           <p style={{ marginTop: '1rem', fontStyle: 'italic', color: 'var(--muted-foreground)' }}>
             {t('about.aiAdvisorSection.poweredBy')}
           </p>
+        </section>
+
+        <section className="about-section">
+          <div className="section-header">
+            <Building2 />
+            <h2>{t('about.enterpriseSection.title')}</h2>
+          </div>
+          <p>
+            {t('about.enterpriseSection.description')}
+          </p>
+          <div className="analytics-features">
+            <div className="analytics-item">
+              <h4>{t('about.enterpriseSection.features.teamManagement.title')}</h4>
+              <p>{t('about.enterpriseSection.features.teamManagement.description')}</p>
+            </div>
+            <div className="analytics-item">
+              <h4>{t('about.enterpriseSection.features.premiumAiMembers.title')}</h4>
+              <p>{t('about.enterpriseSection.features.premiumAiMembers.description')}</p>
+            </div>
+            <div className="analytics-item">
+              <h4>{t('about.enterpriseSection.features.aiCalls.title')}</h4>
+              <p>{t('about.enterpriseSection.features.aiCalls.description')}</p>
+            </div>
+            <div className="analytics-item">
+              <h4>{t('about.enterpriseSection.features.centralizedDashboard.title')}</h4>
+              <p>{t('about.enterpriseSection.features.centralizedDashboard.description')}</p>
+            </div>
+            <div className="analytics-item">
+              <h4>{t('about.enterpriseSection.features.teamWarnings.title')}</h4>
+              <p>{t('about.enterpriseSection.features.teamWarnings.description')}</p>
+            </div>
+            <div className="analytics-item">
+              <h4>{t('about.enterpriseSection.features.overworkDetails.title')}</h4>
+              <p>{t('about.enterpriseSection.features.overworkDetails.description')}</p>
+            </div>
+            <div className="analytics-item">
+              <h4>{t('about.enterpriseSection.features.memberAnalytics.title')}</h4>
+              <p>{t('about.enterpriseSection.features.memberAnalytics.description')}</p>
+            </div>
+          </div>
         </section>
 
         <section className="about-section">

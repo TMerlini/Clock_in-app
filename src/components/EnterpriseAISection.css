@@ -260,6 +260,34 @@
   background: rgba(0, 0, 0, 0.05);
 }
 
+.enterprise-ai-msg-actions {
+  margin-top: 0.75rem;
+  align-self: flex-end;
+}
+
+.enterprise-ai-download-md-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.4rem 0.75rem;
+  background: var(--secondary);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--foreground);
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.enterprise-ai-download-md-btn:hover {
+  background: var(--muted);
+  border-color: var(--primary);
+}
+
+.enterprise-ai-download-md-btn svg {
+  flex-shrink: 0;
+}
+
 .enterprise-ai-input-wrap {
   display: flex;
   gap: 0.5rem;

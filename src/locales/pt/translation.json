@@ -493,7 +493,9 @@
         "warnings": "Soluções quando IHT ou horas extras se aproximam dos limites",
         "law": "Principais obrigações do empregador (Código do Trabalho)"
       },
-      "loadingData": "A carregar dados da equipa..."
+      "loadingData": "A carregar dados da equipa...",
+      "downloadMd": "Descarregar .md",
+      "downloadMdTitle": "Descarregar resposta como ficheiro Markdown"
     }
   },
   "enterpriseInvite": {
@@ -730,6 +732,7 @@
       "breaksRestPeriods": "Pausas e Períodos de Descanso",
       "weekendWork": "Trabalho ao Fim de Semana",
       "usingThisApp": "Usando Esta Aplicação",
+      "enterprise": "Enterprise",
       "legalCompliance": "Cumprimento Legal"
     },
     "additionalResources": "Recursos Adicionais",
@@ -818,11 +821,11 @@
         },
         "q3": {
           "question": "O que é Premium AI e o que inclui?",
-          "answer": "Premium AI (€9,99/mês) inclui:\n• Todas as funcionalidades do plano Pro (análises avançadas, relatórios detalhados, suporte prioritário)\n• Acesso ao Assistente IA com 75 chamadas/mês de alocação base\n• Análise de conformidade com a lei laboral portuguesa\n• Cálculos de limites legais (horas extras, Isenção, férias)\n• Melhores práticas de RH e orientação de equilíbrio trabalho-vida\n• Monitorização de conformidade e alertas proativos\n• Aconselhamento especializado sobre padrões de trabalho e produtividade\n\nPode comprar pacotes de chamadas adicionais (+50 chamadas por €4,99) que nunca expiram, perfeitos para utilizadores avançados que precisam de mais assistência IA."
+          "answer": "Premium AI (€9,99/mês) inclui:\n• Todas as funcionalidades do plano Pro (análises avançadas, relatórios detalhados, suporte prioritário)\n• Acesso ao Assistente IA com 75 chamadas/mês de alocação base\n• Análise de conformidade com a lei laboral portuguesa\n• Cálculos de limites legais (horas extras, Isenção, férias)\n• Melhores práticas de RH e orientação de equilíbrio trabalho-vida\n• Monitorização de conformidade e alertas proativos\n• Aconselhamento especializado sobre padrões de trabalho e produtividade\n\nPode comprar pacotes de chamadas adicionais (+50 chamadas por €4,99) que nunca expiram. Os pacotes de chamadas também estão disponíveis para planos Pro e Enterprise."
         },
         "q4": {
           "question": "Como funcionam os pacotes de chamadas?",
-          "answer": "Os pacotes de chamadas são chamadas adicionais do Assistente IA que pode comprar além da sua alocação mensal base:\n• Cada pacote adiciona +50 chamadas por €4,99\n• Os pacotes de chamadas nunca expiram e acumulam indefinidamente\n• Usados após a alocação base (75 chamadas/mês) ser esgotada\n• Perfeitos para utilizadores avançados que precisam de mais assistência IA\n• Rastreie o seu uso: 'X/Y chamadas restantes (Y base + Z pacotes)'\n• Compre pacotes na página do Assistente IA ou página Premium+ quando tiver uma subscrição Premium AI"
+          "answer": "Os pacotes de chamadas são chamadas adicionais do Assistente IA que pode comprar além da sua alocação mensal base:\n• Cada pacote adiciona +50 chamadas por €4,99\n• Os pacotes de chamadas nunca expiram e acumulam indefinidamente\n• Usados após a alocação base ser esgotada (75 chamadas/mês para Premium AI, 225 para Enterprise)\n• Disponíveis para planos Pro, Premium AI e Enterprise\n• Perfeitos para utilizadores avançados que precisam de mais assistência IA\n• Rastreie o seu uso: 'X/Y chamadas restantes (Y base + Z pacotes)'\n• Compre pacotes na página do Assistente IA ou página Premium+"
         },
         "q5": {
           "question": "Por que a aplicação separa horas 'Regulares', 'Isenção' e 'Trabalho Extra'?",
@@ -853,6 +856,58 @@
         "q3": {
           "question": "Onde posso encontrar informações oficiais sobre a lei laboral portuguesa?",
           "answer": "Fontes oficiais para lei laboral portuguesa:\n• ACT (Autoridade para as Condições do Trabalho): https://www.act.gov.pt\n• Código do Trabalho (Código Laboral): Disponível no site da ACT\n• Ministério do Trabalho: https://www.mtsss.gov.pt\n• Autoridade Europeia do Trabalho: https://www.ela.europa.eu\n\nConsulte sempre fontes oficiais ou profissionais legais para aconselhamento jurídico específico."
+        }
+      },
+      "enterprise": {
+        "q1": {
+          "question": "O que é o plano Enterprise e o que inclui?",
+          "answer": "O plano Enterprise (€199/mês) foi concebido para equipas e organizações:\n• Tudo do Premium AI\n• 225 chamadas IA/mês (150 adicionais + 75 base)\n• Até 10 membros da equipa recebem Premium AI incluído automaticamente\n• Criar organização e convidar membros da equipa\n• Painel de equipa centralizado\n• Monitorizar sessões, análises e finanças por membro\n• Sistema de avisos da equipa (limites de Isenção, horas semanais, horas extras anuais)\n• Rastreamento de detalhes de trabalho extra com gráficos visuais\n• Exportar relatórios CSV por membro\n• Fluxo de convite e aceitação na aplicação"
+        },
+        "q2": {
+          "question": "Como funciona o benefício Premium AI para membros?",
+          "answer": "Quando convida membros da equipa para a sua organização Enterprise:\n• Os primeiros 10 membros recebem automaticamente acesso Premium AI\n• Cada membro recebe 75 chamadas IA/mês\n• Os membros têm todas as funcionalidades Premium AI (análise de conformidade, cálculos legais, orientação de RH)\n• Se um membro for removido da organização, reverte para o plano gratuito\n• O limite de 10 membros é aplicado - verá um aviso se tentar convidar quando o limite for atingido"
+        },
+        "q3": {
+          "question": "O que acontece quando um membro é removido do Enterprise?",
+          "answer": "Quando um membro é removido da sua organização Enterprise:\n• Se tivessem Premium AI do Enterprise, revertem para o plano gratuito\n• Os seus dados de uso de IA são limpos\n• Perdem acesso às funcionalidades Enterprise\n• Ainda podem usar a aplicação com funcionalidades do plano gratuito\n• O histórico de sessões permanece na aplicação (dados pessoais)"
+        },
+        "q4": {
+          "question": "Quantas chamadas IA recebe o Enterprise?",
+          "answer": "Os titulares de conta Enterprise recebem:\n• 225 chamadas IA por mês (150 adicionais + 75 base)\n• Isto é significativamente mais do que Premium AI (75 chamadas/mês)\n• Perfeito para organizações que precisam de análise de conformidade extensiva e orientação de RH\n• Pode comprar pacotes de chamadas adicionais (+50 chamadas por €4.99) que nunca expiram"
+        },
+        "q5": {
+          "question": "Os utilizadores do plano Pro podem comprar pacotes IA?",
+          "answer": "Sim! Os pacotes de chamadas IA estão disponíveis para:\n• Plano Pro (€4.99/mês)\n• Plano Premium AI (€9.99/mês)\n• Plano Enterprise (€199/mês)\n\nCada pacote adiciona +50 chamadas por €4.99 e nunca expira. Isto permite que os utilizadores Pro acedam às funcionalidades do Assistente IA mesmo que o Pro não inclua IA por padrão."
+        },
+        "q6": {
+          "question": "O que são avisos da equipa?",
+          "answer": "O sistema de avisos da equipa monitoriza automaticamente os seus membros da equipa para problemas de conformidade:\n• Avisos de limite de Isenção: Alerta quando os membros se aproximam (90%) ou excedem o seu limite anual de Isenção (200h padrão)\n• Avisos de horas semanais: Alerta quando os membros trabalham 35h+ numa semana (a aproximar-se do limite de 40h)\n• Avisos de horas extras anuais: Alerta quando os membros se aproximam (90%) ou excedem o seu limite anual de horas extras (150h)\n\nOs avisos ajudam-no a gerir proativamente a conformidade e a prevenir problemas legais antes que ocorram."
+        }
+      },
+      "enterprise": {
+        "q1": {
+          "question": "O que é o plano Enterprise e o que inclui?",
+          "answer": "O plano Enterprise (€199/mês) foi concebido para equipas e organizações:\n• Tudo do Premium AI\n• 225 chamadas IA/mês (150 adicionais + 75 base)\n• Até 10 membros da equipa recebem Premium AI incluído automaticamente\n• Criar organização e convidar membros da equipa\n• Painel de equipa centralizado\n• Monitorizar sessões, análises e finanças por membro\n• Sistema de avisos da equipa (limites de Isenção, horas semanais, horas extras anuais)\n• Rastreamento de detalhes de trabalho extra com gráficos visuais\n• Exportar relatórios CSV por membro\n• Fluxo de convite e aceitação na aplicação"
+        },
+        "q2": {
+          "question": "Como funciona o benefício Premium AI para membros?",
+          "answer": "Quando convida membros da equipa para a sua organização Enterprise:\n• Os primeiros 10 membros recebem automaticamente acesso Premium AI\n• Cada membro recebe 75 chamadas IA/mês\n• Os membros têm todas as funcionalidades Premium AI (análise de conformidade, cálculos legais, orientação de RH)\n• Se um membro for removido da organização, reverte para o plano gratuito\n• O limite de 10 membros é aplicado - verá um aviso se tentar convidar quando o limite for atingido"
+        },
+        "q3": {
+          "question": "O que acontece quando um membro é removido do Enterprise?",
+          "answer": "Quando um membro é removido da sua organização Enterprise:\n• Se tivessem Premium AI do Enterprise, revertem para o plano gratuito\n• Os seus dados de uso de IA são limpos\n• Perdem acesso às funcionalidades Enterprise\n• Ainda podem usar a aplicação com funcionalidades do plano gratuito\n• O histórico de sessões permanece na aplicação (dados pessoais)"
+        },
+        "q4": {
+          "question": "Quantas chamadas IA recebe o Enterprise?",
+          "answer": "Os titulares de conta Enterprise recebem:\n• 225 chamadas IA por mês (150 adicionais + 75 base)\n• Isto é significativamente mais do que Premium AI (75 chamadas/mês)\n• Perfeito para organizações que precisam de análise de conformidade extensiva e orientação de RH\n• Pode comprar pacotes de chamadas adicionais (+50 chamadas por €4,99) que nunca expiram"
+        },
+        "q5": {
+          "question": "Os utilizadores do plano Pro podem comprar pacotes IA?",
+          "answer": "Sim! Os pacotes de chamadas IA estão disponíveis para:\n• Plano Pro (€4,99/mês)\n• Plano Premium AI (€9,99/mês)\n• Plano Enterprise (€199/mês)\n\nCada pacote adiciona +50 chamadas por €4,99 e nunca expira. Isto permite que os utilizadores Pro acedam às funcionalidades do Assistente IA mesmo que o Pro não inclua IA por padrão."
+        },
+        "q6": {
+          "question": "O que são avisos da equipa?",
+          "answer": "O sistema de avisos da equipa monitoriza automaticamente os seus membros da equipa para problemas de conformidade:\n• Avisos de limite de Isenção: Alerta quando os membros se aproximam (90%) ou excedem o seu limite anual de Isenção (200h padrão)\n• Avisos de horas semanais: Alerta quando os membros trabalham 35h+ numa semana (a aproximar-se do limite de 40h)\n• Avisos de horas extras anuais: Alerta quando os membros se aproximam (90%) ou excedem o seu limite anual de horas extras (150h)\n\nOs avisos ajudam-no a gerir proativamente a conformidade e a prevenir problemas legais antes que ocorram."
         }
       }
     }
@@ -947,7 +1002,7 @@
       },
       "premiumPlans": {
         "title": "Planos Premium",
-        "description": "Escolha entre planos Básico, Pro ou Premium AI com funcionalidades avançadas e assistência IA"
+        "description": "Atualize para desbloquear funcionalidades avançadas incluindo Assistente IA, suporte prioritário e análises melhoradas. Escolha entre planos Básico (€0.99/mês), Pro (€4.99/mês), Premium AI (€9.99/mês) ou Enterprise (€199/mês). Pacotes de chamadas IA estão disponíveis para planos Pro, Premium AI e Enterprise. Enterprise inclui Premium AI para até 10 membros da equipa."
       }
     },
     "aiAdvisorSection": {
@@ -975,9 +1030,43 @@
       },
       "callPackSystem": {
         "title": "📦 Sistema de Pacotes de Chamadas",
-        "description": "75 chamadas/mês incluídas, com opção de comprar pacotes de +50 chamadas (€4.99, nunca expiram) para utilizadores avançados"
+        "description": "75 chamadas/mês incluídas (225 para Enterprise), com opção de comprar pacotes de +50 chamadas (€4.99, nunca expiram) para planos Pro, Premium AI e Enterprise. Perfeito para utilizadores avançados que precisam de mais assistência IA."
       },
       "poweredBy": "Alimentado por OpenRouter - O encaminhamento multi-modelo IA garante desempenho e fiabilidade ótimos."
+    },
+    "enterpriseSection": {
+      "title": "Plano Enterprise",
+      "description": "O plano Enterprise (€199/mês) foi concebido para equipas e organizações que precisam de rastreamento de tempo abrangente, gestão de equipa e monitorização de conformidade. Perfeito para departamentos de RH, gestores de projeto e empresas que gerem vários funcionários.",
+      "features": {
+        "teamManagement": {
+          "title": "Gestão de Equipa",
+          "description": "Crie a sua organização, convide membros da equipa por email e gerencie funções (admin/membro). Fluxo de convite e aceitação na aplicação para integração perfeita."
+        },
+        "premiumAiMembers": {
+          "title": "Premium AI para Membros da Equipa",
+          "description": "Até 10 membros da equipa recebem automaticamente acesso Premium AI quando se juntam à sua organização. Os membros recebem 75 chamadas IA/mês. Se um membro for removido, reverte para o plano gratuito."
+        },
+        "aiCalls": {
+          "title": "225 Chamadas IA/Mês",
+          "description": "Os titulares de conta Enterprise recebem 225 chamadas IA por mês (150 adicionais + 75 base), fornecendo acesso extensivo ao Assistente IA para análise de conformidade e orientação de RH."
+        },
+        "centralizedDashboard": {
+          "title": "Painel de Equipa Centralizado",
+          "description": "Monitore sessões, análises e dados financeiros de todos os membros da equipa a partir de um único painel. Veja estatísticas da equipa incluindo custos salariais totais, impostos e salário líquido."
+        },
+        "teamWarnings": {
+          "title": "Sistema de Avisos da Equipa",
+          "description": "Detete e alerte automaticamente sobre membros da equipa que se aproximam ou excedem limites legais: limites de Isenção (limiar de 90%), horas semanais (35h+ a aproximar-se de 40h) e limites anuais de horas extras (limiar de 90%)."
+        },
+        "overworkDetails": {
+          "title": "Rastreamento de Detalhes de Trabalho Extra",
+          "description": "Gráfico de barras visual comparando horas extras pagas e horas de Isenção de cada membro da equipa. Cartões de resumo mostram total de OT pago, total de Isenção e membros acima/a aproximar-se de limites."
+        },
+        "memberAnalytics": {
+          "title": "Análises e Finanças por Membro",
+          "description": "Veja análises detalhadas, cálculos financeiros e histórico de sessões para cada membro da equipa. Exporte relatórios CSV por membro para folha de pagamento e documentação de conformidade."
+        }
+      }
     },
     "analyticsReports": {
       "title": "Análises e Relatórios",

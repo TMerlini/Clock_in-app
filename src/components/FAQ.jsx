@@ -17,6 +17,7 @@ export function FAQ() {
     "Breaks & Rest Periods": t('faq.categories.breaksRestPeriods'),
     "Weekend Work": t('faq.categories.weekendWork'),
     "Using This App": t('faq.categories.usingThisApp'),
+    "Enterprise": t('faq.categories.enterprise'),
     "Legal Compliance": t('faq.categories.legalCompliance')
   };
 
@@ -43,6 +44,10 @@ export function FAQ() {
       questionKeys: ['q1', 'q2', 'q3', 'q4', 'q5', 'q6', 'q7', 'q8']
     },
     {
+      category: "Enterprise",
+      questionKeys: ['q1', 'q2', 'q3', 'q4', 'q5', 'q6']
+    },
+    {
       category: "Legal Compliance",
       questionKeys: ['q1', 'q2', 'q3']
     }
@@ -57,6 +62,7 @@ export function FAQ() {
                           cat.category === "Breaks & Rest Periods" ? "breaksRestPeriods" :
                           cat.category === "Weekend Work" ? "weekendWork" :
                           cat.category === "Using This App" ? "usingThisApp" :
+                          cat.category === "Enterprise" ? "enterprise" :
                           "legalCompliance";
       return {
         question: t(`faq.questions.${categoryKey}.${qKey}.question`),
