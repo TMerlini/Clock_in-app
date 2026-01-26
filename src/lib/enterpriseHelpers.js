@@ -171,6 +171,16 @@ export async function getEnterprise(enterpriseId) {
 }
 
 /**
+ * Update enterprise (e.g. rename). Caller must be org creator.
+ * @param {string} enterpriseId
+ * @param {{ name?: string }} updates
+ */
+export async function updateEnterprise(enterpriseId, updates) {
+  const ref = doc(db, ENTERPRISES, enterpriseId);
+  await updateDoc(ref, updates);
+}
+
+/**
  * Accept an invite: set user's enterpriseId/role, update invite status.
  * @param {string} inviteId
  * @param {string} userId - Current user id
@@ -219,6 +229,19 @@ export async function declineInvite(inviteId, userEmail) {
 }
 
 /**
+ * Cancel a pending invite (rescind). Caller must be the inviter.
+ * @param {string} inviteId
+ */
+export async function cancelInvite(inviteId) {
+  const inviteRef = doc(db, INVITES, inviteId);
+  const snap = await getDoc(inviteRef);
+  if (!snap.exists()) throw new Error('Invite not found');
+  const inv = snap.data();
+  if ((inv.status || 'pending') !== 'pending') throw new Error('Invite is not pending');
+  await updateDoc(inviteRef, { status: 'cancelled' });
+}
+
+/**
  * Remove a member from the enterprise by clearing their enterpriseId and enterpriseRole.
  * Caller must ensure the user is not the org creator and not the current user.
  * @param {string} userId - User id of the member to remove
@@ -226,4 +249,27 @@ export async function declineInvite(inviteId, userEmail) {
 export async function removeMember(userId) {
   const settingsRef = doc(db, USER_SETTINGS, userId);
   await updateDoc(settingsRef, { enterpriseId: null, enterpriseRole: null });
+}
+
+/**
+ * Set a same-org member's enterprise role (admin or member). Caller must be enterprise admin.
+ * @param {string} userId - User id of the member
+ * @param {'admin'|'member'} role
+ */
+export async function setMemberRole(userId, role) {
+  const settingsRef = doc(db, USER_SETTINGS, userId);
+  const snap = await getDoc(settingsRef);
+  const data = snap.exists() ? snap.data() : {};
+  await setDoc(settingsRef, { ...data, enterpriseRole: role }, { merge: true });
+}
+
+/**
+ * Leave organization (self-service). Clears own enterpriseId and enterpriseRole.
+ * @param {string} userId - Current user id
+ */
+export async function leaveOrganization(userId) {
+  const settingsRef = doc(db, USER_SETTINGS, userId);
+  const snap = await getDoc(settingsRef);
+  const data = snap.exists() ? snap.data() : {};
+  await setDoc(settingsRef, { ...data, enterpriseId: null, enterpriseRole: null }, { merge: true });
 }

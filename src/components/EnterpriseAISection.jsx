@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, forwardRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -8,7 +8,10 @@ import { getEnterpriseAIContext } from '../lib/enterpriseAIContext';
 import { getEnterpriseMembersContext } from '../lib/enterpriseMembersContext';
 import './EnterpriseAISection.css';
 
-export function EnterpriseAISection({ enterpriseId, members = [] }) {
+export const EnterpriseAISection = forwardRef(function EnterpriseAISection(
+  { enterpriseId, members = [], triggerPrompt = null, onTriggerConsumed },
+  ref
+) {
   const { t } = useTranslation();
   const [expanded, setExpanded] = useState(false);
   const [messages, setMessages] = useState([]);
@@ -18,6 +21,7 @@ export function EnterpriseAISection({ enterpriseId, members = [] }) {
   const [contextLoading, setContextLoading] = useState(false);
   const messagesEndRef = useRef(null);
   const enterpriseContext = useRef(null);
+  const lastTriggerRef = useRef(null);
 
   const { sendMessageStreaming, isLoading } = useOpenRouter();
 
@@ -52,6 +56,17 @@ export function EnterpriseAISection({ enterpriseId, members = [] }) {
       setMessages([{ role: 'assistant', content: t('enterprise.ai.welcome') }]);
     }
   }, [expanded, t]);
+
+  useEffect(() => {
+    const q = triggerPrompt?.trim();
+    if (!q || isLoading) return;
+    if (lastTriggerRef.current === q) return;
+    lastTriggerRef.current = q;
+    setExpanded(true);
+    sendPrompt(q);
+    onTriggerConsumed?.();
+    lastTriggerRef.current = null;
+  }, [triggerPrompt, isLoading]);
 
   const replacePlaceholderWith = (content) => {
     setMessages((prev) => {
@@ -114,7 +129,7 @@ export function EnterpriseAISection({ enterpriseId, members = [] }) {
   const showSuggestions = expanded && messages.length <= 1 && !isLoading;
 
   return (
-    <div className="enterprise-ai-card">
+    <div ref={ref} className="enterprise-ai-card">
       <button
         type="button"
         className="enterprise-ai-header"
@@ -218,4 +233,4 @@ export function EnterpriseAISection({ enterpriseId, members = [] }) {
       )}
     </div>
   );
-}
+});

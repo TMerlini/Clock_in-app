@@ -1,6 +1,6 @@
 import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firestore';
 import { db } from './firebase';
-import { format, startOfMonth, endOfMonth, startOfYear, endOfYear } from 'date-fns';
+import { format, startOfMonth, endOfMonth, startOfYear, endOfYear, startOfWeek, endOfWeek } from 'date-fns';
 import { calculatePeriodFinance } from './financeCalculator';
 
 /**
@@ -293,4 +293,278 @@ Always reference specific member data when providing analyses, and suggest concr
     console.error('Error loading enterprise members context:', error);
     return 'Error loading team data. Member data may not be available.';
   }
+}
+
+const defaultFinanceSettings = () => ({
+  hourlyRate: 0,
+  isencaoRate: 0,
+  isencaoCalculationMethod: 'percentage',
+  isencaoFixedAmount: 0,
+  taxDeductionType: 'both',
+  irsRate: 0,
+  irsBaseSalaryRate: 0,
+  irsIhtRate: 0,
+  irsOvertimeRate: 0,
+  socialSecurityRate: 11,
+  customTaxRate: 0,
+  mealAllowanceIncluded: false,
+  overtimeFirstHourRate: 1.25,
+  overtimeSubsequentRate: 1.5,
+  weekendOvertimeRate: 1.5,
+  holidayOvertimeRate: 2,
+  fixedBonus: 0,
+  dailyMealSubsidy: 0,
+  mealCardDeduction: 0
+});
+
+/**
+ * Fetch per-member finance for a date range and aggregate team stats.
+ * @param {string} enterpriseId
+ * @param {Array<{id: string}>} members
+ * @param {{ start: Date, end: Date }} dateRange
+ * @returns {Promise<{ grossSalary: number, netSalary: number, totalDeductions: number, irs: number, socialSecurity: number, customTax: number, totalHours: number, totalWorkingDays: number, memberCount: number, overIsencaoCount: number, approachingIsencaoCount: number, perMember: Array<{ memberId: string, memberName: string, paidOvertimeHours: number, unpaidHours: number }> }>}
+ */
+export async function getEnterpriseStats(enterpriseId, members, dateRange) {
+  if (!enterpriseId || !members || members.length === 0 || !dateRange?.start || !dateRange?.end) {
+    return {
+      grossSalary: 0,
+      netSalary: 0,
+      totalDeductions: 0,
+      irs: 0,
+      socialSecurity: 0,
+      customTax: 0,
+      totalHours: 0,
+      totalWorkingDays: 0,
+      memberCount: members?.length || 0,
+      overIsencaoCount: 0,
+      approachingIsencaoCount: 0,
+      perMember: []
+    };
+  }
+  const { start, end } = dateRange;
+  const yearStart = startOfYear(end);
+  const yearEnd = endOfYear(end);
+  const promises = members.map(async (member) => {
+    try {
+      const [sessionsSnap, settingsSnap] = await Promise.all([
+        getDocs(query(collection(db, 'sessions'), where('userId', '==', member.id))),
+        getDoc(doc(db, 'userSettings', member.id))
+      ]);
+      const sessions = [];
+      sessionsSnap.forEach((d) => {
+        const data = d.data();
+        sessions.push({
+          id: d.id,
+          ...data,
+          clockIn: data.clockIn?.toDate ? data.clockIn.toDate() : new Date(data.clockIn)
+        });
+      });
+      const settings = settingsSnap.exists() ? settingsSnap.data() : {};
+      const fs = settings.financeSettings || {};
+      const financeSettings = {
+        ...defaultFinanceSettings(),
+        hourlyRate: fs.hourlyRate || 0,
+        isencaoRate: fs.isencaoRate || 0,
+        isencaoCalculationMethod: fs.isencaoCalculationMethod || 'percentage',
+        isencaoFixedAmount: fs.isencaoFixedAmount || 0,
+        taxDeductionType: fs.taxDeductionType || 'both',
+        irsRate: fs.irsRate || 0,
+        irsBaseSalaryRate: fs.irsBaseSalaryRate || 0,
+        irsIhtRate: fs.irsIhtRate || 0,
+        irsOvertimeRate: fs.irsOvertimeRate || 0,
+        socialSecurityRate: fs.socialSecurityRate ?? 11,
+        customTaxRate: fs.customTaxRate || 0,
+        mealAllowanceIncluded: !!fs.mealAllowanceIncluded,
+        overtimeFirstHourRate: fs.overtimeFirstHourRate ?? 1.25,
+        overtimeSubsequentRate: fs.overtimeSubsequentRate ?? 1.5,
+        weekendOvertimeRate: fs.weekendOvertimeRate ?? 1.5,
+        holidayOvertimeRate: fs.holidayOvertimeRate ?? 2,
+        fixedBonus: fs.fixedBonus || 0,
+        dailyMealSubsidy: fs.dailyMealSubsidy || 0,
+        mealCardDeduction: fs.mealCardDeduction || 0
+      };
+      let finance = null;
+      if (sessions.length > 0 && financeSettings.hourlyRate) {
+        try {
+          finance = calculatePeriodFinance(sessions, { start, end }, financeSettings);
+        } catch (e) {
+          console.error(`Finance calc error for member ${member.id}:`, e);
+        }
+      }
+      const yearSessions = sessions.filter((s) => {
+        const t = s.clockIn?.getTime ? s.clockIn.getTime() : new Date(s.clockIn).getTime();
+        return t >= yearStart.getTime() && t <= yearEnd.getTime();
+      });
+      const usedIsencaoHours = yearSessions.reduce((sum, s) => sum + (s.unpaidExtraHours || 0), 0);
+      const annualIsencaoLimit = settings.annualIsencaoLimit || 200;
+      const overLimit = usedIsencaoHours >= annualIsencaoLimit;
+      const approaching = annualIsencaoLimit > 0 && usedIsencaoHours >= annualIsencaoLimit * 0.9 && usedIsencaoHours < annualIsencaoLimit;
+      const memberName = member.username?.trim()
+        ? `@${member.username.trim()}`
+        : (member.email?.trim() || member.id || 'Unknown');
+      const paidOvertimeHours = finance?.hours?.paidExtra ?? 0;
+      const unpaidHours = finance?.hours?.isencao ?? 0;
+      return { member, memberName, finance, overLimit, approaching, paidOvertimeHours, unpaidHours };
+    } catch (e) {
+      console.error(`Stats fetch error for member ${member.id}:`, e);
+      const memberName = member.username?.trim()
+        ? `@${member.username.trim()}`
+        : (member.email?.trim() || member.id || 'Unknown');
+      return {
+        member,
+        memberName,
+        finance: null,
+        overLimit: false,
+        approaching: false,
+        paidOvertimeHours: 0,
+        unpaidHours: 0
+      };
+    }
+  });
+  const results = await Promise.all(promises);
+  const perMember = results.map((r) => ({
+    memberId: r.member.id,
+    memberName: r.memberName,
+    paidOvertimeHours: r.paidOvertimeHours ?? 0,
+    unpaidHours: r.unpaidHours ?? 0
+  }));
+  const agg = {
+    grossSalary: 0,
+    netSalary: 0,
+    totalDeductions: 0,
+    irs: 0,
+    socialSecurity: 0,
+    customTax: 0,
+    totalHours: 0,
+    totalWorkingDays: 0,
+    memberCount: members.length,
+    overIsencaoCount: 0,
+    approachingIsencaoCount: 0
+  };
+  results.forEach((r) => {
+    if (!r) return;
+    const f = r.finance;
+    if (r.overLimit) agg.overIsencaoCount += 1;
+    if (r.approaching) agg.approachingIsencaoCount += 1;
+    if (!f) return;
+    agg.grossSalary += f.earnings?.grossSalary ?? 0;
+    agg.netSalary += f.netSalary ?? 0;
+    agg.totalDeductions += (f.deductions?.total ?? 0) + (f.deductions?.mealCardDeduction ?? 0);
+    agg.irs += f.deductions?.irs ?? 0;
+    agg.socialSecurity += f.deductions?.socialSecurity ?? 0;
+    agg.customTax += f.deductions?.custom ?? 0;
+    agg.totalHours += (f.hours?.regular ?? 0) + (f.hours?.isencao ?? 0) + (f.hours?.paidExtra ?? 0);
+    agg.totalWorkingDays += f.workingDays ?? 0;
+  });
+  return { ...agg, perMember };
+}
+
+const ANNUAL_OVERTIME_CAP = 150;
+
+function memberDisplayName(m) {
+  const n = (m.username || '').trim();
+  if (n) return n.startsWith('@') ? n : `@${n}`;
+  const e = (m.email || '').trim();
+  if (e) return e;
+  return m.id || 'Unknown';
+}
+
+/**
+ * Fetch per-member team warnings (Isenção, overtime, etc.) for the Team Warnings card.
+ * @param {string} enterpriseId
+ * @param {Array<{ id: string, email?: string, username?: string }>} members
+ * @returns {Promise<{ warnings: Array<{ memberId: string, memberName: string, type: string, severity: string, detail: string }> }>}
+ */
+export async function getEnterpriseTeamWarnings(enterpriseId, members) {
+  if (!enterpriseId || !members || members.length === 0) {
+    return { warnings: [] };
+  }
+  const now = new Date();
+  const yearStart = startOfYear(now);
+  const yearEnd = endOfYear(now);
+  const weekStart = startOfWeek(now, { weekStartsOn: 1 });
+  const weekEnd = endOfWeek(now, { weekStartsOn: 1 });
+
+  const promises = members.map(async (member) => {
+    const warnings = [];
+    const name = memberDisplayName(member);
+    try {
+      const [sessionsSnap, settingsSnap] = await Promise.all([
+        getDocs(query(collection(db, 'sessions'), where('userId', '==', member.id))),
+        getDoc(doc(db, 'userSettings', member.id))
+      ]);
+      const sessions = [];
+      sessionsSnap.forEach((d) => {
+        const data = d.data();
+        sessions.push({
+          id: d.id,
+          ...data,
+          clockIn: data.clockIn?.toDate ? data.clockIn.toDate() : new Date(data.clockIn)
+        });
+      });
+      const settings = settingsSnap.exists() ? settingsSnap.data() : {};
+      const annualIsencaoLimit = settings.annualIsencaoLimit ?? 200;
+
+      const yearSessions = sessions.filter((s) => {
+        const t = s.clockIn?.getTime ? s.clockIn.getTime() : new Date(s.clockIn).getTime();
+        return t >= yearStart.getTime() && t <= yearEnd.getTime();
+      });
+      const usedIsencaoHours = yearSessions.reduce((sum, s) => sum + (s.unpaidExtraHours || 0), 0);
+
+      if (usedIsencaoHours >= annualIsencaoLimit) {
+        const pct = annualIsencaoLimit > 0 ? ((usedIsencaoHours / annualIsencaoLimit) * 100).toFixed(0) : 0;
+        warnings.push({
+          memberId: member.id,
+          memberName: name,
+          type: 'isencao_over',
+          severity: 'high',
+          detail: `${usedIsencaoHours.toFixed(0)}h / ${annualIsencaoLimit}h (${pct}%)`
+        });
+      } else if (annualIsencaoLimit > 0 && usedIsencaoHours >= annualIsencaoLimit * 0.9) {
+        const pct = ((usedIsencaoHours / annualIsencaoLimit) * 100).toFixed(0);
+        warnings.push({
+          memberId: member.id,
+          memberName: name,
+          type: 'isencao_approaching',
+          severity: 'medium',
+          detail: `${pct}% (${usedIsencaoHours.toFixed(0)}h / ${annualIsencaoLimit}h)`
+        });
+      }
+
+      const weekSessions = sessions.filter((s) => {
+        const t = s.clockIn?.getTime ? s.clockIn.getTime() : new Date(s.clockIn).getTime();
+        return t >= weekStart.getTime() && t <= weekEnd.getTime();
+      });
+      const weekHours = weekSessions.reduce((sum, s) => sum + (s.totalHours || 0), 0);
+      if (weekHours > 40) {
+        warnings.push({
+          memberId: member.id,
+          memberName: name,
+          type: 'overtime_weekly',
+          severity: 'medium',
+          detail: `${weekHours.toFixed(0)}h this week`
+        });
+      }
+
+      const ytdPaidExtra = yearSessions.reduce((sum, s) => sum + (s.paidExtraHours || 0), 0);
+      if (ytdPaidExtra > ANNUAL_OVERTIME_CAP) {
+        warnings.push({
+          memberId: member.id,
+          memberName: name,
+          type: 'overtime_annual',
+          severity: 'high',
+          detail: `${ytdPaidExtra.toFixed(0)}h / ${ANNUAL_OVERTIME_CAP}h`
+        });
+      }
+
+      return warnings;
+    } catch (e) {
+      console.error(`Team warnings fetch error for member ${member.id}:`, e);
+      return [];
+    }
+  });
+
+  const results = await Promise.all(promises);
+  const warnings = results.flat();
+  return { warnings };
 }

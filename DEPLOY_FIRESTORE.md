@@ -66,7 +66,7 @@ firebase projects:list
 
 ```bash
 cd path\to\Clock_in_app
-# Deploy both rules and indexes (use your project ID)
+NPM# Deploy both rules and indexes (use your project ID)
 firebase deploy --only firestore --project <your-project-id>
 
 # Or deploy only rules (e.g. after rule changes):
