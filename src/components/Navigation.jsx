@@ -29,7 +29,9 @@ export const Navigation = memo(function Navigation({ currentPage, onPageChange, 
         const d = snap.exists() ? snap.data() : {};
         const plan = (d.subscriptionPlan || d.plan || '').toLowerCase();
         const eid = d.enterpriseId || null;
-        setShowEnterprise(plan === 'enterprise' || !!eid);
+        const role = d.enterpriseRole || null;
+        // Only show Enterprise tab for admins (plan is enterprise OR user is enterprise admin)
+        setShowEnterprise(plan === 'enterprise' || (!!eid && role === 'admin'));
       } catch {
         if (!cancelled) setShowEnterprise(false);
       }

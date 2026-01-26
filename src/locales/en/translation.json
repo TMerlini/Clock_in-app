@@ -374,6 +374,8 @@
     "subtitle": "Create your organization, invite your team, and monitor sessions, analytics, and finance per member.",
     "upgradeCta": "Upgrade to Enterprise",
     "upgradeDescription": "Enterprise plan is required to create an organization and invite team members.",
+    "unauthorized": "Access Restricted",
+    "memberNoAccess": "Only enterprise administrators can access the Enterprise page. If you need access, please contact your organization administrator.",
     "createOrg": "Create your organization",
     "orgName": "Organization name",
     "orgNamePlaceholder": "Your company or team name",

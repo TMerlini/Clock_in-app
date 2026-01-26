@@ -509,9 +509,34 @@ export function Enterprise({ user, onNavigate }) {
   }, [memberSessions, memberSettings, memberDateRange, financeSettings]);
 
   const memberFilteredSessions = useMemo(() => {
-    if (!memberFinanceData) return [];
-    return [...(memberFinanceData.sessions || [])].sort((a, b) => b.date.getTime() - a.date.getTime());
-  }, [memberFinanceData]);
+    if (memberFinanceData) {
+      return [...(memberFinanceData.sessions || [])].sort((a, b) => b.date.getTime() - a.date.getTime());
+    }
+    // Fallback: use raw sessions filtered by date range when finance data unavailable
+    if (!memberSessions.length || !memberDateRange?.start || !memberDateRange?.end) return [];
+    const filtered = memberSessions.filter(s => {
+      let clockInTime;
+      if (s.clockIn?.toDate) {
+        clockInTime = s.clockIn.toDate().getTime();
+      } else if (s.clockIn instanceof Date) {
+        clockInTime = s.clockIn.getTime();
+      } else {
+        clockInTime = s.clockIn;
+      }
+      return clockInTime >= memberDateRange.start.getTime() && clockInTime <= memberDateRange.end.getTime();
+    });
+    return filtered.map(s => {
+      const clockIn = s.clockIn?.toDate ? s.clockIn.toDate() : (s.clockIn instanceof Date ? s.clockIn : new Date(s.clockIn));
+      return {
+        id: s.id,
+        date: clockIn,
+        regularHours: s.regularHours || 0,
+        isencaoHours: s.unpaidExtraHours || s.isencaoHours || 0,
+        paidExtraHours: s.paidExtraHours || 0,
+        totalEarnings: 0 // Can't calculate without finance settings
+      };
+    }).sort((a, b) => b.date.getTime() - a.date.getTime());
+  }, [memberFinanceData, memberSessions, memberDateRange]);
 
   const memberPreviousDateRange = useMemo(() => {
     if (!memberDateRange?.start || !memberDateRange?.end) return null;
@@ -722,44 +747,14 @@ export function Enterprise({ user, onNavigate }) {
   }
 
   const isCreator = enterprise && enterprise.createdBy === user.uid;
+  // Members (non-admins) should not have access to Enterprise page
   if (enterpriseRole === 'member' && enterprise && !isCreator) {
     return (
       <div className="enterprise-container">
-        <div className="enterprise-header">
-          <Building2 className="enterprise-header-icon" size={32} />
-          <div>
-            <h1>{t('enterprise.title')}</h1>
-            <p>{t('enterprise.yourePartOf')} <strong>{enterprise.name}</strong></p>
-            {members.length > 0 && (
-              <p className="enterprise-member-summary-inline">{t('enterprise.statsMembers')}: {members.length}</p>
-            )}
-          </div>
-        </div>
-        {success && <div className="enterprise-success">{success}</div>}
-        {error && (
-          <div className="enterprise-error">
-            <AlertCircle size={18} />
-            <span>{error}</span>
-          </div>
-        )}
-        <div className="enterprise-member-dashboard-actions">
-          <button type="button" className="enterprise-nav-btn" onClick={() => onNavigate && onNavigate('analytics')}>
-            <BarChart3 size={18} />
-            <span>{t('navigation.analytics')}</span>
-          </button>
-          <button type="button" className="enterprise-nav-btn" onClick={() => onNavigate && onNavigate('finance')}>
-            <DollarSign size={18} />
-            <span>{t('navigation.finance')}</span>
-          </button>
-          <button
-            type="button"
-            className="enterprise-leave-btn"
-            onClick={handleLeaveOrg}
-            disabled={leavingOrg}
-          >
-            {leavingOrg ? <Loader size={18} className="spinning" /> : null}
-            <span>{t('enterprise.leaveOrg')}</span>
-          </button>
+        <div className="enterprise-unauthorized">
+          <Building2 size={48} />
+          <h2>{t('enterprise.unauthorized')}</h2>
+          <p>{t('enterprise.memberNoAccess')}</p>
         </div>
       </div>
     );
@@ -1438,13 +1433,12 @@ export function Enterprise({ user, onNavigate }) {
                       {canRemove && (
                         <button
                           type="button"
-                          className="enterprise-remove-btn"
+                          className="enterprise-remove-btn-icon"
                           onClick={() => handleRemoveMember(m)}
                           disabled={isRemoving}
                           title={t('enterprise.removeMember')}
                         >
-                          {isRemoving ? <Loader size={14} className="spinning" /> : <Trash2 size={14} />}
-                          <span>{t('enterprise.remove')}</span>
+                          {isRemoving ? <Loader size={16} className="spinning" /> : <X size={16} />}
                         </button>
                       )}
                     </div>

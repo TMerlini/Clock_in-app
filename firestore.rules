@@ -64,6 +64,7 @@ service cloud.firestore {
     match /overworkDeductions/{deductionId} {
       allow create: if isAuth() && request.resource.data.userId == request.auth.uid;
       allow read, update, delete: if isAuth() && resource.data.userId == request.auth.uid;
+      allow read: if isAuth() && (isAppAdmin() || sameOrgAsViewer(resource.data.userId));
     }
 
     match /calendarTokens/{userId} {

@@ -482,8 +482,13 @@ export async function getEnterpriseTeamWarnings(enterpriseId, members) {
   const now = new Date();
   const yearStart = startOfYear(now);
   const yearEnd = endOfYear(now);
+  // Ensure end dates include the full day (23:59:59.999)
+  const yearEndTime = new Date(yearEnd);
+  yearEndTime.setHours(23, 59, 59, 999);
   const weekStart = startOfWeek(now, { weekStartsOn: 1 });
   const weekEnd = endOfWeek(now, { weekStartsOn: 1 });
+  const weekEndTime = new Date(weekEnd);
+  weekEndTime.setHours(23, 59, 59, 999);
 
   const promises = members.map(async (member) => {
     const warnings = [];
@@ -507,7 +512,7 @@ export async function getEnterpriseTeamWarnings(enterpriseId, members) {
 
       const yearSessions = sessions.filter((s) => {
         const t = s.clockIn?.getTime ? s.clockIn.getTime() : new Date(s.clockIn).getTime();
-        return t >= yearStart.getTime() && t <= yearEnd.getTime();
+        return t >= yearStart.getTime() && t <= yearEndTime.getTime();
       });
       const usedIsencaoHours = yearSessions.reduce((sum, s) => sum + (s.unpaidExtraHours || 0), 0);
 
@@ -533,7 +538,7 @@ export async function getEnterpriseTeamWarnings(enterpriseId, members) {
 
       const weekSessions = sessions.filter((s) => {
         const t = s.clockIn?.getTime ? s.clockIn.getTime() : new Date(s.clockIn).getTime();
-        return t >= weekStart.getTime() && t <= weekEnd.getTime();
+        return t >= weekStart.getTime() && t <= weekEndTime.getTime();
       });
       const weekHours = weekSessions.reduce((sum, s) => sum + (s.totalHours || 0), 0);
       if (weekHours > 40) {
@@ -566,5 +571,6 @@ export async function getEnterpriseTeamWarnings(enterpriseId, members) {
 
   const results = await Promise.all(promises);
   const warnings = results.flat();
+  console.log(`[Team Warnings] Calculated ${warnings.length} warnings for ${members.length} members`);
   return { warnings };
 }

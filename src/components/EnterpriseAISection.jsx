@@ -63,10 +63,39 @@ export const EnterpriseAISection = forwardRef(function EnterpriseAISection(
     if (lastTriggerRef.current === q) return;
     lastTriggerRef.current = q;
     setExpanded(true);
-    sendPrompt(q);
-    onTriggerConsumed?.();
-    lastTriggerRef.current = null;
-  }, [triggerPrompt, isLoading]);
+    
+    // Ensure members context is loaded before sending prompt
+    const sendWithContext = async () => {
+      if (enterpriseId && members.length > 0 && !membersContext && !contextLoading) {
+        setContextLoading(true);
+        try {
+          const context = await getEnterpriseMembersContext(enterpriseId, members);
+          setMembersContext(context);
+          setContextLoading(false);
+          // Send prompt after context is loaded, passing the context directly
+          sendPrompt(q, context);
+          onTriggerConsumed?.();
+          lastTriggerRef.current = null;
+        } catch (error) {
+          console.error('Error loading members context:', error);
+          const errorContext = 'Error loading team data. Member data may not be available.';
+          setMembersContext(errorContext);
+          setContextLoading(false);
+          // Send prompt even if context load failed
+          sendPrompt(q, errorContext);
+          onTriggerConsumed?.();
+          lastTriggerRef.current = null;
+        }
+      } else {
+        // Context already loaded or not needed, send immediately
+        sendPrompt(q);
+        onTriggerConsumed?.();
+        lastTriggerRef.current = null;
+      }
+    };
+    
+    sendWithContext();
+  }, [triggerPrompt, isLoading, enterpriseId, members, membersContext, contextLoading]);
 
   const replacePlaceholderWith = (content) => {
     setMessages((prev) => {
@@ -81,7 +110,7 @@ export const EnterpriseAISection = forwardRef(function EnterpriseAISection(
     setStreamingContent('');
   };
 
-  const sendPrompt = async (prompt) => {
+  const sendPrompt = async (prompt, contextOverride = null) => {
     if (!prompt?.trim() || isLoading) return;
     const userMessage = prompt.trim();
     setInputValue('');
@@ -99,8 +128,10 @@ export const EnterpriseAISection = forwardRef(function EnterpriseAISection(
     if (enterpriseContext.current) {
       systemContext += enterpriseContext.current;
     }
-    if (membersContext) {
-      systemContext += '\n\n' + membersContext;
+    // Use contextOverride if provided (for trigger), otherwise use state
+    const contextToUse = contextOverride !== null ? contextOverride : membersContext;
+    if (contextToUse) {
+      systemContext += '\n\n' + contextToUse;
     }
     if (systemContext) {
       apiMessages.push({ role: 'system', content: systemContext });

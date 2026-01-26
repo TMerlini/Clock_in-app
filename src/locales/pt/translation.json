@@ -374,6 +374,8 @@
     "subtitle": "Crie a sua organização, convide a sua equipa e monitore sessões, análises e finanças por membro.",
     "upgradeCta": "Atualizar para Enterprise",
     "upgradeDescription": "O plano Enterprise é necessário para criar uma organização e convidar membros da equipa.",
+    "unauthorized": "Acesso Restrito",
+    "memberNoAccess": "Apenas administradores da empresa podem aceder à página Enterprise. Se precisar de acesso, contacte o administrador da sua organização.",
     "createOrg": "Criar a sua organização",
     "orgName": "Nome da organização",
     "orgNamePlaceholder": "Nome da sua empresa ou equipa",
