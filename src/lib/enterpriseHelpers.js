@@ -24,6 +24,7 @@ import {
   serverTimestamp
 } from 'firebase/firestore';
 import { db } from './firebase';
+import { initializeCalls } from './tokenManager';
 
 const ENTERPRISES = 'enterprises';
 const INVITES = 'enterpriseInvites';
@@ -182,6 +183,7 @@ export async function updateEnterprise(enterpriseId, updates) {
 
 /**
  * Accept an invite: set user's enterpriseId/role, update invite status.
+ * If enterprise has less than 10 Premium AI members, assign Premium AI to the new member.
  * @param {string} inviteId
  * @param {string} userId - Current user id
  * @param {string} userEmail - Current user email (for validation)
@@ -205,11 +207,35 @@ export async function acceptInvite(inviteId, userId, userEmail) {
   if (sameOrg && existingRole === 'admin') {
     return;
   }
-  await setDoc(settingsRef, {
+  
+  // Check if enterprise has less than 10 Premium AI members
+  const premiumAiCount = await getEnterprisePremiumAIMemberCount(inv.enterpriseId);
+  const shouldAssignPremiumAi = premiumAiCount < 10;
+  
+  const updateData = {
     ...data,
     enterpriseId: inv.enterpriseId,
     enterpriseRole: 'member'
-  }, { merge: true });
+  };
+  
+  if (shouldAssignPremiumAi) {
+    // Assign Premium AI plan and mark as from enterprise
+    updateData.subscriptionPlan = 'premium_ai';
+    updateData.plan = 'premium_ai';
+    updateData.premiumAiFromEnterprise = true;
+  }
+  
+  await setDoc(settingsRef, updateData, { merge: true });
+  
+  // Initialize calls for Premium AI members (75 calls, not 225 - only enterprise account holder gets 225)
+  if (shouldAssignPremiumAi) {
+    try {
+      await initializeCalls(userId);
+    } catch (error) {
+      console.error('Error initializing calls for enterprise member:', error);
+      // Don't throw - member is already added, calls can be initialized later
+    }
+  }
 }
 
 /**
@@ -242,13 +268,53 @@ export async function cancelInvite(inviteId) {
 }
 
 /**
+ * Get count of members with Premium AI from enterprise (premiumAiFromEnterprise flag).
+ * @param {string} enterpriseId
+ * @returns {Promise<number>} Count of members with Premium AI from enterprise
+ */
+export async function getEnterprisePremiumAIMemberCount(enterpriseId) {
+  const q = query(
+    collection(db, USER_SETTINGS),
+    where('enterpriseId', '==', enterpriseId),
+    where('premiumAiFromEnterprise', '==', true)
+  );
+  const snap = await getDocs(q);
+  return snap.size;
+}
+
+/**
  * Remove a member from the enterprise by clearing their enterpriseId and enterpriseRole.
+ * If member has Premium AI from enterprise, revert to free plan.
  * Caller must ensure the user is not the org creator and not the current user.
  * @param {string} userId - User id of the member to remove
  */
 export async function removeMember(userId) {
   const settingsRef = doc(db, USER_SETTINGS, userId);
-  await updateDoc(settingsRef, { enterpriseId: null, enterpriseRole: null });
+  const settingsDoc = await getDoc(settingsRef);
+  
+  if (!settingsDoc.exists()) {
+    // If settings don't exist, just clear enterprise fields
+    await updateDoc(settingsRef, { enterpriseId: null, enterpriseRole: null });
+    return;
+  }
+  
+  const settings = settingsDoc.data();
+  const hasPremiumAiFromEnterprise = settings.premiumAiFromEnterprise === true;
+  
+  if (hasPremiumAiFromEnterprise) {
+    // Revert to free plan and clear AI usage
+    await updateDoc(settingsRef, {
+      enterpriseId: null,
+      enterpriseRole: null,
+      subscriptionPlan: 'free',
+      plan: 'free',
+      premiumAiFromEnterprise: null,
+      aiUsage: null
+    });
+  } else {
+    // Just clear enterprise fields
+    await updateDoc(settingsRef, { enterpriseId: null, enterpriseRole: null });
+  }
 }
 
 /**

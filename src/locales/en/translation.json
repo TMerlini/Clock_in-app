@@ -353,15 +353,15 @@
       },
       "enterprise": {
         "name": "Enterprise",
-        "price": "Custom",
+        "price": "€199",
         "period": "month",
         "feature1": "Everything in Premium AI",
-        "feature2": "Create organization & invite team",
-        "feature3": "Monitor sessions, analytics & finance per member",
-        "feature4": "In-app invite & accept flow",
-        "feature5": "Centralized team dashboard",
-        "feature6": "Export per member (CSV)",
-        "feature7": "Contact sales for pricing"
+        "feature2": "225 AI calls/month (150 + 75 base)",
+        "feature3": "Up to 10 members get Premium AI included",
+        "feature4": "Create organization & invite team",
+        "feature5": "Monitor sessions, analytics & finance per member",
+        "feature6": "Centralized team dashboard",
+        "feature7": "Export per member (CSV)"
       }
     }
   },
@@ -394,6 +394,7 @@
     "inviteSuccess": "Invite sent.",
     "inviteError": "Invite already pending for this email.",
     "inviteSelf": "You cannot invite your own email address.",
+    "premiumAiLimitReached": "Premium AI member limit reached (10 members). Additional members will join with free plan.",
     "createError": "Could not create organization. Please try again.",
     "noMembers": "No members yet. Invite your team by email.",
     "noMembersMatch": "No members match your search.",
@@ -455,7 +456,9 @@
     "isencaoOver": "Over Isenção limit",
     "isencaoApproaching": "Approaching Isenção limit",
     "overtimeWeekly": "Over 40h this week",
+    "overtimeWeeklyApproaching": "High weekly hours (approaching 40h)",
     "overtimeAnnual": "Over annual overtime cap",
+    "overtimeAnnualApproaching": "Approaching annual overtime cap",
     "aiCall": {
       "title": "Team HR & Law AI",
       "description": "Get AI analysis and advice on HR, legal compliance, and finance.",

@@ -1,6 +1,6 @@
 import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firestore';
 import { db } from './firebase';
-import { format, startOfMonth, endOfMonth, startOfYear, endOfYear, startOfWeek, endOfWeek } from 'date-fns';
+import { format, startOfMonth, endOfMonth, startOfYear, endOfYear, startOfWeek, endOfWeek, subDays } from 'date-fns';
 import { calculatePeriodFinance } from './financeCalculator';
 
 /**
@@ -402,8 +402,25 @@ export async function getEnterpriseStats(enterpriseId, members, dateRange) {
       const memberName = member.username?.trim()
         ? `@${member.username.trim()}`
         : (member.email?.trim() || member.id || 'Unknown');
-      const paidOvertimeHours = finance?.hours?.paidExtra ?? 0;
-      const unpaidHours = finance?.hours?.isencao ?? 0;
+      
+      // Calculate overwork hours from finance if available, otherwise from raw session data
+      let paidOvertimeHours = 0;
+      let unpaidHours = 0;
+      
+      if (finance?.hours) {
+        // Use finance calculation if available (more accurate, respects finance settings)
+        paidOvertimeHours = finance.hours.paidExtra ?? 0;
+        unpaidHours = finance.hours.isencao ?? 0;
+      } else if (sessions.length > 0) {
+        // Fallback: calculate from raw session data filtered by date range
+        const dateRangeSessions = sessions.filter((s) => {
+          const t = s.clockIn?.getTime ? s.clockIn.getTime() : new Date(s.clockIn).getTime();
+          return t >= start.getTime() && t <= end.getTime();
+        });
+        paidOvertimeHours = dateRangeSessions.reduce((sum, s) => sum + (s.paidExtraHours || 0), 0);
+        unpaidHours = dateRangeSessions.reduce((sum, s) => sum + (s.unpaidExtraHours || 0), 0);
+      }
+      
       return { member, memberName, finance, overLimit, approaching, paidOvertimeHours, unpaidHours };
     } catch (e) {
       console.error(`Stats fetch error for member ${member.id}:`, e);
@@ -546,8 +563,17 @@ export async function getEnterpriseTeamWarnings(enterpriseId, members) {
           memberId: member.id,
           memberName: name,
           type: 'overtime_weekly',
-          severity: 'medium',
+          severity: 'high',
           detail: `${weekHours.toFixed(0)}h this week`
+        });
+      } else if (weekHours >= 35) {
+        // Approaching weekly overtime threshold (35h or more, approaching 40h)
+        warnings.push({
+          memberId: member.id,
+          memberName: name,
+          type: 'overtime_weekly_approaching',
+          severity: 'medium',
+          detail: `${weekHours.toFixed(1)}h this week (approaching 40h limit)`
         });
       }
 
@@ -560,6 +586,16 @@ export async function getEnterpriseTeamWarnings(enterpriseId, members) {
           severity: 'high',
           detail: `${ytdPaidExtra.toFixed(0)}h / ${ANNUAL_OVERTIME_CAP}h`
         });
+      } else if (ytdPaidExtra >= ANNUAL_OVERTIME_CAP * 0.9) {
+        // Approaching annual overtime cap (90% or more)
+        const pct = ((ytdPaidExtra / ANNUAL_OVERTIME_CAP) * 100).toFixed(0);
+        warnings.push({
+          memberId: member.id,
+          memberName: name,
+          type: 'overtime_annual_approaching',
+          severity: 'medium',
+          detail: `${pct}% (${ytdPaidExtra.toFixed(0)}h / ${ANNUAL_OVERTIME_CAP}h)`
+        });
       }
 
       return warnings;
@@ -571,6 +607,5 @@ export async function getEnterpriseTeamWarnings(enterpriseId, members) {
 
   const results = await Promise.all(promises);
   const warnings = results.flat();
-  console.log(`[Team Warnings] Calculated ${warnings.length} warnings for ${members.length} members`);
   return { warnings };
 }

@@ -353,15 +353,15 @@
       },
       "enterprise": {
         "name": "Enterprise",
-        "price": "Personalizado",
+        "price": "€199",
         "period": "mês",
         "feature1": "Tudo do Premium AI",
-        "feature2": "Criar organização e convidar equipa",
-        "feature3": "Monitorizar sessões, análises e finanças por membro",
-        "feature4": "Convite e aceitação na aplicação",
-        "feature5": "Painel de equipa centralizado",
-        "feature6": "Exportar por membro (CSV)",
-        "feature7": "Contacte vendas para preços"
+        "feature2": "225 chamadas AI/mês (150 + 75 base)",
+        "feature3": "Até 10 membros recebem Premium AI incluído",
+        "feature4": "Criar organização e convidar equipa",
+        "feature5": "Monitorizar sessões, análises e finanças por membro",
+        "feature6": "Painel de equipa centralizado",
+        "feature7": "Exportar por membro (CSV)"
       }
     }
   },
@@ -394,6 +394,7 @@
     "inviteSuccess": "Convite enviado.",
     "inviteError": "Já existe um convite pendente para este email.",
     "inviteSelf": "Não pode convidar o seu próprio email.",
+    "premiumAiLimitReached": "Limite de membros Premium AI atingido (10 membros). Membros adicionais juntar-se-ão com plano gratuito.",
     "createError": "Não foi possível criar a organização. Tente novamente.",
     "noMembers": "Ainda sem membros. Convide a sua equipa por email.",
     "noMembersMatch": "Nenhum membro corresponde à pesquisa.",
@@ -455,7 +456,9 @@
     "isencaoOver": "Acima do limite de Isenção",
     "isencaoApproaching": "A aproximar do limite de Isenção",
     "overtimeWeekly": "Mais de 40h esta semana",
+    "overtimeWeeklyApproaching": "Horas semanais elevadas (a aproximar de 40h)",
     "overtimeAnnual": "Acima do limite anual de horas extras",
+    "overtimeAnnualApproaching": "A aproximar do limite anual de horas extras",
     "aiCall": {
       "title": "IA Equipa RH e Direito",
       "description": "Obtenha análise e conselhos da IA sobre RH, conformidade legal e finanças.",

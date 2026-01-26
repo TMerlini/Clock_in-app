@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { db, auth } from '../lib/firebase';
 import { STRIPE_PRICE_IDS, STRIPE_PAYMENT_LINKS, PLAN_NAMES, isStripeConfigured } from '../lib/stripeConfig';
@@ -14,13 +14,8 @@ export function PremiumPlus({ user, onNavigate }) {
   const [redirecting, setRedirecting] = useState(false);
   const [successMessage, setSuccessMessage] = useState(null);
 
-  useEffect(() => {
-    loadSubscriptionStatus();
-    checkStripeReturn();
-  }, [user]);
-
   // Check if user is returning from Stripe checkout
-  const checkStripeReturn = async () => {
+  const checkStripeReturn = useCallback(async () => {
     const urlParams = new URLSearchParams(window.location.search);
     const success = urlParams.get('success');
     const canceled = urlParams.get('canceled');
@@ -58,7 +53,12 @@ export function PremiumPlus({ user, onNavigate }) {
         window.history.replaceState({}, document.title, window.location.pathname);
       }, 5000);
     }
-  };
+  }, [t]);
+
+  useEffect(() => {
+    loadSubscriptionStatus();
+    checkStripeReturn();
+  }, [user, checkStripeReturn]);
 
   const loadSubscriptionStatus = async () => {
     try {
@@ -372,7 +372,7 @@ export function PremiumPlus({ user, onNavigate }) {
       </div>
 
       <div className="plans-grid">
-        {plans.map((plan) => {
+        {plans.filter(plan => plan.id !== 'FREE').map((plan) => {
           const IconComponent = plan.icon;
           const isCurrent = isCurrentPlan(plan.id);
           const buttonText = getButtonText(plan.id);
@@ -448,25 +448,80 @@ export function PremiumPlus({ user, onNavigate }) {
         })}
       </div>
 
-      {currentPlan && currentPlan.toLowerCase() === 'premium_ai' && (
-        <div className="call-pack-section">
-          <div className="call-pack-card">
-            <div className="call-pack-content">
-              <div>
-                <h3>{t('premiumPlus.needMoreCalls')}</h3>
-                <p>{t('premiumPlus.callPackDescription')}</p>
+      {/* Bottom section: Free plan and AI packs card */}
+      <div className="bottom-section">
+        {/* Free plan displayed separately below */}
+        {(() => {
+          const freePlan = plans.find(plan => plan.id === 'FREE');
+          if (!freePlan) return null;
+          const IconComponent = freePlan.icon;
+          const isCurrent = isCurrentPlan(freePlan.id);
+          const buttonText = getButtonText(freePlan.id);
+          const disabled = isButtonDisabled(freePlan.id);
+
+          return (
+            <div className="free-plan-card-wrapper">
+              <div className={`plan-card free-plan-card ${isCurrent ? 'current' : ''}`}>
+                {isCurrent && (
+                  <div className="current-badge">
+                    <Check size={16} />
+                    <span>{t('premiumPlus.currentPlan')}</span>
+                  </div>
+                )}
+
+                <div className="plan-header">
+                  <div className={`plan-icon ${freePlan.color}`}>
+                    <IconComponent size={32} />
+                  </div>
+                  <h2 className="plan-name">{freePlan.name}</h2>
+                  <div className="plan-price">
+                    <span className="price-amount">{freePlan.price}</span>
+                    <span className="price-period">/{freePlan.period}</span>
+                  </div>
+                </div>
+
+                <ul className="plan-features">
+                  {freePlan.features.map((feature, index) => (
+                    <li key={index}>
+                      <Check size={18} />
+                      <span>{feature}</span>
+                    </li>
+                  ))}
+                </ul>
+
+                <button
+                  className={`plan-button ${freePlan.color} ${isCurrent ? 'current' : ''}`}
+                  onClick={() => handleSubscribe(freePlan.id, freePlan.name)}
+                  disabled={disabled}
+                >
+                  {buttonText}
+                </button>
               </div>
-              <button
-                className="call-pack-button"
-                onClick={() => onNavigate && onNavigate('call-pack-purchase')}
-              >
-                <ShoppingCart size={18} />
-                <span>{t('premiumPlus.buyCallPacks')}</span>
-              </button>
+            </div>
+          );
+        })()}
+
+        {/* AI packs card for Premium AI, Pro, and Enterprise plans */}
+        {currentPlan && ['premium_ai', 'pro', 'enterprise'].includes(currentPlan.toLowerCase()) && (
+          <div className="call-pack-card-wrapper">
+            <div className="call-pack-card">
+              <div className="call-pack-content">
+                <div>
+                  <h3>{t('premiumPlus.needMoreCalls')}</h3>
+                  <p>{t('premiumPlus.callPackDescription')}</p>
+                </div>
+                <button
+                  className="call-pack-button"
+                  onClick={() => onNavigate && onNavigate('call-pack-purchase')}
+                >
+                  <ShoppingCart size={18} />
+                  <span>{t('premiumPlus.buyCallPacks')}</span>
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
 
       <div className="premium-plus-footer">
         <p>

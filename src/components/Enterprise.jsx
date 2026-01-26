@@ -11,7 +11,8 @@ import {
   removeMember,
   cancelInvite,
   leaveOrganization,
-  setMemberRole
+  setMemberRole,
+  getEnterprisePremiumAIMemberCount
 } from '../lib/enterpriseHelpers';
 import { getEnterpriseStats, getEnterpriseTeamWarnings } from '../lib/enterpriseMembersContext';
 import { calculatePeriodFinance } from '../lib/financeCalculator';
@@ -168,6 +169,19 @@ export function Enterprise({ user, onNavigate }) {
       setError(t('enterprise.inviteSelf'));
       return;
     }
+    
+    // Check Premium AI member limit before inviting
+    try {
+      const premiumAiCount = await getEnterprisePremiumAIMemberCount(enterpriseId);
+      if (premiumAiCount >= 10) {
+        setError(t('enterprise.premiumAiLimitReached') || 'Premium AI member limit reached (10 members). Additional members will join with free plan.');
+        return;
+      }
+    } catch (err) {
+      console.error('Error checking Premium AI count:', err);
+      // Continue with invite even if check fails
+    }
+    
     setInviting(true);
     setError(null);
     setSuccess(null);
@@ -1499,7 +1513,9 @@ export function Enterprise({ user, onNavigate }) {
                   isencao_over: 'isencaoOver',
                   isencao_approaching: 'isencaoApproaching',
                   overtime_weekly: 'overtimeWeekly',
-                  overtime_annual: 'overtimeAnnual'
+                  overtime_weekly_approaching: 'overtimeWeeklyApproaching',
+                  overtime_annual: 'overtimeAnnual',
+                  overtime_annual_approaching: 'overtimeAnnualApproaching'
                 }[w.type] || w.type;
                 return (
                   <li key={`${w.memberId}-${w.type}-${idx}`} className={`enterprise-warning-item enterprise-warning--${w.severity}`}>

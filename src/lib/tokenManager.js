@@ -2,6 +2,7 @@ import { doc, getDoc, setDoc, Timestamp } from 'firebase/firestore';
 import { db } from './firebase';
 
 const CALL_ALLOCATION = 75; // Base API calls allocated per subscription period (resets monthly)
+const ENTERPRISE_CALL_ALLOCATION = 225; // Enterprise accounts get 225 calls (150 additional + 75 base)
 const CALL_PACK_SIZE = 50; // Size of purchasable call packs
 const TOKENS_PER_CHARACTER = 4; // Approximate: 1 token per 4 characters (for estimation only)
 
@@ -75,6 +76,9 @@ export async function checkAndResetCalls(userId) {
     // Only reset calls for Premium AI or Enterprise users
     if (subscriptionPlan !== 'premium_ai' && subscriptionPlan !== 'enterprise') return;
     
+    const isEnterprise = subscriptionPlan === 'enterprise';
+    const callsAllocated = isEnterprise ? ENTERPRISE_CALL_ALLOCATION : CALL_ALLOCATION;
+    
     const subscriptionStartDate = settings.subscriptionStartDate;
     const aiUsage = settings.aiUsage || {};
     const lastResetDate = aiUsage.lastResetDate;
@@ -85,7 +89,7 @@ export async function checkAndResetCalls(userId) {
       // Initialize calls if they don't exist
       await setDoc(settingsRef, {
         aiUsage: {
-          callsAllocated: CALL_ALLOCATION,
+          callsAllocated: callsAllocated,
           callsUsed: 0,
           totalTokensUsed: 0,
           callPacks: [],
@@ -102,7 +106,7 @@ export async function checkAndResetCalls(userId) {
       const currentPacks = aiUsage.callPacks || [];
       await setDoc(settingsRef, {
         aiUsage: {
-          callsAllocated: CALL_ALLOCATION,
+          callsAllocated: callsAllocated,
           callsUsed: 0,
           totalTokensUsed: 0,
           callPacks: currentPacks, // Preserve call packs on reset
@@ -343,11 +347,18 @@ export async function initializeCalls(userId) {
     if (!userId) return;
     
     const settingsRef = doc(db, 'userSettings', userId);
+    const settingsDoc = await getDoc(settingsRef);
+    const settings = settingsDoc.exists() ? settingsDoc.data() : {};
+    const subscriptionPlan = (settings.subscriptionPlan || settings.plan || '').toLowerCase();
+    
+    const isEnterprise = subscriptionPlan === 'enterprise';
+    const callsAllocated = isEnterprise ? ENTERPRISE_CALL_ALLOCATION : CALL_ALLOCATION;
+    
     const now = Timestamp.now();
     
     await setDoc(settingsRef, {
       aiUsage: {
-        callsAllocated: CALL_ALLOCATION,
+        callsAllocated: callsAllocated,
         callsUsed: 0,
         totalTokensUsed: 0,
         callPacks: [],
