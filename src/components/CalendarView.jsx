@@ -1,24 +1,28 @@
 import { useState, useEffect, memo } from 'react';
 import { useGoogleCalendar } from '../hooks/useGoogleCalendar';
 import { Calendar } from './ui/calendar';
-import { Calendar as CalendarIcon, RefreshCw, AlertCircle } from 'lucide-react';
-import { format, startOfDay, endOfDay, subDays, addDays } from 'date-fns';
-import { formatHoursMinutes } from '../lib/utils';
+import { Calendar as CalendarIcon, RefreshCw, AlertCircle, ChevronLeft, ChevronRight } from 'lucide-react';
+import { format, startOfDay, endOfDay, startOfWeek, endOfWeek, startOfMonth, endOfMonth, subDays, addDays, addWeeks, subWeeks } from 'date-fns';
 import { useTranslation } from 'react-i18next';
 import { getDateFnsLocale } from '../lib/i18n';
 import './CalendarView.css';
 import 'react-day-picker/style.css';
 
 export const CalendarView = memo(function CalendarView({ user }) {
+  void user;
   const { t } = useTranslation();
   const googleCalendar = useGoogleCalendar();
   const [selectedDate, setSelectedDate] = useState(new Date());
+  const [viewMode, setViewMode] = useState('daily');
+  const [viewingWeekStart, setViewingWeekStart] = useState(() => startOfWeek(new Date(), { weekStartsOn: 1 }));
+  const [viewingMonth, setViewingMonth] = useState(() => startOfMonth(new Date()));
   const [events, setEvents] = useState([]);
   const [eventsForDate, setEventsForDate] = useState([]);
+  const [eventsForWeek, setEventsForWeek] = useState([]);
+  const [eventsForMonth, setEventsForMonth] = useState([]);
   const [datesWithEvents, setDatesWithEvents] = useState(new Set());
-  const [datesWithCalendarEvents, setDatesWithCalendarEvents] = useState(new Map()); // date -> calendarId
   const [loading, setLoading] = useState(false);
-  const [dateRange, setDateRange] = useState({ daysBack: 90, daysForward: 30 }); // Wider range by default
+  const [dateRange] = useState({ daysBack: 90, daysForward: 30 });
   const [calendars, setCalendars] = useState([]);
   const [selectedCalendars, setSelectedCalendars] = useState(new Set(['primary']));
 
@@ -38,7 +42,20 @@ export const CalendarView = memo(function CalendarView({ user }) {
 
   useEffect(() => {
     loadEventsForDate(selectedDate);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedDate, events]);
+
+  useEffect(() => {
+    if (viewMode !== 'weekly') return;
+    loadEventsForWeek(viewingWeekStart);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [viewingWeekStart, events, viewMode]);
+
+  useEffect(() => {
+    if (viewMode !== 'monthly') return;
+    loadEventsForMonth(viewingMonth);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [viewingMonth, events, viewMode]);
 
   const loadCalendars = async () => {
     if (!googleCalendar.isAuthorized) return;
@@ -85,6 +102,8 @@ export const CalendarView = memo(function CalendarView({ user }) {
       setDatesWithEvents(dateSet);
       
       loadEventsForDate(selectedDate, calendarEvents);
+      loadEventsForWeek(viewingWeekStart, calendarEvents);
+      loadEventsForMonth(viewingMonth, calendarEvents);
     } catch (error) {
       console.error('Error loading calendar events:', error);
       
@@ -109,14 +128,43 @@ export const CalendarView = memo(function CalendarView({ user }) {
       return eventStart >= startDate && eventStart <= endDate;
     });
 
-    // Sort by start time descending
     filtered.sort((a, b) => {
       const aStart = new Date(a.start.dateTime || a.start.date).getTime();
       const bStart = new Date(b.start.dateTime || b.start.date).getTime();
       return bStart - aStart;
     });
-    
     setEventsForDate(filtered);
+  };
+
+  const loadEventsForWeek = (weekStart, eventsList = events) => {
+    const weekEnd = endOfWeek(weekStart, { weekStartsOn: 1 });
+    const start = startOfDay(weekStart);
+    const end = endOfDay(weekEnd);
+    const filtered = eventsList.filter((event) => {
+      const eventStart = new Date(event.start.dateTime || event.start.date);
+      return eventStart >= start && eventStart <= end;
+    });
+    filtered.sort((a, b) => {
+      const aStart = new Date(a.start.dateTime || a.start.date).getTime();
+      const bStart = new Date(b.start.dateTime || b.start.date).getTime();
+      return bStart - aStart;
+    });
+    setEventsForWeek(filtered);
+  };
+
+  const loadEventsForMonth = (monthStart, eventsList = events) => {
+    const start = startOfMonth(monthStart);
+    const end = endOfMonth(monthStart);
+    const filtered = eventsList.filter((event) => {
+      const eventStart = new Date(event.start.dateTime || event.start.date);
+      return eventStart >= start && eventStart <= end;
+    });
+    filtered.sort((a, b) => {
+      const aStart = new Date(a.start.dateTime || a.start.date).getTime();
+      const bStart = new Date(b.start.dateTime || b.start.date).getTime();
+      return bStart - aStart;
+    });
+    setEventsForMonth(filtered);
   };
 
   const handleDateSelect = (date) => {
@@ -124,6 +172,27 @@ export const CalendarView = memo(function CalendarView({ user }) {
       setSelectedDate(date);
       loadEventsForDate(date);
     }
+  };
+
+  const handleViewModeChange = (mode) => {
+    setViewMode(mode);
+    if (mode === 'weekly') {
+      const weekStart = startOfWeek(selectedDate, { weekStartsOn: 1 });
+      setViewingWeekStart(weekStart);
+    } else if (mode === 'monthly') {
+      setViewingMonth(startOfMonth(selectedDate));
+    }
+  };
+
+  const goPrevWeek = () => {
+    const prev = subWeeks(viewingWeekStart, 1);
+    setViewingWeekStart(prev);
+    setSelectedDate(prev);
+  };
+  const goNextWeek = () => {
+    const next = addWeeks(viewingWeekStart, 1);
+    setViewingWeekStart(next);
+    setSelectedDate(next);
   };
 
   // Color mapping for different calendars
@@ -208,16 +277,78 @@ export const CalendarView = memo(function CalendarView({ user }) {
               </h2>
               <p className="card-description">{t('calendar.description')}</p>
             </div>
-            <div className="calendar-wrapper">
-              <Calendar
-                mode="single"
-                selected={selectedDate}
-                onSelect={handleDateSelect}
-                modifiers={modifiers}
-                modifiersClassNames={modifiersClassNames}
-                locale={getDateFnsLocale()}
-              />
+            <div className="calendar-view-selector">
+              <button
+                type="button"
+                className={`calendar-view-tab ${viewMode === 'daily' ? 'active' : ''}`}
+                onClick={() => handleViewModeChange('daily')}
+              >
+                {t('calendar.viewDaily')}
+              </button>
+              <button
+                type="button"
+                className={`calendar-view-tab ${viewMode === 'weekly' ? 'active' : ''}`}
+                onClick={() => handleViewModeChange('weekly')}
+              >
+                {t('calendar.viewWeekly')}
+              </button>
+              <button
+                type="button"
+                className={`calendar-view-tab ${viewMode === 'monthly' ? 'active' : ''}`}
+                onClick={() => handleViewModeChange('monthly')}
+              >
+                {t('calendar.viewMonthly')}
+              </button>
             </div>
+            {viewMode === 'weekly' ? (
+              <div className="calendar-week-nav">
+                <button type="button" className="calendar-nav-btn" onClick={goPrevWeek} aria-label={t('calendar.prevWeek')}>
+                  <ChevronLeft size={20} />
+                </button>
+                <span className="calendar-week-range">
+                  {format(viewingWeekStart, 'd MMM', { locale: getDateFnsLocale() })} – {format(endOfWeek(viewingWeekStart, { weekStartsOn: 1 }), 'd MMM yyyy', { locale: getDateFnsLocale() })}
+                </span>
+                <button type="button" className="calendar-nav-btn" onClick={goNextWeek} aria-label={t('calendar.nextWeek')}>
+                  <ChevronRight size={20} />
+                </button>
+              </div>
+            ) : null}
+            {viewMode === 'weekly' ? (
+              <div className="calendar-week-grid" role="grid" aria-label={t('calendar.weekView')}>
+                {Array.from({ length: 7 }, (_, i) => {
+                  const d = addDays(viewingWeekStart, i);
+                  const dateStr = format(d, 'yyyy-MM-dd');
+                  const hasEvents = datesWithEvents.has(dateStr);
+                  const isToday = format(d, 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd');
+                  return (
+                    <button
+                      key={dateStr}
+                      type="button"
+                      className={`calendar-week-day ${hasEvents ? 'has-events' : ''} ${isToday ? 'today' : ''}`}
+                      onClick={() => { setSelectedDate(d); setViewMode('daily'); }}
+                      aria-label={format(d, 'EEEE d MMMM', { locale: getDateFnsLocale() })}
+                    >
+                      <span className="calendar-week-dayname">{format(d, 'EEE', { locale: getDateFnsLocale() })}</span>
+                      <span className="calendar-week-daynum">{format(d, 'd')}</span>
+                      {hasEvents && <span className="calendar-week-dot" />}
+                    </button>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="calendar-wrapper">
+                <Calendar
+                  mode="single"
+                  selected={selectedDate}
+                  onSelect={handleDateSelect}
+                  month={viewMode === 'monthly' ? viewingMonth : undefined}
+                  onMonthChange={viewMode === 'monthly' ? (m) => setViewingMonth(m) : undefined}
+                  modifiers={modifiers}
+                  modifiersClassNames={modifiersClassNames}
+                  locale={getDateFnsLocale()}
+                />
+              </div>
+            )}
             {googleCalendar.isAuthorized && (
               <div style={{ marginTop: '1rem', display: 'flex', justifyContent: 'center' }}>
                 <button
@@ -234,7 +365,14 @@ export const CalendarView = memo(function CalendarView({ user }) {
 
           <div className="card" style={{ marginTop: '2rem' }}>
             <div className="card-header">
-              <h2 className="card-title">{t('calendar.eventsFor')} {format(selectedDate, 'MMMM dd, yyyy', { locale: getDateFnsLocale() })}</h2>
+              <h2 className="card-title">
+                {viewMode === 'daily' && `${t('calendar.eventsFor')} ${format(selectedDate, 'MMMM dd, yyyy', { locale: getDateFnsLocale() })}`}
+                {viewMode === 'weekly' && t('calendar.eventsForWeek', {
+                  start: format(viewingWeekStart, 'd MMM', { locale: getDateFnsLocale() }),
+                  end: format(endOfWeek(viewingWeekStart, { weekStartsOn: 1 }), 'd MMM yyyy', { locale: getDateFnsLocale() })
+                })}
+                {viewMode === 'monthly' && t('calendar.eventsForMonth', { monthYear: format(viewingMonth, 'MMMM yyyy', { locale: getDateFnsLocale() }) })}
+              </h2>
             </div>
             <div className="sessions-container">
               {!googleCalendar.isAuthorized ? (
@@ -248,18 +386,16 @@ export const CalendarView = memo(function CalendarView({ user }) {
                   <RefreshCw className="spinning" size={48} />
                   <p>{t('calendar.loadingEvents')}</p>
                 </div>
-              ) : eventsForDate.length === 0 ? (
-                <p className="empty-sessions">
-                  {t('calendar.noEvents')}
-                </p>
-              ) : (
+              ) : (() => {
+                const periodEvents = viewMode === 'daily' ? eventsForDate : viewMode === 'weekly' ? eventsForWeek : eventsForMonth;
+                return periodEvents.length === 0 ? (
+                  <p className="empty-sessions">
+                    {t('calendar.noEvents')}
+                  </p>
+                ) : (
                 <div className="sessions-list">
-                  {eventsForDate.map((event, index) => {
-                    const eventStart = new Date(event.start.dateTime || event.start.date);
-                    const eventEnd = new Date(event.end.dateTime || event.end.date);
-                    const durationMs = eventEnd.getTime() - eventStart.getTime();
-                    const totalHours = durationMs / (1000 * 60 * 60);
-                    const { regularHours, unpaidExtraHours, paidExtraHours, notes: parsedNotes } = parseEventDescription(event);
+                  {periodEvents.map((event) => {
+                    const { notes: parsedNotes } = parseEventDescription(event);
                     const sourceCalendar = calendars.find(cal => cal.id === event.sourceCalendarId);
                     
                     return (
@@ -313,7 +449,8 @@ export const CalendarView = memo(function CalendarView({ user }) {
                     );
                   })}
                 </div>
-              )}
+              );
+            })()}
             </div>
           </div>
         </div>
