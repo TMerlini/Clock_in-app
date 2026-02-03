@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { addDoc, collection, doc, getDoc, query, where, getDocs } from 'firebase/firestore';
 import { db, auth } from '../lib/firebase';
 import { X, Save, AlertCircle, Plus, MapPin } from 'lucide-react';
-import { format } from 'date-fns';
+import { format, startOfDay, endOfDay } from 'date-fns';
 import { formatHoursMinutes, calculateUsedIsencaoHours } from '../lib/utils';
 import './SessionEditor.css';
 
@@ -77,6 +77,39 @@ export function SessionCreator({ user, selectedDate, onClose, onUpdate }) {
     if (newClockOut <= newClockIn) {
       setError('Clock out time must be after clock in time');
       return;
+    }
+
+    // Overlap detection: check existing sessions for the selected date
+    try {
+      const dayStart = startOfDay(selectedDate).getTime();
+      const dayEnd = endOfDay(selectedDate).getTime();
+      const sessionsRef = collection(db, 'sessions');
+      const sessionsQuery = query(
+        sessionsRef,
+        where('userId', '==', user.uid),
+        where('clockIn', '>=', dayStart),
+        where('clockIn', '<=', dayEnd)
+      );
+      const snap = await getDocs(sessionsQuery);
+      const existingSessions = [];
+      snap.forEach((d) => existingSessions.push({ ...d.data(), id: d.id }));
+
+      const overlaps = existingSessions.filter((s) => {
+        const startA = newClockIn;
+        const endA = newClockOut;
+        const startB = s.clockIn;
+        const endB = s.clockOut || s.clockIn;
+        return startA < endB && startB < endA;
+      });
+
+      if (overlaps.length > 0) {
+        const confirmed = window.confirm(
+          'This session overlaps with an existing session on this date. Create anyway?'
+        );
+        if (!confirmed) return;
+      }
+    } catch (err) {
+      console.error('Error checking session overlap:', err);
     }
 
     const totalHours = (newClockOut - newClockIn) / (1000 * 60 * 60);

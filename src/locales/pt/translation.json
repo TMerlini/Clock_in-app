@@ -173,13 +173,22 @@
       "lastSynced": "Última sincronização",
       "syncSessions": "Sincronizar Sessão(ões)",
       "importFromCalendar": "Importar do Calendário",
-      "syncing": "A sincronizar..."
+      "syncing": "A sincronizar...",
+      "autoSync": "Sincronizar sessões automaticamente com o Google Calendar",
+      "autoSyncDescription": "Quando ativado, a entrada e saída criarão e atualizarão eventos no seu Google Calendar. Pode sincronizar manualmente a partir daqui."
     },
     "actions": {
       "resetToDefaults": "Repor Padrões",
       "saveSettings": "Guardar Definições",
       "settingsSaved": "Definições guardadas com sucesso! As alterações aplicar-se-ão a novas sessões.",
       "loadingSettings": "A carregar definições..."
+    },
+    "dataExport": {
+      "title": "Dados e Cópia de Segurança",
+      "description": "Descarregue uma cópia dos seus dados (sessões, definições, deduções de horas extras) em JSON. Útil para cópia de segurança ou portabilidade de dados.",
+      "download": "Descarregar os meus dados",
+      "exporting": "A exportar...",
+      "error": "Falha ao exportar dados."
     },
     "units": {
       "hours": "horas",
@@ -203,7 +212,8 @@
     "lunchTime": "Hora de Almoço",
     "expenses": "Despesas",
     "clockInOut": "Entrada/Saída",
-    "noData": "--:--"
+    "noData": "--:--",
+    "maxHoursWarning": "Está prestes a registar {{hours}} para esta sessão. Continuar?"
   },
   "aiAdvisor": {
     "title": "Assistente IA",
@@ -323,6 +333,7 @@
     "needMoreCalls": "Precisa de Mais Chamadas IA?",
     "callPackDescription": "Compre pacotes de chamadas adicionais que nunca expiram. Perfeito para utilizadores avançados!",
     "buyCallPacks": "Comprar Pacotes de Chamadas",
+    "poweredByOpenRouter": "powered by OpenRouter",
     "plans": {
       "mostPopular": "Mais Popular",
       "free": {
@@ -494,6 +505,8 @@
     },
     "exportPeriod": "Período",
     "period": "Período",
+    "exportAllMembers": "Exportar todos os membros",
+    "exporting": "A exportar...",
     "sessionsInPeriod": "Sessões no período",
     "sessionsCount": "{{count}} sessões",
     "workingDays": "Dias úteis",
@@ -939,6 +952,42 @@
           "answer": "O sistema de avisos da equipa monitoriza automaticamente os seus membros da equipa para problemas de conformidade:\n• Avisos de limite de Isenção: Alerta quando os membros se aproximam (90%) ou excedem o seu limite anual de Isenção (200h padrão)\n• Avisos de horas semanais: Alerta quando os membros trabalham 35h+ numa semana (a aproximar-se do limite de 40h)\n• Avisos de horas extras anuais: Alerta quando os membros se aproximam (90%) ou excedem o seu limite anual de horas extras (150h)\n\nOs avisos ajudam-no a gerir proativamente a conformidade e a prevenir problemas legais antes que ocorram."
         }
       }
+    }
+  },
+  "admin": {
+    "analytics": {
+      "title": "Análises de Uso",
+      "range7d": "Últimos 7 dias",
+      "range14d": "Últimos 14 dias",
+      "range30d": "Últimos 30 dias",
+      "range90d": "Últimos 90 dias",
+      "totalUsers": "Total de Utilizadores",
+      "totalRegistered": "Total de utilizadores registados",
+      "active7d": "Ativos (7 dias)",
+      "activeLast7": "Ativos nos últimos 7 dias",
+      "active30d": "Ativos (30 dias)",
+      "activeLast30": "Ativos nos últimos 30 dias",
+      "premiumAI": "Premium AI",
+      "premiumSubscribers": "Subscritores Premium AI",
+      "totalSessions": "Total de Sessões",
+      "sessionsTracked": "Total de sessões rastreadas",
+      "totalAICalls": "Total de Chamadas IA",
+      "aiCallsUsed": "Chamadas IA utilizadas",
+      "newThisMonth": "Novos Este Mês",
+      "newUsersMonth": "Novos utilizadores este mês",
+      "sessionsThisMonth": "Sessões Este Mês",
+      "sessionsMonth": "Sessões este mês",
+      "enterpriseOrgs": "Organizações Enterprise",
+      "enterpriseOrgsLabel": "Organizações Enterprise",
+      "usersOverTime": "Novos Registos ao Longo do Tempo",
+      "activeUsersOverTime": "Utilizadores Ativos ao Longo do Tempo",
+      "sessionsOverTime": "Sessões ao Longo do Tempo",
+      "subscriptionDistribution": "Distribuição de Subscrições",
+      "newSignups": "Novos registos",
+      "activeUsers": "Utilizadores ativos",
+      "sessions": "Sessões",
+      "users": "utilizadores",
+      "noData": "Sem dados de análise disponíveis."
     }
   },
   "about": {

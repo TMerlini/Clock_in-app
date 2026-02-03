@@ -398,6 +398,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 2rem;
+  flex-wrap: wrap;
 }
 
 .call-pack-content h3 {
@@ -482,6 +483,12 @@
   max-width: 500px;
   display: flex;
   justify-content: center;
+}
+
+.call-pack-openrouter {
+  margin: 0.5rem 0;
+  width: 100%;
+  flex-basis: 100%;
 }
 
 /* Tablet Responsiveness */

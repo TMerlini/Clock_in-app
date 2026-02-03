@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { doc, getDoc, setDoc, collection, query, where, getDocs, updateDoc } from 'firebase/firestore';
 import { db, auth } from '../lib/firebase';
 import { CalendarAuthButton } from './CalendarAuthButton';
-import { Settings as SettingsIcon, Save, RotateCcw, Clock, Coffee, AlertTriangle, DollarSign, Calendar, CheckCircle, XCircle, AlertCircle, RefreshCw, User, AtSign, Download, Crown, Globe } from 'lucide-react';
+import { Settings as SettingsIcon, Save, RotateCcw, Clock, Coffee, AlertTriangle, DollarSign, Calendar, CheckCircle, XCircle, AlertCircle, RefreshCw, User, AtSign, Download, Crown, Globe, Database } from 'lucide-react';
 import { format } from 'date-fns';
 import { useTranslation } from 'react-i18next';
 import i18n from '../lib/i18n';
@@ -49,7 +49,9 @@ export function Settings({ googleCalendar, onUsernameChange, onNavigate }) {
   const [saved, setSaved] = useState(false);
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
+  const [exportingData, setExportingData] = useState(false);
   const [showSetupInstructions, setShowSetupInstructions] = useState(false);
+  const [calendarAutoSync, setCalendarAutoSync] = useState(true);
   const [syncStats, setSyncStats] = useState({
     totalSessions: 0,
     syncedSessions: 0,
@@ -120,7 +122,8 @@ export function Settings({ googleCalendar, onUsernameChange, onNavigate }) {
         setFixedBonus(financeSettings.fixedBonus || 0);
         setDailyMealSubsidy(financeSettings.dailyMealSubsidy || 0);
         setMealCardDeduction(financeSettings.mealCardDeduction || 0);
-        
+        setCalendarAutoSync(settings.calendarAutoSync !== false);
+
         // Notify parent of username
         if (settings.username && onUsernameChange) {
           onUsernameChange(settings.username);
@@ -307,6 +310,7 @@ export function Settings({ googleCalendar, onUsernameChange, onNavigate }) {
         bankHolidayApplyBonus,
         isPremium,
         language,
+        calendarAutoSync,
         financeSettings: {
           hourlyRate,
           isencaoRate,
@@ -337,7 +341,7 @@ export function Settings({ googleCalendar, onUsernameChange, onNavigate }) {
       }
 
       const settingsRef = doc(db, 'userSettings', user.uid);
-      await setDoc(settingsRef, settings);
+      await setDoc(settingsRef, settings, { merge: true });
       
       // Notify parent of username change
       if (onUsernameChange) {
@@ -389,6 +393,47 @@ export function Settings({ googleCalendar, onUsernameChange, onNavigate }) {
     setFixedBonus(0);
     setDailyMealSubsidy(0);
     setMealCardDeduction(0);
+  };
+
+  const handleExportMyData = async () => {
+    const currentUser = auth.currentUser;
+    if (!currentUser) return;
+    setExportingData(true);
+    try {
+      const [sessionsSnap, settingsSnap, deductionsSnap] = await Promise.all([
+        getDocs(query(collection(db, 'sessions'), where('userId', '==', currentUser.uid))),
+        getDoc(doc(db, 'userSettings', currentUser.uid)),
+        getDocs(query(collection(db, 'overworkDeductions'), where('userId', '==', currentUser.uid)))
+      ]);
+      const sessions = [];
+      sessionsSnap.forEach((d) => sessions.push({ id: d.id, ...d.data() }));
+      const settings = settingsSnap.exists() ? settingsSnap.data() : null;
+      const deductions = [];
+      deductionsSnap.forEach((d) => deductions.push({ id: d.id, ...d.data() }));
+      const exportData = {
+        exportedAt: new Date().toISOString(),
+        userId: currentUser.uid,
+        email: currentUser.email,
+        sessions,
+        userSettings: settings,
+        overworkDeductions: deductions
+      };
+      const json = JSON.stringify(exportData, null, 2);
+      const blob = new Blob([json], { type: 'application/json;charset=utf-8;' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = `clock-in-data-${format(new Date(), 'yyyy-MM-dd')}.json`;
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(link.href);
+    } catch (err) {
+      console.error('Export data error:', err);
+      alert(t('settings.dataExport.error', { defaultValue: 'Failed to export data.' }));
+    } finally {
+      setExportingData(false);
+    }
   };
 
   const handleLanguageChange = async (newLanguage) => {
@@ -1302,6 +1347,33 @@ export function Settings({ googleCalendar, onUsernameChange, onNavigate }) {
             />
 
             {googleCalendar.isAuthorized && (
+              <div className="setting-item" style={{ marginTop: '1rem' }}>
+                <div className="setting-header">
+                  <Calendar className="setting-icon" />
+                  <div>
+                    <label htmlFor="calendarAutoSync">{t('settings.googleCalendar.autoSync')}</label>
+                    <p className="setting-description">{t('settings.googleCalendar.autoSyncDescription')}</p>
+                  </div>
+                </div>
+                <div className="setting-input-group">
+                  <label className="toggle-switch">
+                    <input
+                      id="calendarAutoSync"
+                      type="checkbox"
+                      checked={calendarAutoSync}
+                      onChange={(e) => setCalendarAutoSync(e.target.checked)}
+                      className="toggle-input"
+                    />
+                    <span className="toggle-slider"></span>
+                  </label>
+                  <span className="toggle-label">
+                    {calendarAutoSync ? t('settings.bankHolidays.enabled') : t('settings.bankHolidays.disabled')}
+                  </span>
+                </div>
+              </div>
+            )}
+
+            {googleCalendar.isAuthorized && (
               <div className="sync-status-container">
                 <h3 className="sync-status-title">{t('settings.googleCalendar.syncStatus')}</h3>
                 <div className="sync-stats-grid">
@@ -1357,6 +1429,25 @@ export function Settings({ googleCalendar, onUsernameChange, onNavigate }) {
             )}
           </section>
         )}
+
+        <section className="settings-section">
+          <div className="section-title">
+            <Database />
+            <h2>{t('settings.dataExport.title', { defaultValue: 'Data & Backup' })}</h2>
+          </div>
+          <p className="section-description">
+            {t('settings.dataExport.description', { defaultValue: 'Download a copy of your data (sessions, settings, overwork deductions) as JSON. Useful for backup or data portability.' })}
+          </p>
+          <button
+            type="button"
+            className="batch-sync-button"
+            onClick={handleExportMyData}
+            disabled={exportingData}
+          >
+            <Download className={exportingData ? 'spinning' : ''} />
+            {exportingData ? t('settings.dataExport.exporting', { defaultValue: 'Exporting...' }) : t('settings.dataExport.download', { defaultValue: 'Download my data' })}
+          </button>
+        </section>
 
         <div className="settings-actions">
           <button className="reset-button" onClick={handleReset}>

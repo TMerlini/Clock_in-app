@@ -1,23 +1,31 @@
-import { useState, useEffect } from 'react';
-import { collection, getDocs, doc, getDoc, setDoc, deleteDoc, query, orderBy, limit, where } from 'firebase/firestore';
+import { useState, useEffect, useMemo } from 'react';
+import { collection, getDocs, doc, getDoc, setDoc, deleteDoc } from 'firebase/firestore';
 import { db, auth } from '../lib/firebase';
 import { isAdmin } from '../lib/adminUtils';
 import { addCallPack } from '../lib/tokenManager';
 import { getPlanConfig, savePlanConfig } from '../lib/planConfig';
 import { Shield, Users, UserPlus, Crown, BarChart3, Package, Settings, Search, Trash2, Edit2, Eye, Loader, AlertCircle, Check, X, Plus, ChevronDown, ChevronUp } from 'lucide-react';
+import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { format, startOfDay, startOfMonth, subDays, eachDayOfInterval } from 'date-fns';
+import { useTranslation } from 'react-i18next';
 import './Admin.css';
 
-export function Admin({ user, onNavigate }) {
+export function Admin({ user }) {
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(true);
   const [users, setUsers] = useState([]);
   const [guests, setGuests] = useState([]);
+  const [sessions, setSessions] = useState([]);
   const [stats, setStats] = useState({
     totalUsers: 0,
     activeUsers7d: 0,
     activeUsers30d: 0,
     premiumAISubscribers: 0,
     totalSessions: 0,
-    totalAICalls: 0
+    totalAICalls: 0,
+    newUsersThisMonth: 0,
+    sessionsThisMonth: 0,
+    enterpriseCount: 0
   });
   const [searchTerm, setSearchTerm] = useState('');
   const [activeSection, setActiveSection] = useState('stats');
@@ -30,6 +38,7 @@ export function Admin({ user, onNavigate }) {
   const [planConfigLoading, setPlanConfigLoading] = useState(false);
   const [planConfigSaving, setPlanConfigSaving] = useState(null);
   const [expandedPlanEditor, setExpandedPlanEditor] = useState(null);
+  const [analyticsDateRange, setAnalyticsDateRange] = useState('30d');
 
   useEffect(() => {
     if (user && isAdmin(user)) {
@@ -92,34 +101,49 @@ export function Admin({ user, onNavigate }) {
         }
       });
 
-      // Load session counts for statistics
+      // Load sessions for statistics and analytics
       const sessionsRef = collection(db, 'sessions');
       const sessionsSnapshot = await getDocs(sessionsRef);
+      const sessionsList = [];
       const totalSessions = sessionsSnapshot.size;
 
       // Calculate active users (users with sessions in last 7/30 days)
       const now = Date.now();
       const sevenDaysAgo = now - (7 * 24 * 60 * 60 * 1000);
       const thirtyDaysAgo = now - (30 * 24 * 60 * 60 * 1000);
+      const monthStart = startOfMonth(new Date()).getTime();
 
       const activeUsers7d = new Set();
       const activeUsers30d = new Set();
+      let newUsersThisMonth = 0;
+      let sessionsThisMonth = 0;
 
       sessionsSnapshot.forEach((sessionDoc) => {
         const session = sessionDoc.data();
         const userId = session.userId;
         const clockIn = session.clockIn || 0;
+        sessionsList.push({ id: sessionDoc.id, userId, clockIn, ...session });
 
-        if (clockIn >= thirtyDaysAgo) {
-          activeUsers30d.add(userId);
-        }
-        if (clockIn >= sevenDaysAgo) {
-          activeUsers7d.add(userId);
-        }
+        if (clockIn >= monthStart) sessionsThisMonth++;
+        if (clockIn >= thirtyDaysAgo) activeUsers30d.add(userId);
+        if (clockIn >= sevenDaysAgo) activeUsers7d.add(userId);
       });
 
+      allUsers.forEach((u) => {
+        const createdAtMs = u.createdAt?.seconds ? u.createdAt.seconds * 1000 : (u.createdAt || 0);
+        if (createdAtMs >= monthStart) newUsersThisMonth++;
+      });
+
+      // Load enterprise count
+      let enterpriseCount = 0;
+      try {
+        const enterprisesRef = collection(db, 'enterprises');
+        const enterprisesSnap = await getDocs(enterprisesRef);
+        enterpriseCount = enterprisesSnap.size;
+      } catch { /* enterprises may not exist */ }
+
       // Calculate statistics
-      const premiumAISubscribers = allUsers.filter(u => 
+      const premiumAISubscribers = allUsers.filter(u =>
         (u.subscriptionPlan || '').toLowerCase() === 'premium_ai'
       ).length;
 
@@ -127,20 +151,23 @@ export function Admin({ user, onNavigate }) {
       let totalAICalls = 0;
       allUsers.forEach(u => {
         if (u.aiUsage && u.aiUsage.totalTokensUsed) {
-          // We track totalTokensUsed, but can estimate calls from callsUsed
           totalAICalls += (u.aiUsage.callsUsed || 0);
         }
       });
 
       setUsers(allUsers);
       setGuests(guestAccounts);
+      setSessions(sessionsList);
       setStats({
         totalUsers: allUsers.length,
         activeUsers7d: activeUsers7d.size,
         activeUsers30d: activeUsers30d.size,
         premiumAISubscribers,
         totalSessions,
-        totalAICalls
+        totalAICalls,
+        newUsersThisMonth,
+        sessionsThisMonth,
+        enterpriseCount: enterpriseCount
       });
     } catch (error) {
       console.error('Error loading admin data:', error);
@@ -300,6 +327,70 @@ export function Admin({ user, onNavigate }) {
   const filteredGuests = guests.filter(g =>
     g.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const createdAtToMs = (ts) => {
+    if (!ts) return 0;
+    if (ts.seconds != null) return ts.seconds * 1000;
+    return typeof ts === 'number' ? ts : 0;
+  };
+
+  const analyticsChartData = useMemo(() => {
+    if (!users.length && !sessions.length) return null;
+    const days = parseInt(analyticsDateRange, 10) || 30;
+    const end = new Date();
+    const start = subDays(end, days);
+    const interval = eachDayOfInterval({ start, end });
+
+    const newSignupsByDay = {};
+    const activeByDay = {};
+    const sessionsByDay = {};
+    interval.forEach((d) => {
+      const key = format(d, 'yyyy-MM-dd');
+      newSignupsByDay[key] = 0;
+      activeByDay[key] = new Set();
+      sessionsByDay[key] = 0;
+    });
+
+    users.forEach((u) => {
+      const ms = createdAtToMs(u.createdAt);
+      if (ms >= start.getTime() && ms <= end.getTime()) {
+        const key = format(startOfDay(ms), 'yyyy-MM-dd');
+        if (newSignupsByDay[key] !== undefined) newSignupsByDay[key]++;
+      }
+    });
+
+    sessions.forEach((s) => {
+      const clockIn = s.clockIn || 0;
+      if (clockIn >= start.getTime() && clockIn <= end.getTime()) {
+        const key = format(startOfDay(clockIn), 'yyyy-MM-dd');
+        if (activeByDay[key]) activeByDay[key].add(s.userId);
+        if (sessionsByDay[key] !== undefined) sessionsByDay[key]++;
+      }
+    });
+
+    const usersOverTime = interval.map((d) => {
+      const key = format(d, 'yyyy-MM-dd');
+      return {
+        date: format(d, 'MMM d'),
+        fullDate: key,
+        newUsers: newSignupsByDay[key] || 0,
+        activeUsers: activeByDay[key]?.size || 0,
+        sessions: sessionsByDay[key] || 0
+      };
+    });
+
+    const dist = { free: 0, basic: 0, pro: 0, premium_ai: 0, enterprise: 0 };
+    users.forEach((u) => {
+      let plan = (u.subscriptionPlan || 'free').toLowerCase().replace(/[- ]/g, '_');
+      if (!(plan in dist)) plan = 'free';
+      dist[plan]++;
+    });
+    const subscriptionDistribution = Object.entries(dist)
+      .filter(([, v]) => v > 0)
+      .map(([name, value]) => ({ name: name.replace('_', ' '), value }));
+
+    return { usersOverTime, subscriptionDistribution };
+  }, [users, sessions, analyticsDateRange]);
 
   // Check if user is admin
   if (!user || !isAdmin(user)) {
@@ -743,32 +834,150 @@ export function Admin({ user, onNavigate }) {
       {/* Analytics Section */}
       {activeSection === 'analytics' && (
         <div className="admin-section">
-          <div className="section-header">
-            <h2>Usage Analytics</h2>
+          <div className="section-header analytics-section-header">
+            <h2>{t('admin.analytics.title', { defaultValue: 'Usage Analytics' })}</h2>
+            <select
+              className="analytics-date-range-select"
+              value={analyticsDateRange}
+              onChange={(e) => setAnalyticsDateRange(e.target.value)}
+            >
+              <option value="7d">{t('admin.analytics.range7d', { defaultValue: 'Last 7 days' })}</option>
+              <option value="14d">{t('admin.analytics.range14d', { defaultValue: 'Last 14 days' })}</option>
+              <option value="30d">{t('admin.analytics.range30d', { defaultValue: 'Last 30 days' })}</option>
+              <option value="90d">{t('admin.analytics.range90d', { defaultValue: 'Last 90 days' })}</option>
+            </select>
           </div>
 
           <div className="analytics-grid">
             <div className="analytics-card">
-              <h3>User Growth</h3>
+              <h3>{t('admin.analytics.totalUsers', { defaultValue: 'Total Users' })}</h3>
               <div className="analytics-value">{stats.totalUsers}</div>
-              <div className="analytics-label">Total registered users</div>
+              <div className="analytics-label">{t('admin.analytics.totalRegistered', { defaultValue: 'Total registered users' })}</div>
             </div>
             <div className="analytics-card">
-              <h3>Active Users</h3>
+              <h3>{t('admin.analytics.active7d', { defaultValue: 'Active (7 days)' })}</h3>
               <div className="analytics-value">{stats.activeUsers7d}</div>
-              <div className="analytics-label">Active in last 7 days</div>
+              <div className="analytics-label">{t('admin.analytics.activeLast7', { defaultValue: 'Active in last 7 days' })}</div>
             </div>
             <div className="analytics-card">
-              <h3>Subscription Distribution</h3>
+              <h3>{t('admin.analytics.active30d', { defaultValue: 'Active (30 days)' })}</h3>
+              <div className="analytics-value">{stats.activeUsers30d}</div>
+              <div className="analytics-label">{t('admin.analytics.activeLast30', { defaultValue: 'Active in last 30 days' })}</div>
+            </div>
+            <div className="analytics-card">
+              <h3>{t('admin.analytics.premiumAI', { defaultValue: 'Premium AI' })}</h3>
               <div className="analytics-value">{stats.premiumAISubscribers}</div>
-              <div className="analytics-label">Premium AI subscribers</div>
+              <div className="analytics-label">{t('admin.analytics.premiumSubscribers', { defaultValue: 'Premium AI subscribers' })}</div>
             </div>
             <div className="analytics-card">
-              <h3>Session Activity</h3>
+              <h3>{t('admin.analytics.totalSessions', { defaultValue: 'Total Sessions' })}</h3>
               <div className="analytics-value">{stats.totalSessions}</div>
-              <div className="analytics-label">Total sessions tracked</div>
+              <div className="analytics-label">{t('admin.analytics.sessionsTracked', { defaultValue: 'Total sessions tracked' })}</div>
+            </div>
+            <div className="analytics-card">
+              <h3>{t('admin.analytics.totalAICalls', { defaultValue: 'Total AI Calls' })}</h3>
+              <div className="analytics-value">{stats.totalAICalls}</div>
+              <div className="analytics-label">{t('admin.analytics.aiCallsUsed', { defaultValue: 'AI calls used' })}</div>
+            </div>
+            <div className="analytics-card">
+              <h3>{t('admin.analytics.newThisMonth', { defaultValue: 'New This Month' })}</h3>
+              <div className="analytics-value">{stats.newUsersThisMonth ?? 0}</div>
+              <div className="analytics-label">{t('admin.analytics.newUsersMonth', { defaultValue: 'New users this month' })}</div>
+            </div>
+            <div className="analytics-card">
+              <h3>{t('admin.analytics.sessionsThisMonth', { defaultValue: 'Sessions This Month' })}</h3>
+              <div className="analytics-value">{stats.sessionsThisMonth ?? 0}</div>
+              <div className="analytics-label">{t('admin.analytics.sessionsMonth', { defaultValue: 'Sessions this month' })}</div>
+            </div>
+            <div className="analytics-card">
+              <h3>{t('admin.analytics.enterpriseOrgs', { defaultValue: 'Enterprise Orgs' })}</h3>
+              <div className="analytics-value">{stats.enterpriseCount ?? 0}</div>
+              <div className="analytics-label">{t('admin.analytics.enterpriseOrgsLabel', { defaultValue: 'Enterprise organizations' })}</div>
             </div>
           </div>
+
+          {analyticsChartData ? (
+            <div className="analytics-charts">
+              <div className="analytics-chart-card">
+                <h3 className="analytics-chart-title">{t('admin.analytics.usersOverTime', { defaultValue: 'New Signups Over Time' })}</h3>
+                <div className="analytics-chart-container">
+                  <ResponsiveContainer width="100%" height={280}>
+                    <LineChart data={analyticsChartData.usersOverTime} margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+                      <XAxis dataKey="date" stroke="var(--muted-foreground)" style={{ fontSize: '12px' }} />
+                      <YAxis stroke="var(--muted-foreground)" style={{ fontSize: '12px' }} />
+                      <Tooltip
+                        contentStyle={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)', borderRadius: '8px', color: 'var(--foreground)' }}
+                      />
+                      <Line type="monotone" dataKey="newUsers" stroke="var(--primary)" strokeWidth={2} name={t('admin.analytics.newSignups', { defaultValue: 'New signups' })} dot={{ r: 3 }} activeDot={{ r: 5 }} />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+              <div className="analytics-chart-card">
+                <h3 className="analytics-chart-title">{t('admin.analytics.activeUsersOverTime', { defaultValue: 'Active Users Over Time' })}</h3>
+                <div className="analytics-chart-container">
+                  <ResponsiveContainer width="100%" height={280}>
+                    <BarChart data={analyticsChartData.usersOverTime} margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+                      <XAxis dataKey="date" stroke="var(--muted-foreground)" style={{ fontSize: '12px' }} />
+                      <YAxis stroke="var(--muted-foreground)" style={{ fontSize: '12px' }} />
+                      <Tooltip
+                        contentStyle={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)', borderRadius: '8px', color: 'var(--foreground)' }}
+                      />
+                      <Bar dataKey="activeUsers" name={t('admin.analytics.activeUsers', { defaultValue: 'Active users' })} fill="var(--primary)" radius={[4, 4, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+              <div className="analytics-chart-card">
+                <h3 className="analytics-chart-title">{t('admin.analytics.sessionsOverTime', { defaultValue: 'Sessions Over Time' })}</h3>
+                <div className="analytics-chart-container">
+                  <ResponsiveContainer width="100%" height={280}>
+                    <BarChart data={analyticsChartData.usersOverTime} margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+                      <XAxis dataKey="date" stroke="var(--muted-foreground)" style={{ fontSize: '12px' }} />
+                      <YAxis stroke="var(--muted-foreground)" style={{ fontSize: '12px' }} />
+                      <Tooltip
+                        contentStyle={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)', borderRadius: '8px', color: 'var(--foreground)' }}
+                      />
+                      <Bar dataKey="sessions" name={t('admin.analytics.sessions', { defaultValue: 'Sessions' })} fill="#10b981" radius={[4, 4, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+              {analyticsChartData.subscriptionDistribution.length > 0 && (
+                <div className="analytics-chart-card analytics-pie-card">
+                  <h3 className="analytics-chart-title">{t('admin.analytics.subscriptionDistribution', { defaultValue: 'Subscription Distribution' })}</h3>
+                  <div className="analytics-chart-container analytics-pie-container">
+                    <ResponsiveContainer width="100%" height={280}>
+                      <PieChart>
+                        <Pie
+                          data={analyticsChartData.subscriptionDistribution}
+                          dataKey="value"
+                          nameKey="name"
+                          cx="50%"
+                          cy="50%"
+                          outerRadius={100}
+                          label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                        >
+                          {analyticsChartData.subscriptionDistribution.map((_, i) => (
+                            <Cell key={i} fill={['var(--primary)', '#10b981', '#f59e0b', '#8b5cf6', '#6366f1'][i % 5]} />
+                          ))}
+                        </Pie>
+                        <Tooltip
+                          contentStyle={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)', borderRadius: '8px', color: 'var(--foreground)' }}
+                          formatter={(v) => [v, t('admin.analytics.users', { defaultValue: 'users' })]}
+                        />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="analytics-charts-empty">{t('admin.analytics.noData', { defaultValue: 'No analytics data available.' })}</div>
+          )}
         </div>
       )}
 

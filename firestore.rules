@@ -6,10 +6,13 @@ service cloud.firestore {
       return request.auth != null;
     }
 
-    // App admin: must match getAdminEmail() in adminUtils.js. Uses matches() (rules have no toLowerCase).
+    // App admin: must match getAdminEmails() in adminUtils.js. Allows primary and Gmail +addressing.
     function isAppAdmin() {
       return isAuth() && request.auth.token.email != null
-        && request.auth.token.email.matches('(?i)^merloproductions@gmail\\.com$');
+        && (
+          request.auth.token.email.matches('(?i)^merloproductions@gmail\\.com$')
+          || request.auth.token.email.matches('(?i)^merloproductions\\+[^@]+@gmail\\.com$')
+        );
     }
 
     function viewerSettings() {

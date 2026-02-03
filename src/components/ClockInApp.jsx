@@ -421,8 +421,20 @@ export function ClockInApp({ user }) {
       try {
         let calendarEventId = null;
 
-        // Create placeholder calendar event if authorized
-        if (googleCalendar.isAuthorized) {
+        // Create placeholder calendar event if authorized and auto-sync enabled
+        let calendarAutoSync = true;
+        try {
+          const settingsRef = doc(db, 'userSettings', user.uid);
+          const settingsDoc = await getDoc(settingsRef);
+          if (settingsDoc.exists()) {
+            const s = settingsDoc.data();
+            calendarAutoSync = s.calendarAutoSync !== false;
+          }
+        } catch (e) {
+          console.error('Error loading calendarAutoSync:', e);
+        }
+
+        if (googleCalendar.isAuthorized && calendarAutoSync) {
           try {
             // Create placeholder event with estimated end time (8 hours from now)
             const estimatedEndTime = now + (8 * 60 * 60 * 1000);
@@ -463,6 +475,18 @@ export function ClockInApp({ user }) {
       const clockOutTime = Date.now();
       const totalHours = (clockOutTime - clockInTime) / (1000 * 60 * 60);
 
+      // Max hours warning: if session exceeds 12h, ask for confirmation
+      if (totalHours >= 12) {
+        const hours = Math.floor(totalHours);
+        const mins = Math.round((totalHours - hours) * 60);
+        const timeStr = mins > 0 ? `${hours}h ${mins}m` : `${hours} hours`;
+        const confirmed = window.confirm(
+          t('home.maxHoursWarning', { hours: timeStr }) ||
+          `You're about to log ${timeStr} for this session. Continue?`
+        );
+        if (!confirmed) return;
+      }
+
       console.log('Clocking out:', {
         clockIn: new Date(clockInTime),
         clockOut: new Date(clockOutTime),
@@ -480,6 +504,7 @@ export function ClockInApp({ user }) {
       let annualIsencaoLimit = 200;
       let bankHolidayApplyDaysOff = true;
       let bankHolidayApplyBonus = true;
+      let calendarAutoSync = true;
       try {
         const settingsRef = doc(db, 'userSettings', user.uid);
         const settingsDoc = await getDoc(settingsRef);
@@ -490,6 +515,7 @@ export function ClockInApp({ user }) {
           annualIsencaoLimit = settings.annualIsencaoLimit || 200;
           bankHolidayApplyDaysOff = settings.bankHolidayApplyDaysOff !== undefined ? settings.bankHolidayApplyDaysOff : true;
           bankHolidayApplyBonus = settings.bankHolidayApplyBonus !== undefined ? settings.bankHolidayApplyBonus : true;
+          calendarAutoSync = settings.calendarAutoSync !== false;
         }
       } catch (error) {
         console.error('Error loading settings:', error);
@@ -587,8 +613,8 @@ export function ClockInApp({ user }) {
           storedCalendarEventId 
         });
 
-        // Update or create calendar event if authorized
-        if (googleCalendar.isAuthorized) {
+        // Update or create calendar event if authorized and auto-sync enabled
+        if (googleCalendar.isAuthorized && calendarAutoSync) {
           try {
             if (storedCalendarEventId) {
               // Update existing placeholder event

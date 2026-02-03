@@ -84,6 +84,7 @@ export function Enterprise({ user, onNavigate }) {
   const [memberDetailError, setMemberDetailError] = useState(null);
   const [memberReportType, setMemberReportType] = useState('monthly');
   const [memberSelectedDate, setMemberSelectedDate] = useState(new Date());
+  const [bulkExportLoading, setBulkExportLoading] = useState(false);
 
   useEffect(() => {
     if (!user) {
@@ -653,6 +654,92 @@ export function Enterprise({ user, onNavigate }) {
     URL.revokeObjectURL(link.href);
   };
 
+  const handleBulkExportAllMembers = async () => {
+    if (!enterpriseId || !members.length || !globalStatsDateRange?.start || !globalStatsDateRange?.end) return;
+    setBulkExportLoading(true);
+    try {
+      const rows = [];
+      const header = ['Member', t('finance.csv.date'), t('finance.csv.regularHours'), t('finance.csv.isencaoHours'), t('finance.csv.overtimeHours'), t('finance.csv.totalEarnings')];
+      rows.push(header.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(','));
+
+      for (const m of members) {
+        const [sessionsSnap, settingsSnap] = await Promise.all([
+          getDocs(query(collection(db, 'sessions'), where('userId', '==', m.id))),
+          getDoc(doc(db, 'userSettings', m.id))
+        ]);
+        const sessions = [];
+        sessionsSnap.forEach((d) => {
+          const data = d.data();
+          sessions.push({
+            id: d.id,
+            ...data,
+            clockIn: data.clockIn?.toDate ? data.clockIn.toDate() : new Date(data.clockIn)
+          });
+        });
+        const settings = settingsSnap.exists() ? settingsSnap.data() : {};
+        const fs = settings.financeSettings || {};
+        const financeSettings = {
+          hourlyRate: fs.hourlyRate || 0,
+          isencaoRate: fs.isencaoRate || 0,
+          isencaoCalculationMethod: fs.isencaoCalculationMethod || 'percentage',
+          isencaoFixedAmount: fs.isencaoFixedAmount || 0,
+          taxDeductionType: fs.taxDeductionType || 'both',
+          irsRate: fs.irsRate || 0,
+          irsBaseSalaryRate: fs.irsBaseSalaryRate || 0,
+          irsIhtRate: fs.irsIhtRate || 0,
+          irsOvertimeRate: fs.irsOvertimeRate || 0,
+          socialSecurityRate: fs.socialSecurityRate ?? 11,
+          customTaxRate: fs.customTaxRate || 0,
+          mealAllowanceIncluded: !!fs.mealAllowanceIncluded,
+          overtimeFirstHourRate: fs.overtimeFirstHourRate ?? 1.25,
+          overtimeSubsequentRate: fs.overtimeSubsequentRate ?? 1.5,
+          weekendOvertimeRate: fs.weekendOvertimeRate ?? 1.5,
+          holidayOvertimeRate: fs.holidayOvertimeRate ?? 2,
+          fixedBonus: fs.fixedBonus || 0,
+          dailyMealSubsidy: fs.dailyMealSubsidy || 0,
+          mealCardDeduction: fs.mealCardDeduction || 0
+        };
+        let financeData = null;
+        try {
+          financeData = calculatePeriodFinance(sessions, globalStatsDateRange, financeSettings);
+        } catch (e) {
+          console.error('Bulk export finance calc error:', e);
+        }
+        const memberName = getMemberDisplayName(m).replace(/"/g, '""');
+        const sessionRows = (financeData?.sessions || []).sort((a, b) => b.date.getTime() - a.date.getTime());
+        sessionRows.forEach((s) => {
+          rows.push([
+            `"${memberName}"`,
+            format(s.date, 'yyyy-MM-dd'),
+            (s.regularHours || 0).toFixed(2),
+            (s.isencaoHours || 0).toFixed(2),
+            (s.paidExtraHours || 0).toFixed(2),
+            (s.totalEarnings || 0).toFixed(2)
+          ].join(','));
+        });
+      }
+
+      const csv = rows.join('\n');
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      const periodLabel = globalStatsDateRange?.start && globalStatsDateRange?.end
+        ? `${format(globalStatsDateRange.start, 'yyyy-MM-dd')}-${format(globalStatsDateRange.end, 'yyyy-MM-dd')}`
+        : 'export';
+      link.download = `enterprise-all-members-${periodLabel}.csv`;
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(link.href);
+    } catch (err) {
+      console.error('Bulk export error:', err);
+      setError(t('common.error') || 'Export failed');
+    } finally {
+      setBulkExportLoading(false);
+    }
+  };
+
   const handleGlobalStatsExportCSV = () => {
     const periodLabel = globalStatsDateRange?.start && globalStatsDateRange?.end
       ? `${format(globalStatsDateRange.start, 'yyyy-MM-dd', { locale: getDateFnsLocale() })} – ${format(globalStatsDateRange.end, 'yyyy-MM-dd', { locale: getDateFnsLocale() })}`
@@ -821,6 +908,16 @@ export function Enterprise({ user, onNavigate }) {
           <button type="button" className="enterprise-export-btn" onClick={handleGlobalStatsExportCSV} title={t('finance.exportCSV')}>
             <Download size={18} />
             <span>{t('finance.exportCSV')}</span>
+          </button>
+          <button
+            type="button"
+            className="enterprise-export-btn"
+            onClick={handleBulkExportAllMembers}
+            disabled={bulkExportLoading || members.length === 0}
+            title={t('enterprise.exportAllMembers', { defaultValue: 'Export all members' })}
+          >
+            {bulkExportLoading ? <Loader size={18} className="spinning" /> : <Download size={18} />}
+            <span>{bulkExportLoading ? t('enterprise.exporting', { defaultValue: 'Exporting...' }) : t('enterprise.exportAllMembers', { defaultValue: 'Export all members' })}</span>
           </button>
         </div>
         <div className="enterprise-stats-strip">

@@ -173,13 +173,22 @@
       "lastSynced": "Last synced",
       "syncSessions": "Sync Session(s)",
       "importFromCalendar": "Import from Calendar",
-      "syncing": "Syncing..."
+      "syncing": "Syncing...",
+      "autoSync": "Automatically sync sessions to Google Calendar",
+      "autoSyncDescription": "When enabled, clock-in and clock-out will create and update events in your Google Calendar. You can still sync manually from here."
     },
     "actions": {
       "resetToDefaults": "Reset to Defaults",
       "saveSettings": "Save Settings",
       "settingsSaved": "Settings saved successfully! Changes will apply to new sessions.",
       "loadingSettings": "Loading settings..."
+    },
+    "dataExport": {
+      "title": "Data & Backup",
+      "description": "Download a copy of your data (sessions, settings, overwork deductions) as JSON. Useful for backup or data portability.",
+      "download": "Download my data",
+      "exporting": "Exporting...",
+      "error": "Failed to export data."
     },
     "units": {
       "hours": "hours",
@@ -203,7 +212,8 @@
     "lunchTime": "Lunch Time",
     "expenses": "Expenses",
     "clockInOut": "Clock In/Out",
-    "noData": "--:--"
+    "noData": "--:--",
+    "maxHoursWarning": "You're about to log {{hours}} for this session. Continue?"
   },
   "aiAdvisor": {
     "title": "AI Advisor",
@@ -323,6 +333,7 @@
     "needMoreCalls": "Need More AI Calls?",
     "callPackDescription": "Purchase additional call packs that never expire. Perfect for power users!",
     "buyCallPacks": "Buy Call Packs",
+    "poweredByOpenRouter": "powered by OpenRouter",
     "plans": {
       "mostPopular": "Most Popular",
       "free": {
@@ -494,6 +505,8 @@
     },
     "exportPeriod": "Period",
     "period": "Period",
+    "exportAllMembers": "Export all members",
+    "exporting": "Exporting...",
     "sessionsInPeriod": "Sessions in period",
     "sessionsCount": "{{count}} sessions",
     "workingDays": "Working days",
@@ -913,6 +926,42 @@
           "answer": "The team warnings system automatically monitors your team members for compliance issues:\n• Isenção limit warnings: Alerts when members approach (90%) or exceed their annual Isenção limit (200h default)\n• Weekly hours warnings: Alerts when members work 35h+ in a week (approaching 40h limit)\n• Annual overtime warnings: Alerts when members approach (90%) or exceed their annual overtime cap (150h)\n\nWarnings help you proactively manage compliance and prevent legal issues before they occur."
         }
       }
+    }
+  },
+  "admin": {
+    "analytics": {
+      "title": "Usage Analytics",
+      "range7d": "Last 7 days",
+      "range14d": "Last 14 days",
+      "range30d": "Last 30 days",
+      "range90d": "Last 90 days",
+      "totalUsers": "Total Users",
+      "totalRegistered": "Total registered users",
+      "active7d": "Active (7 days)",
+      "activeLast7": "Active in last 7 days",
+      "active30d": "Active (30 days)",
+      "activeLast30": "Active in last 30 days",
+      "premiumAI": "Premium AI",
+      "premiumSubscribers": "Premium AI subscribers",
+      "totalSessions": "Total Sessions",
+      "sessionsTracked": "Total sessions tracked",
+      "totalAICalls": "Total AI Calls",
+      "aiCallsUsed": "AI calls used",
+      "newThisMonth": "New This Month",
+      "newUsersMonth": "New users this month",
+      "sessionsThisMonth": "Sessions This Month",
+      "sessionsMonth": "Sessions this month",
+      "enterpriseOrgs": "Enterprise Orgs",
+      "enterpriseOrgsLabel": "Enterprise organizations",
+      "usersOverTime": "New Signups Over Time",
+      "activeUsersOverTime": "Active Users Over Time",
+      "sessionsOverTime": "Sessions Over Time",
+      "subscriptionDistribution": "Subscription Distribution",
+      "newSignups": "New signups",
+      "activeUsers": "Active users",
+      "sessions": "Sessions",
+      "users": "users",
+      "noData": "No analytics data available."
     }
   },
   "about": {
