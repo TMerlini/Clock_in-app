@@ -174,13 +174,16 @@ export async function getCallStatus(userId) {
     }
     
     const settings = settingsDoc.data();
+    const subscriptionPlan = (settings.subscriptionPlan || settings.plan || '').toLowerCase();
+    // Pro has no base allocation; only Premium AI and Enterprise get base calls
+    const hasBaseAllocation = subscriptionPlan === 'premium_ai' || subscriptionPlan === 'enterprise';
     // Check both old (aiTokens) and new (aiUsage) format for migration
     const aiUsage = settings.aiUsage || {};
     const aiTokens = settings.aiTokens || {};
     const callPacks = aiUsage.callPacks || [];
     
-    // Migrate from old format if needed
-    if (aiTokens.allocated && !aiUsage.callsAllocated) {
+    // Migrate from old format if needed (only for plans with base allocation)
+    if (aiTokens.allocated && !aiUsage.callsAllocated && hasBaseAllocation) {
       // Old format exists, migrate to new format
       const callsAllocated = CALL_ALLOCATION;
       const callsUsed = 0; // Reset calls on migration
@@ -204,8 +207,9 @@ export async function getCallStatus(userId) {
       };
     }
     
-    const callsAllocated = aiUsage.callsAllocated || CALL_ALLOCATION;
-    const callsUsed = aiUsage.callsUsed || 0;
+    const defaultBaseAllocation = subscriptionPlan === 'enterprise' ? ENTERPRISE_CALL_ALLOCATION : CALL_ALLOCATION;
+    const callsAllocated = hasBaseAllocation ? (aiUsage.callsAllocated ?? defaultBaseAllocation) : 0;
+    const callsUsed = hasBaseAllocation ? (aiUsage.callsUsed || 0) : 0;
     const baseRemaining = Math.max(0, callsAllocated - callsUsed);
     const packsRemaining = getCallPacksRemaining(callPacks);
     const totalAvailable = baseRemaining + packsRemaining;
@@ -289,15 +293,18 @@ export async function deductCall(userId, actualTokens = 0) {
     }
     
     const settings = settingsDoc.data();
+    const subscriptionPlan = (settings.subscriptionPlan || settings.plan || '').toLowerCase();
+    const hasBaseAllocation = subscriptionPlan === 'premium_ai' || subscriptionPlan === 'enterprise';
+    const defaultBaseAllocation = subscriptionPlan === 'enterprise' ? ENTERPRISE_CALL_ALLOCATION : CALL_ALLOCATION;
     const aiUsage = settings.aiUsage || { 
-      callsAllocated: CALL_ALLOCATION, 
+      callsAllocated: hasBaseAllocation ? defaultBaseAllocation : 0, 
       callsUsed: 0, 
       totalTokensUsed: 0,
       callPacks: []
     };
     
-    const callsAllocated = aiUsage.callsAllocated || CALL_ALLOCATION;
-    let currentCallsUsed = aiUsage.callsUsed || 0;
+    const callsAllocated = hasBaseAllocation ? (aiUsage.callsAllocated ?? defaultBaseAllocation) : 0;
+    let currentCallsUsed = hasBaseAllocation ? (aiUsage.callsUsed || 0) : 0;
     const currentTotalTokens = aiUsage.totalTokensUsed || 0;
     let callPacks = [...(aiUsage.callPacks || [])];
     

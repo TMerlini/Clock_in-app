@@ -55,6 +55,7 @@ export function AIAdvisor({ user, onNavigate }) {
     callPacks: []
   });
   const [isPremiumAI, setIsPremiumAI] = useState(false);
+  const [needsCallsToUseAI, setNeedsCallsToUseAI] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [loadingMessageIndex, setLoadingMessageIndex] = useState(0);
   const [streamingContent, setStreamingContent] = useState('');
@@ -113,13 +114,14 @@ export function AIAdvisor({ user, onNavigate }) {
       if (settingsDoc.exists()) {
         const settings = settingsDoc.data();
         const subscriptionPlan = (settings.subscriptionPlan || settings.plan || '').toLowerCase();
-        // Admin always has Premium AI access
-        const premiumAI = adminCheck || subscriptionPlan === 'premium_ai';
-        // Premium is true if user has any paid plan (including premium_ai), isPremium flag, or is admin
-        const premium = adminCheck || settings.isPremium || premiumAI || subscriptionPlan === 'basic' || subscriptionPlan === 'pro' || subscriptionPlan === 'enterprise';
+        // Admin always has Premium AI access. Enterprise includes Premium AI.
+        const premiumAI = adminCheck || subscriptionPlan === 'premium_ai' || subscriptionPlan === 'enterprise';
+        // Premium = can access AI Advisor. Basic has no AI. Pro can use AI with purchased packs. Premium AI/Enterprise have base allocation.
+        const premium = adminCheck || settings.isPremium || premiumAI || subscriptionPlan === 'pro' || subscriptionPlan === 'enterprise';
         
         setIsPremium(premium);
         setIsPremiumAI(premiumAI);
+        setNeedsCallsToUseAI(premiumAI || subscriptionPlan === 'pro');
         
         console.log('Premium status check:', { premium, premiumAI, subscriptionPlan, isAdmin: adminCheck });
 
@@ -180,6 +182,23 @@ export function AIAdvisor({ user, onNavigate }) {
                   callPacks: []
                 });
               }
+            }
+          } else if (subscriptionPlan === 'pro') {
+            // Pro: load call status from packs only (no base allocation)
+            try {
+              const status = await getCallStatus(currentUser.uid);
+              setCallStatus(status);
+            } catch (error) {
+              console.error('Error loading call status for Pro:', error);
+              setCallStatus({ 
+                callsAllocated: 0, 
+                callsUsed: 0, 
+                callsRemaining: 0,
+                packsRemaining: 0,
+                totalAvailable: 0,
+                totalTokensUsed: 0,
+                callPacks: []
+              });
             }
           }
           
@@ -585,12 +604,12 @@ export function AIAdvisor({ user, onNavigate }) {
           <button
             className="send-button"
             onClick={handleSendMessage}
-            disabled={!inputValue.trim() || isLoading || contextLoading || (isPremiumAI && callStatus.totalAvailable <= 0)}
+            disabled={!inputValue.trim() || isLoading || contextLoading || (needsCallsToUseAI && callStatus.totalAvailable <= 0)}
           >
             <Send size={20} />
           </button>
         </div>
-        {isPremiumAI && (
+        {needsCallsToUseAI && (
           <div className="call-counter-container">
             <div className="token-counter-small">
               {callStatus.callsAllocated >= 999999

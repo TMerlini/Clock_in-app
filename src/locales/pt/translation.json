@@ -1,4 +1,18 @@
 {
+  "syncOnVisit": {
+    "title": "Sincronizar Google Calendar",
+    "notConnectedMessage": "Ligue o Google Calendar para sincronizar automaticamente as suas sessões de trabalho.",
+    "unsyncedMessage": "Tem sessões de trabalho que ainda não foram sincronizadas com o Google Calendar.",
+    "syncGoogle": "Sincronizar Google",
+    "continueOffline": "Continuar offline"
+  },
+  "planGate": {
+    "basic": {
+      "title": "Mudar para Básico",
+      "description": "{{feature}} está disponível no plano Básico. Faça upgrade para desbloquear Calendário, Análises, Finanças e Definições.",
+      "button": "Ver Planos"
+    }
+  },
   "common": {
     "loading": "Carregando...",
     "save": "Guardar",
@@ -305,6 +319,7 @@
     "currentPlan": "Plano Atual",
     "subscribe": "Subscrever",
     "switchToFree": "Mudar para Gratuito",
+    "switchToPlan": "Mudar para {{planName}}",
     "needMoreCalls": "Precisa de Mais Chamadas IA?",
     "callPackDescription": "Compre pacotes de chamadas adicionais que nunca expiram. Perfeito para utilizadores avançados!",
     "buyCallPacks": "Comprar Pacotes de Chamadas",
@@ -313,28 +328,28 @@
       "free": {
         "name": "Gratuito",
         "period": "mês",
-        "feature1": "Rastreamento de tempo básico",
-        "feature2": "Gestão básica de sessões",
-        "feature3": "Análises limitadas",
-        "feature4": "Exportação básica"
+        "feature1": "Entrada/saída e gestão de sessões",
+        "feature2": "Seletor de datas e lista de sessões",
+        "feature3": "FAQ, Sobre, Seleção de planos",
+        "feature4": "Faça upgrade quando quiser"
       },
       "basic": {
         "name": "Básico",
         "price": "€0.99",
         "period": "mês",
         "feature1": "Tudo do Gratuito",
-        "feature2": "Análises completas",
-        "feature3": "Sincronização Google Calendar",
-        "feature4": "Gestão avançada de sessões",
-        "feature5": "Exportar sessões"
+        "feature2": "Vista de calendário e importação",
+        "feature3": "Análises e Finanças com exportação CSV",
+        "feature4": "Definições e sincronização Google Calendar",
+        "feature5": "Gestão completa de sessões"
       },
       "pro": {
         "name": "Pro",
         "price": "€4.99",
         "period": "mês",
         "feature1": "Tudo do Básico",
-        "feature2": "Análises avançadas",
-        "feature3": "Relatórios detalhados",
+        "feature2": "Assistente IA (compre pacotes para usar)",
+        "feature3": "Análises avançadas e relatórios",
         "feature4": "Funcionalidade de exportação",
         "feature5": "Suporte prioritário",
         "feature6": "Intervalos de datas personalizados"

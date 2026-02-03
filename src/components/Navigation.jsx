@@ -6,7 +6,7 @@ import { isAdmin } from '../lib/adminUtils';
 import { useTranslation } from 'react-i18next';
 import './Navigation.css';
 
-export const Navigation = memo(function Navigation({ currentPage, onPageChange, user }) {
+export const Navigation = memo(function Navigation({ currentPage, onPageChange, user, plan }) {
   const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const [buttonPosition, setButtonPosition] = useState({ x: 0, y: 0 });
@@ -15,6 +15,9 @@ export const Navigation = memo(function Navigation({ currentPage, onPageChange, 
   const [showEnterprise, setShowEnterprise] = useState(false);
   const buttonRef = useRef(null);
   const dragTimeout = useRef(null);
+
+  const planLower = (plan || '').toLowerCase();
+  const isFreePlan = !planLower || planLower === 'free';
 
   useEffect(() => {
     if (!user) {
@@ -27,11 +30,10 @@ export const Navigation = memo(function Navigation({ currentPage, onPageChange, 
         const snap = await getDoc(doc(db, 'userSettings', user.uid));
         if (cancelled) return;
         const d = snap.exists() ? snap.data() : {};
-        const plan = (d.subscriptionPlan || d.plan || '').toLowerCase();
+        const p = (d.subscriptionPlan || d.plan || '').toLowerCase();
         const eid = d.enterpriseId || null;
         const role = d.enterpriseRole || null;
-        // Only show Enterprise tab for admins (plan is enterprise OR user is enterprise admin)
-        setShowEnterprise(plan === 'enterprise' || (!!eid && role === 'admin'));
+        setShowEnterprise(p === 'enterprise' || (!!eid && role === 'admin'));
       } catch {
         if (!cancelled) setShowEnterprise(false);
       }
@@ -40,7 +42,7 @@ export const Navigation = memo(function Navigation({ currentPage, onPageChange, 
     return () => { cancelled = true; };
   }, [user]);
 
-  const menuItems = [
+  const allMenuItems = [
     { id: 'home', label: t('navigation.home'), icon: Home },
     { id: 'calendar', label: t('navigation.calendar'), icon: Calendar },
     { id: 'analytics', label: t('navigation.analytics'), icon: BarChart3 },
@@ -52,6 +54,9 @@ export const Navigation = memo(function Navigation({ currentPage, onPageChange, 
     { id: 'about', label: t('navigation.about'), icon: Info }
   ];
 
+  const menuItems = isFreePlan
+    ? allMenuItems.filter((item) => ['home', 'ai-advisor', 'premium-plus', 'faq', 'about'].includes(item.id))
+    : allMenuItems;
   const finalMenuItems = [...menuItems];
   if (showEnterprise) {
     finalMenuItems.push({ id: 'enterprise', label: t('navigation.enterprise'), icon: Building2 });

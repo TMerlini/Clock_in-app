@@ -283,13 +283,14 @@ export function PremiumPlus({ user, onNavigate }) {
     }
   ];
 
-  const getButtonText = (planId) => {
+  const getButtonText = (plan) => {
+    const planId = plan.id;
     // Free plan is always available and is the default
     if (planId === 'FREE') {
       if (!currentPlan || currentPlan.toLowerCase() === 'free') {
         return t('premiumPlus.currentPlan');
       }
-      return t('premiumPlus.switchToFree');
+      return t('premiumPlus.switchToPlan', { planName: plan.name });
     }
 
     if (!currentPlan || currentPlan.toLowerCase() === 'free') {
@@ -307,7 +308,7 @@ export function PremiumPlus({ user, onNavigate }) {
       return t('premiumPlus.subscribe'); // Upgrade
     }
     if (targetLevel < currentLevel) {
-      return t('premiumPlus.switchToFree'); // Downgrade
+      return t('premiumPlus.switchToPlan', { planName: plan.name }); // Downgrade
     }
     return t('premiumPlus.subscribe');
   };
@@ -375,7 +376,7 @@ export function PremiumPlus({ user, onNavigate }) {
         {plans.filter(plan => plan.id !== 'FREE').map((plan) => {
           const IconComponent = plan.icon;
           const isCurrent = isCurrentPlan(plan.id);
-          const buttonText = getButtonText(plan.id);
+          const buttonText = getButtonText(plan);
           const disabled = isButtonDisabled(plan.id);
 
           return (
@@ -456,7 +457,7 @@ export function PremiumPlus({ user, onNavigate }) {
           if (!freePlan) return null;
           const IconComponent = freePlan.icon;
           const isCurrent = isCurrentPlan(freePlan.id);
-          const buttonText = getButtonText(freePlan.id);
+          const buttonText = getButtonText(freePlan);
           const disabled = isButtonDisabled(freePlan.id);
 
           return (

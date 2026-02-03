@@ -3,14 +3,19 @@ import { signOut } from 'firebase/auth';
 import { collection, addDoc, query, where, getDocs, orderBy, doc, setDoc, deleteDoc, onSnapshot, getDoc } from 'firebase/firestore';
 import { auth, db } from '../lib/firebase';
 import i18n from '../lib/i18n';
+import { useTranslation } from 'react-i18next';
 import { useGoogleCalendar } from '../hooks/useGoogleCalendar';
+import { useSubscriptionPlan } from '../hooks/useSubscriptionPlan';
 import { Navigation } from './Navigation';
+import { PlanGate } from './PlanGate';
 import { About } from './About';
 import { FAQ } from './FAQ';
 import { Calendar } from './ui/calendar';
 import { GoogleCalendarSync } from './GoogleCalendarSync';
+import { SyncOnVisitModal } from './SyncOnVisitModal';
 import { ActiveSessionCard } from './ActiveSessionCard';
 import { SyncStatusIndicator } from './SyncStatusIndicator';
+import { hasUnsyncedSessions, syncUnsyncedSessions } from '../lib/syncCalendarSessions';
 import { EnterpriseInviteBanner } from './EnterpriseInviteBanner';
 import { Loader } from './Loader';
 import { ErrorBoundary } from './ErrorBoundary';
@@ -55,6 +60,7 @@ const GoogleCalendarIcon = () => (
 );
 
 export function ClockInApp({ user }) {
+  const { t } = useTranslation();
   const [currentPage, setCurrentPage] = useState('home');
   const [isClockedIn, setIsClockedIn] = useState(false);
   const [clockInTime, setClockInTime] = useState(null);
@@ -68,9 +74,14 @@ export function ClockInApp({ user }) {
   const [syncingSession, setSyncingSession] = useState(null);
   const [activeSessionDetails, setActiveSessionDetails] = useState(null);
   const [displayName, setDisplayName] = useState(null);
+  const [showSyncOnVisitModal, setShowSyncOnVisitModal] = useState(false);
+  const [syncOnVisitVariant, setSyncOnVisitVariant] = useState('not_connected');
 
   // Google Calendar integration
   const googleCalendar = useGoogleCalendar();
+  const { plan } = useSubscriptionPlan();
+
+  const isFreePlan = !plan || plan === 'free';
 
   // Memoize handlers passed to child components
   const handlePageChange = useCallback((page) => {
@@ -100,6 +111,19 @@ export function ClockInApp({ user }) {
 
   const handleCloseSyncer = useCallback(() => {
     setSyncingSession(null);
+  }, []);
+
+  const handleSyncOnVisitSync = useCallback(() => {
+    if (syncOnVisitVariant === 'not_connected') {
+      googleCalendar.requestAuthorization();
+    } else {
+      syncUnsyncedSessions(googleCalendar);
+    }
+    setShowSyncOnVisitModal(false);
+  }, [syncOnVisitVariant, googleCalendar]);
+
+  const handleSyncOnVisitContinue = useCallback(() => {
+    setShowSyncOnVisitModal(false);
   }, []);
 
   // Listen for active clock-in state from Firestore (real-time sync across devices)
@@ -185,6 +209,29 @@ export function ClockInApp({ user }) {
   useEffect(() => {
     loadSessionDates();
   }, [user]);
+
+  // Show sync-on-visit modal when not synced (every page load). Skip for Free users (no Calendar access).
+  useEffect(() => {
+    if (!googleCalendar.isReady || !user || isFreePlan) return;
+
+    // Delay to allow token to load from Firestore before checking isAuthorized
+    const timer = setTimeout(async () => {
+      if (!googleCalendar.isAuthorized) {
+        setSyncOnVisitVariant('not_connected');
+        setShowSyncOnVisitModal(true);
+        return;
+      }
+      const hasUnsynced = await hasUnsyncedSessions(user.uid);
+      if (hasUnsynced) {
+        setSyncOnVisitVariant('unsynced_sessions');
+        setShowSyncOnVisitModal(true);
+      } else {
+        setShowSyncOnVisitModal(false);
+      }
+    }, 1500);
+
+    return () => clearTimeout(timer);
+  }, [googleCalendar.isReady, googleCalendar.isAuthorized, user, isFreePlan]);
 
   // Load user display name and language from settings
   useEffect(() => {
@@ -691,6 +738,9 @@ export function ClockInApp({ user }) {
   const renderContent = () => {
     switch (currentPage) {
       case 'analytics':
+        if (isFreePlan) {
+          return <PlanGate requiredPlan="basic" featureName={t('navigation.analytics')} onUpgrade={() => handlePageChange('premium-plus')} />;
+        }
         return (
           <ErrorBoundary>
             <Suspense fallback={<Loader />}>
@@ -699,6 +749,9 @@ export function ClockInApp({ user }) {
           </ErrorBoundary>
         );
       case 'finance':
+        if (isFreePlan) {
+          return <PlanGate requiredPlan="basic" featureName={t('navigation.finance')} onUpgrade={() => handlePageChange('premium-plus')} />;
+        }
         return (
           <ErrorBoundary>
             <Suspense fallback={<Loader />}>
@@ -749,6 +802,9 @@ export function ClockInApp({ user }) {
       case 'faq':
         return <FAQ />;
       case 'settings':
+        if (isFreePlan) {
+          return <PlanGate requiredPlan="basic" featureName={t('navigation.settings')} onUpgrade={() => handlePageChange('premium-plus')} />;
+        }
         return (
           <ErrorBoundary>
             <Suspense fallback={<Loader />}>
@@ -757,6 +813,9 @@ export function ClockInApp({ user }) {
           </ErrorBoundary>
         );
       case 'calendar-import':
+        if (isFreePlan) {
+          return <PlanGate requiredPlan="basic" featureName={t('navigation.calendar')} onUpgrade={() => handlePageChange('premium-plus')} />;
+        }
         return (
           <ErrorBoundary>
             <Suspense fallback={<Loader />}>
@@ -765,6 +824,9 @@ export function ClockInApp({ user }) {
           </ErrorBoundary>
         );
       case 'calendar':
+        if (isFreePlan) {
+          return <PlanGate requiredPlan="basic" featureName={t('navigation.calendar')} onUpgrade={() => handlePageChange('premium-plus')} />;
+        }
         return (
           <ErrorBoundary>
             <Suspense fallback={<Loader />}>
@@ -828,7 +890,7 @@ export function ClockInApp({ user }) {
 
   return (
     <div className="app-container">
-      <Navigation currentPage={currentPage} onPageChange={handlePageChange} user={user} />
+      <Navigation currentPage={currentPage} onPageChange={handlePageChange} user={user} plan={plan} />
 
       <div className="app-header">
         <div className="header-content">
@@ -842,7 +904,7 @@ export function ClockInApp({ user }) {
             </div>
           </div>
           <div className="header-right">
-            <SyncStatusIndicator googleCalendar={googleCalendar} />
+            {!isFreePlan && <SyncStatusIndicator googleCalendar={googleCalendar} />}
             <div className="user-info" title={user.email}>
               <User />
               <span>{displayName ? `@${displayName}` : user.email}</span>
@@ -894,6 +956,14 @@ export function ClockInApp({ user }) {
         <GoogleCalendarSync
           session={syncingSession}
           onClose={handleCloseSyncer}
+        />
+      )}
+
+      {showSyncOnVisitModal && (
+        <SyncOnVisitModal
+          variant={syncOnVisitVariant}
+          onSync={handleSyncOnVisitSync}
+          onContinue={handleSyncOnVisitContinue}
         />
       )}
     </div>

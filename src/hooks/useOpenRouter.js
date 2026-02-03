@@ -40,35 +40,45 @@ export function useOpenRouter() {
       // Check if user is Premium AI and has calls available
       const currentUser = auth.currentUser;
       let isPremiumAI = false;
+      let canUseAI = false; // Premium AI, Enterprise, or Pro with packs
       let actualTokens = 0;
       
       // Admin email - full Premium AI access, no call limits
       const ADMIN_EMAIL = 'merloproductions@gmail.com';
       const isAdmin = currentUser?.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase();
       
+      let subscriptionPlan = '';
       if (currentUser && !isAdmin) {
-        // Check if user has Premium AI subscription
         const settingsRef = doc(db, 'userSettings', currentUser.uid);
         const settingsDoc = await getDoc(settingsRef);
         
         if (settingsDoc.exists()) {
           const settings = settingsDoc.data();
-          const subscriptionPlan = (settings.subscriptionPlan || settings.plan || '').toLowerCase();
+          subscriptionPlan = (settings.subscriptionPlan || settings.plan || '').toLowerCase();
+          
+          // Basic has no AI access
+          if (subscriptionPlan === 'basic') {
+            throw new Error('AI Advisor is not included in the Basic plan. Upgrade to Pro or Premium AI to use AI features.');
+          }
+          
           isPremiumAI = subscriptionPlan === 'premium_ai' || subscriptionPlan === 'enterprise';
           
-          if (isPremiumAI) {
-            // Check call availability (need at least 1 call)
-            const hasCalls = await checkCallAvailability(currentUser.uid);
-            
-            if (!hasCalls) {
+          // Premium AI/Enterprise: check base + pack calls. Pro: check pack calls only.
+          const hasCalls = await checkCallAvailability(currentUser.uid);
+          if (!hasCalls) {
+            if (isPremiumAI) {
               const status = await getCallStatus(currentUser.uid);
               throw new Error(`You've used all your calls for this subscription period (${status.callsUsed}/${status.callsAllocated}). Your calls will reset on your next subscription renewal.`);
             }
+            if (subscriptionPlan === 'pro') {
+              throw new Error('You need to purchase AI call packs to use the AI Advisor. Go to Premium+ to buy call packs.');
+            }
           }
+          canUseAI = isPremiumAI || subscriptionPlan === 'pro';
         }
       } else if (isAdmin) {
-        // Admin always has Premium AI access
         isPremiumAI = true;
+        canUseAI = true;
       }
 
       // Use provided model, or fallback to default, or use user's OpenRouter default
@@ -111,7 +121,7 @@ export function useOpenRouter() {
 
       // Deduct one call and track actual tokens after successful API call
       // Admin still tracks tokens for monitoring/testing, but doesn't deduct calls
-      if (isPremiumAI && currentUser) {
+      if (canUseAI && currentUser) {
         try {
           if (!isAdmin) {
             // Regular users: deduct call and track tokens
@@ -236,6 +246,7 @@ export function useOpenRouter() {
 
     let currentUser = auth.currentUser;
     let isPremiumAI = false;
+    let canUseAI = false;
     let isAdmin = false;
 
     try {
@@ -250,17 +261,25 @@ export function useOpenRouter() {
         if (settingsDoc.exists()) {
           const settings = settingsDoc.data();
           const subscriptionPlan = (settings.subscriptionPlan || settings.plan || '').toLowerCase();
+          if (subscriptionPlan === 'basic') {
+            throw new Error('AI Advisor is not included in the Basic plan. Upgrade to Pro or Premium AI to use AI features.');
+          }
           isPremiumAI = subscriptionPlan === 'premium_ai' || subscriptionPlan === 'enterprise';
-          if (isPremiumAI) {
-            const hasCalls = await checkCallAvailability(currentUser.uid);
-            if (!hasCalls) {
+          const hasCalls = await checkCallAvailability(currentUser.uid);
+          if (!hasCalls) {
+            if (isPremiumAI) {
               const status = await getCallStatus(currentUser.uid);
               throw new Error(`You've used all your calls for this subscription period (${status.callsUsed}/${status.callsAllocated}). Your calls will reset on your next subscription renewal.`);
             }
+            if (subscriptionPlan === 'pro') {
+              throw new Error('You need to purchase AI call packs to use the AI Advisor. Go to Premium+ to buy call packs.');
+            }
           }
+          canUseAI = isPremiumAI || subscriptionPlan === 'pro';
         }
       } else if (isAdmin) {
         isPremiumAI = true;
+        canUseAI = true;
       }
 
       const modelToUse = model || OPENROUTER_DEFAULT_MODEL;
@@ -315,7 +334,7 @@ export function useOpenRouter() {
         console.log('Stream token usage:', { promptTokens, completionTokens, total: actualTokens });
       }
 
-      if (isPremiumAI && currentUser) {
+      if (canUseAI && currentUser) {
         try {
           if (!isAdmin) {
             await deductCall(currentUser.uid, actualTokens);

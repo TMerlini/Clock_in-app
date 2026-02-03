@@ -1,4 +1,18 @@
 {
+  "syncOnVisit": {
+    "title": "Sync Google Calendar",
+    "notConnectedMessage": "Connect Google Calendar to sync your work sessions automatically.",
+    "unsyncedMessage": "You have work sessions that haven't been synced to Google Calendar.",
+    "syncGoogle": "Sync Google",
+    "continueOffline": "Continue offline"
+  },
+  "planGate": {
+    "basic": {
+      "title": "Upgrade to Basic",
+      "description": "{{feature}} is available on the Basic plan. Upgrade to unlock Calendar, Analytics, Finance, and Settings.",
+      "button": "View Plans"
+    }
+  },
   "common": {
     "loading": "Loading...",
     "save": "Save",
@@ -305,6 +319,7 @@
     "currentPlan": "Current Plan",
     "subscribe": "Subscribe",
     "switchToFree": "Switch to Free",
+    "switchToPlan": "Switch to {{planName}}",
     "needMoreCalls": "Need More AI Calls?",
     "callPackDescription": "Purchase additional call packs that never expire. Perfect for power users!",
     "buyCallPacks": "Buy Call Packs",
@@ -313,28 +328,28 @@
       "free": {
         "name": "Free",
         "period": "month",
-        "feature1": "Core time tracking",
-        "feature2": "Basic session management",
-        "feature3": "Limited analytics",
-        "feature4": "Basic export"
+        "feature1": "Clock in/out and session management",
+        "feature2": "Date picker and session list",
+        "feature3": "FAQ, About, Plan selection",
+        "feature4": "Upgrade anytime"
       },
       "basic": {
         "name": "Basic",
         "price": "€0.99",
         "period": "month",
         "feature1": "Everything in Free",
-        "feature2": "Full analytics",
-        "feature3": "Google Calendar sync",
-        "feature4": "Advanced session management",
-        "feature5": "Export sessions"
+        "feature2": "Calendar view and import",
+        "feature3": "Analytics and Finance with CSV export",
+        "feature4": "Settings and Google Calendar sync",
+        "feature5": "Full session management"
       },
       "pro": {
         "name": "Pro",
         "price": "€4.99",
         "period": "month",
         "feature1": "Everything in Basic",
-        "feature2": "Advanced analytics",
-        "feature3": "Detailed reports",
+        "feature2": "AI Advisor (buy call packs to use)",
+        "feature3": "Advanced analytics and reports",
         "feature4": "Export functionality",
         "feature5": "Priority support",
         "feature6": "Custom date ranges"

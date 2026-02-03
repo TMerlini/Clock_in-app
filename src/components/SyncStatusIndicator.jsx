@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Cloud, CloudOff, AlertTriangle, RefreshCw } from 'lucide-react';
-import { collection, query, where, getDocs, updateDoc, doc } from 'firebase/firestore';
-import { auth, db } from '../lib/firebase';
+import { syncUnsyncedSessions } from '../lib/syncCalendarSessions';
 import './SyncStatusIndicator.css';
 
 // Google Calendar Icon Component
@@ -61,95 +60,13 @@ export function SyncStatusIndicator({ googleCalendar }) {
 
   const handleSync = async () => {
     if (isSyncing || !googleCalendar.isAuthorized) return;
-    
+
     setIsSyncing(true);
     try {
-      const user = auth.currentUser;
-      if (!user) {
-        setIsSyncing(false);
-        return;
-      }
-
-      // Get all unsynced and failed sessions
-      const sessionsQuery = query(
-        collection(db, 'sessions'),
-        where('userId', '==', user.uid)
-      );
-      const sessionsSnapshot = await getDocs(sessionsQuery);
-      
-      const unsyncedSessions = [];
-      sessionsSnapshot.forEach((docSnap) => {
-        const session = docSnap.data();
-        const status = session.calendarSyncStatus || 'not_synced';
-        if (status === 'not_synced' || status === 'failed') {
-          unsyncedSessions.push({ id: docSnap.id, ...session });
-        }
-      });
-
-      if (unsyncedSessions.length === 0) {
-        // No sessions to sync - could show a subtle notification
-        setIsSyncing(false);
-        return;
-      }
-
-      // Process sync operations in parallel with concurrency limit
-      const CONCURRENCY_LIMIT = 5;
-      let successCount = 0;
-      let failCount = 0;
-
-      // Process sessions in batches to avoid rate limits
-      for (let i = 0; i < unsyncedSessions.length; i += CONCURRENCY_LIMIT) {
-        const batch = unsyncedSessions.slice(i, i + CONCURRENCY_LIMIT);
-        
-        const results = await Promise.allSettled(
-          batch.map(async (session) => {
-            try {
-              // Create calendar event
-              const calendarEvent = await googleCalendar.createCalendarEvent({
-                clockIn: session.clockIn,
-                clockOut: session.clockOut,
-                regularHours: session.regularHours,
-                unpaidHours: session.unpaidExtraHours,
-                paidHours: session.paidExtraHours,
-                notes: session.notes || ''
-              });
-
-              // Update session with sync info
-              const sessionRef = doc(db, 'sessions', session.id);
-              await updateDoc(sessionRef, {
-                calendarEventId: calendarEvent.id,
-                calendarSyncStatus: 'synced',
-                lastSyncAt: Date.now()
-              });
-
-              return { success: true, sessionId: session.id };
-            } catch (error) {
-              console.error(`Failed to sync session ${session.id}:`, error);
-              
-              // Mark as failed
-              const sessionRef = doc(db, 'sessions', session.id);
-              await updateDoc(sessionRef, {
-                calendarSyncStatus: 'failed'
-              });
-              
-              return { success: false, sessionId: session.id, error };
-            }
-          })
-        );
-
-        // Count successes and failures
-        results.forEach((result) => {
-          if (result.status === 'fulfilled' && result.value.success) {
-            successCount++;
-          } else {
-            failCount++;
-          }
-        });
-      }
-
-      setIsSyncing(false);
+      await syncUnsyncedSessions(googleCalendar);
     } catch (error) {
       console.error('Error during sync:', error);
+    } finally {
       setIsSyncing(false);
     }
   };
