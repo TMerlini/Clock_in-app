@@ -50,6 +50,8 @@ export function Login({ onLogin }) {
 
         <p className="login-footer">
           Sign in to track and manage your work sessions
+          {' · '}
+          <a href="/privacy" target="_blank" rel="noopener noreferrer" className="login-privacy-link">Privacy Policy</a>
         </p>
       </div>
     </div>

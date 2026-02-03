@@ -206,6 +206,16 @@
   font-weight: 400;
 }
 
+.login-privacy-link {
+  color: rgba(139, 92, 246, 0.9);
+  text-decoration: underline;
+  font-weight: 500;
+}
+
+.login-privacy-link:hover {
+  color: rgba(139, 92, 246, 1);
+}
+
 /* Mobile Responsiveness */
 @media (max-width: 640px) {
   .login-card {
