@@ -24,6 +24,7 @@ import {
   serverTimestamp
 } from 'firebase/firestore';
 import { db } from './firebase';
+import { getEnterpriseMaxPremiumUsers } from './planConfig';
 import { initializeCalls } from './tokenManager';
 
 const ENTERPRISES = 'enterprises';
@@ -183,7 +184,7 @@ export async function updateEnterprise(enterpriseId, updates) {
 
 /**
  * Accept an invite: set user's enterpriseId/role, update invite status.
- * If enterprise has less than 10 Premium AI members, assign Premium AI to the new member.
+ * If enterprise has less than maxPremiumUsers (from plan config) Premium AI members, assign Premium AI to the new member.
  * @param {string} inviteId
  * @param {string} userId - Current user id
  * @param {string} userEmail - Current user email (for validation)
@@ -208,9 +209,9 @@ export async function acceptInvite(inviteId, userId, userEmail) {
     return;
   }
   
-  // Check if enterprise has less than 10 Premium AI members
+  const maxPremiumUsers = await getEnterpriseMaxPremiumUsers();
   const premiumAiCount = await getEnterprisePremiumAIMemberCount(inv.enterpriseId);
-  const shouldAssignPremiumAi = premiumAiCount < 10;
+  const shouldAssignPremiumAi = premiumAiCount < maxPremiumUsers;
   
   const updateData = {
     ...data,

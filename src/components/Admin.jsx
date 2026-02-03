@@ -3,7 +3,8 @@ import { collection, getDocs, doc, getDoc, setDoc, deleteDoc, query, orderBy, li
 import { db, auth } from '../lib/firebase';
 import { isAdmin } from '../lib/adminUtils';
 import { addCallPack } from '../lib/tokenManager';
-import { Shield, Users, UserPlus, Crown, BarChart3, Package, Settings, Search, Trash2, Edit2, Eye, Loader, AlertCircle, Check, X } from 'lucide-react';
+import { getPlanConfig, savePlanConfig } from '../lib/planConfig';
+import { Shield, Users, UserPlus, Crown, BarChart3, Package, Settings, Search, Trash2, Edit2, Eye, Loader, AlertCircle, Check, X, Plus, ChevronDown, ChevronUp } from 'lucide-react';
 import './Admin.css';
 
 export function Admin({ user, onNavigate }) {
@@ -25,6 +26,10 @@ export function Admin({ user, onNavigate }) {
   const [newGuestPlan, setNewGuestPlan] = useState('free');
   const [selectedUser, setSelectedUser] = useState(null);
   const [showUserDetails, setShowUserDetails] = useState(false);
+  const [planConfig, setPlanConfig] = useState(null);
+  const [planConfigLoading, setPlanConfigLoading] = useState(false);
+  const [planConfigSaving, setPlanConfigSaving] = useState(null);
+  const [expandedPlanEditor, setExpandedPlanEditor] = useState(null);
 
   useEffect(() => {
     if (user && isAdmin(user)) {
@@ -33,6 +38,23 @@ export function Admin({ user, onNavigate }) {
       setLoading(false);
     }
   }, [user]);
+
+  useEffect(() => {
+    if (activeSection === 'subscriptions' && user && isAdmin(user)) {
+      const load = async () => {
+        setPlanConfigLoading(true);
+        try {
+          const config = await getPlanConfig();
+          setPlanConfig(config);
+        } catch (err) {
+          console.error('Error loading plan config:', err);
+        } finally {
+          setPlanConfigLoading(false);
+        }
+      };
+      load();
+    }
+  }, [activeSection, user]);
 
   const loadAdminData = async () => {
     try {
@@ -207,6 +229,51 @@ export function Admin({ user, onNavigate }) {
       console.error('Error adding call pack:', error);
       alert('Error adding call pack: ' + error.message);
     }
+  };
+
+  const handleSavePlanConfig = async (planId, updates) => {
+    setPlanConfigSaving(planId);
+    try {
+      await savePlanConfig({ [planId]: updates });
+      const config = await getPlanConfig();
+      setPlanConfig(config);
+      alert(`Plan "${planId}" saved successfully.`);
+    } catch (err) {
+      console.error('Error saving plan config:', err);
+      alert('Error saving plan config: ' + err.message);
+    } finally {
+      setPlanConfigSaving(null);
+    }
+  };
+
+  const handleUpdatePlanEditor = (planId, field, value) => {
+    if (!planConfig) return;
+    setPlanConfig({
+      ...planConfig,
+      [planId]: {
+        ...(planConfig[planId] || {}),
+        [field]: value
+      }
+    });
+  };
+
+  const handleAddFeature = (planId) => {
+    const plan = planConfig?.[planId];
+    const features = Array.isArray(plan?.features) ? [...plan.features, ''] : [''];
+    handleUpdatePlanEditor(planId, 'features', features);
+  };
+
+  const handleRemoveFeature = (planId, index) => {
+    const plan = planConfig?.[planId];
+    const features = Array.isArray(plan?.features) ? plan.features.filter((_, i) => i !== index) : [];
+    handleUpdatePlanEditor(planId, 'features', features);
+  };
+
+  const handleUpdateFeature = (planId, index, value) => {
+    const plan = planConfig?.[planId];
+    const features = Array.isArray(plan?.features) ? [...plan.features] : [];
+    features[index] = value;
+    handleUpdatePlanEditor(planId, 'features', features);
   };
 
   const handleDeleteGuest = async (guestId, guestEmail) => {
@@ -554,6 +621,122 @@ export function Admin({ user, onNavigate }) {
               );
             })}
           </div>
+
+          <p className="plan-config-hint">Edit prices and features shown on the Premium+ page. Display prices are cosmetic; update Stripe Payment Links separately for actual charges.</p>
+
+          {planConfigLoading ? (
+            <div className="plan-editor-loading">
+              <Loader className="spinning" size={24} />
+              <span>Loading plan config...</span>
+            </div>
+          ) : planConfig && (
+            <div className="plan-editor-list">
+              {['basic', 'pro', 'premium_ai', 'enterprise'].map((planId) => {
+                const plan = planConfig[planId] || {};
+                const isExpanded = expandedPlanEditor === planId;
+                const features = Array.isArray(plan.features) ? plan.features : [];
+                return (
+                  <div key={planId} className="plan-editor-card">
+                    <button
+                      type="button"
+                      className="plan-editor-header"
+                      onClick={() => setExpandedPlanEditor(isExpanded ? null : planId)}
+                    >
+                      <span className="plan-editor-title">{planId.replace('_', ' ').toUpperCase()}</span>
+                      {isExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                    </button>
+                    {isExpanded && (
+                      <div className="plan-editor-body">
+                        <div className="plan-editor-row">
+                          <div className="form-group">
+                            <label>Price (display)</label>
+                            <input
+                              type="text"
+                              value={plan.price || ''}
+                              onChange={(e) => handleUpdatePlanEditor(planId, 'price', e.target.value)}
+                              placeholder="e.g. €0.99 or Custom"
+                            />
+                          </div>
+                          <div className="form-group">
+                            <label>Period</label>
+                            <select
+                              value={plan.period || 'month'}
+                              onChange={(e) => handleUpdatePlanEditor(planId, 'period', e.target.value)}
+                            >
+                              <option value="month">month</option>
+                              <option value="year">year</option>
+                            </select>
+                          </div>
+                          {planId === 'enterprise' && (
+                            <div className="form-group">
+                              <label>Max Premium+ users (included in plan)</label>
+                              <input
+                                type="number"
+                                min={0}
+                                value={plan.maxPremiumUsers ?? 10}
+                                onChange={(e) => handleUpdatePlanEditor(planId, 'maxPremiumUsers', parseInt(e.target.value, 10) || 0)}
+                              />
+                            </div>
+                          )}
+                        </div>
+                        <div className="form-group">
+                          <label>Features</label>
+                          <div className="plan-features-list">
+                            {features.map((f, i) => (
+                              <div key={i} className="plan-feature-row">
+                                <input
+                                  type="text"
+                                  value={f}
+                                  onChange={(e) => handleUpdateFeature(planId, i, e.target.value)}
+                                  placeholder="Feature description"
+                                />
+                                <button
+                                  type="button"
+                                  className="action-button delete"
+                                  onClick={() => handleRemoveFeature(planId, i)}
+                                  title="Remove"
+                                >
+                                  <Trash2 size={14} />
+                                </button>
+                              </div>
+                            ))}
+                            <button
+                              type="button"
+                              className="add-feature-button"
+                              onClick={() => handleAddFeature(planId)}
+                            >
+                              <Plus size={16} />
+                              <span>Add feature</span>
+                            </button>
+                          </div>
+                        </div>
+                        <div className="plan-editor-actions">
+                          <button
+                            type="button"
+                            className="submit-button"
+                            disabled={planConfigSaving === planId}
+                            onClick={() => handleSavePlanConfig(planId, plan)}
+                          >
+                            {planConfigSaving === planId ? (
+                              <>
+                                <Loader className="spinning" size={16} />
+                                <span>Saving...</span>
+                              </>
+                            ) : (
+                              <>
+                                <Check size={16} />
+                                <span>Save {planId}</span>
+                              </>
+                            )}
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
       )}
 

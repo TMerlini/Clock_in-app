@@ -70,5 +70,10 @@ service cloud.firestore {
     match /calendarTokens/{userId} {
       allow read, write: if isAuth() && userId == request.auth.uid;
     }
+
+    match /planConfig/{docId} {
+      allow read: if isAuth();
+      allow write: if isAuth() && isAppAdmin();
+    }
   }
 }

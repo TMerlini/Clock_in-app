@@ -14,6 +14,7 @@ import {
   setMemberRole,
   getEnterprisePremiumAIMemberCount
 } from '../lib/enterpriseHelpers';
+import { getEnterpriseMaxPremiumUsers } from '../lib/planConfig';
 import { getEnterpriseStats, getEnterpriseTeamWarnings } from '../lib/enterpriseMembersContext';
 import { calculatePeriodFinance } from '../lib/financeCalculator';
 import { startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfYear, endOfYear, format, formatDistanceToNow, eachMonthOfInterval, subMonths, subWeeks, subDays, subYears } from 'date-fns';
@@ -172,9 +173,10 @@ export function Enterprise({ user, onNavigate }) {
     
     // Check Premium AI member limit before inviting
     try {
+      const maxPremiumUsers = await getEnterpriseMaxPremiumUsers();
       const premiumAiCount = await getEnterprisePremiumAIMemberCount(enterpriseId);
-      if (premiumAiCount >= 10) {
-        setError(t('enterprise.premiumAiLimitReached') || 'Premium AI member limit reached (10 members). Additional members will join with free plan.');
+      if (premiumAiCount >= maxPremiumUsers) {
+        setError(t('enterprise.premiumAiLimitReached', { count: maxPremiumUsers }) || `Premium AI member limit reached (${maxPremiumUsers} members). Additional members will join with free plan.`);
         return;
       }
     } catch (err) {

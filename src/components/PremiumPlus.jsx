@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { db, auth } from '../lib/firebase';
 import { STRIPE_PRICE_IDS, STRIPE_PAYMENT_LINKS, PLAN_NAMES, isStripeConfigured } from '../lib/stripeConfig';
+import { getPlanConfig } from '../lib/planConfig';
 import { initializeCalls } from '../lib/tokenManager';
 import { Crown, Check, Sparkles, Zap, AlertCircle, Loader, ShoppingCart, Building2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -13,6 +14,11 @@ export function PremiumPlus({ user, onNavigate }) {
   const [loading, setLoading] = useState(true);
   const [redirecting, setRedirecting] = useState(false);
   const [successMessage, setSuccessMessage] = useState(null);
+  const [planConfig, setPlanConfig] = useState(null);
+
+  useEffect(() => {
+    getPlanConfig().then(setPlanConfig).catch(() => setPlanConfig(null));
+  }, []);
 
   // Check if user is returning from Stripe checkout
   const checkStripeReturn = useCallback(async () => {
@@ -199,6 +205,7 @@ export function PremiumPlus({ user, onNavigate }) {
     }
   };
 
+  const cfg = (id) => planConfig?.[id.toLowerCase()];
   const plans = [
     {
       id: 'FREE',
@@ -218,10 +225,10 @@ export function PremiumPlus({ user, onNavigate }) {
     {
       id: 'BASIC',
       name: t('premiumPlus.plans.basic.name'),
-      price: '€0.99',
-      period: t('premiumPlus.plans.basic.period', { defaultValue: 'month' }),
+      price: cfg('basic')?.price ?? '€0.99',
+      period: cfg('basic')?.period ?? t('premiumPlus.plans.basic.period', { defaultValue: 'month' }),
       icon: Zap,
-      features: [
+      features: (cfg('basic')?.features?.length && cfg('basic').features.filter(Boolean).length) ? cfg('basic').features : [
         t('premiumPlus.plans.basic.feature1'),
         t('premiumPlus.plans.basic.feature2'),
         t('premiumPlus.plans.basic.feature3'),
@@ -233,10 +240,10 @@ export function PremiumPlus({ user, onNavigate }) {
     {
       id: 'PRO',
       name: t('premiumPlus.plans.pro.name'),
-      price: '€4.99',
-      period: t('premiumPlus.plans.pro.period', { defaultValue: 'month' }),
+      price: cfg('pro')?.price ?? '€4.99',
+      period: cfg('pro')?.period ?? t('premiumPlus.plans.pro.period', { defaultValue: 'month' }),
       icon: Sparkles,
-      features: [
+      features: (cfg('pro')?.features?.length && cfg('pro').features.filter(Boolean).length) ? cfg('pro').features : [
         t('premiumPlus.plans.pro.feature1'),
         t('premiumPlus.plans.pro.feature2'),
         t('premiumPlus.plans.pro.feature3'),
@@ -250,10 +257,10 @@ export function PremiumPlus({ user, onNavigate }) {
     {
       id: 'PREMIUM_AI',
       name: t('premiumPlus.plans.premiumAi.name'),
-      price: '€9.99',
-      period: t('premiumPlus.plans.premiumAi.period', { defaultValue: 'month' }),
+      price: cfg('premium_ai')?.price ?? '€9.99',
+      period: cfg('premium_ai')?.period ?? t('premiumPlus.plans.premiumAi.period', { defaultValue: 'month' }),
       icon: Crown,
-      features: [
+      features: (cfg('premium_ai')?.features?.length && cfg('premium_ai').features.filter(Boolean).length) ? cfg('premium_ai').features : [
         t('premiumPlus.plans.premiumAi.feature1'),
         t('premiumPlus.plans.premiumAi.feature2'),
         t('premiumPlus.plans.premiumAi.feature3'),
@@ -267,18 +274,25 @@ export function PremiumPlus({ user, onNavigate }) {
     {
       id: 'ENTERPRISE',
       name: t('premiumPlus.plans.enterprise.name'),
-      price: t('premiumPlus.plans.enterprise.price'),
-      period: t('premiumPlus.plans.enterprise.period', { defaultValue: 'month' }),
+      price: cfg('enterprise')?.price ?? t('premiumPlus.plans.enterprise.price'),
+      period: cfg('enterprise')?.period ?? t('premiumPlus.plans.enterprise.period', { defaultValue: 'month' }),
       icon: Building2,
-      features: [
-        t('premiumPlus.plans.enterprise.feature1'),
-        t('premiumPlus.plans.enterprise.feature2'),
-        t('premiumPlus.plans.enterprise.feature3'),
-        t('premiumPlus.plans.enterprise.feature4'),
-        t('premiumPlus.plans.enterprise.feature5'),
-        t('premiumPlus.plans.enterprise.feature6'),
-        t('premiumPlus.plans.enterprise.feature7')
-      ],
+      features: (() => {
+        const maxCount = cfg('enterprise')?.maxPremiumUsers ?? 10;
+        const replaceCount = (s) => (typeof s === 'string' ? s.replace(/\{\{count\}\}/g, String(maxCount)) : s);
+        const raw = (cfg('enterprise')?.features?.length && cfg('enterprise').features.filter(Boolean).length)
+          ? cfg('enterprise').features
+          : [
+              t('premiumPlus.plans.enterprise.feature1'),
+              t('premiumPlus.plans.enterprise.feature2'),
+              t('premiumPlus.plans.enterprise.feature3', { count: maxCount }),
+              t('premiumPlus.plans.enterprise.feature4'),
+              t('premiumPlus.plans.enterprise.feature5'),
+              t('premiumPlus.plans.enterprise.feature6'),
+              t('premiumPlus.plans.enterprise.feature7')
+            ];
+        return raw.map(replaceCount);
+      })(),
       color: 'indigo'
     }
   ];

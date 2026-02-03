@@ -59,7 +59,9 @@ export const Navigation = memo(function Navigation({ currentPage, onPageChange, 
     : allMenuItems;
   const finalMenuItems = [...menuItems];
   if (showEnterprise) {
-    finalMenuItems.push({ id: 'enterprise', label: t('navigation.enterprise'), icon: Building2 });
+    const premiumIndex = finalMenuItems.findIndex((item) => item.id === 'premium-plus');
+    const insertAt = premiumIndex >= 0 ? premiumIndex + 1 : finalMenuItems.length;
+    finalMenuItems.splice(insertAt, 0, { id: 'enterprise', label: t('navigation.enterprise'), icon: Building2 });
   }
   if (user && isAdmin(user)) {
     finalMenuItems.push({ id: 'admin', label: t('navigation.admin'), icon: Shield });
