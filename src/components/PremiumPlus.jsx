@@ -305,12 +305,12 @@ export function PremiumPlus({ user, onNavigate }) {
       return t('premiumPlus.currentPlan');
     }
     if (targetLevel > currentLevel) {
-      return t('premiumPlus.subscribe'); // Upgrade
+      return t('premiumPlus.switchToPlan', { planName: plan.name }); // Upgrade
     }
     if (targetLevel < currentLevel) {
       return t('premiumPlus.switchToPlan', { planName: plan.name }); // Downgrade
     }
-    return t('premiumPlus.subscribe');
+    return t('premiumPlus.switchToPlan', { planName: plan.name });
   };
 
   const isCurrentPlan = (planId) => {

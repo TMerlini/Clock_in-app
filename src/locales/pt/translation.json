@@ -867,6 +867,10 @@
         "q8": {
           "question": "Como posso alterar o idioma da aplicação?",
           "answer": "A aplicação suporta Português e Inglês:\n• Vá para a página Definições\n• Navegue até à secção 'Idioma'\n• Selecione o seu idioma preferido (Português ou English)\n• A interface atualiza imediatamente\n• A sua preferência de idioma é guardada e persiste entre dispositivos\n• Datas do calendário e formatação adaptam-se automaticamente ao idioma selecionado\n\nNota: A aplicação usa Português (pt) como idioma padrão."
+        },
+        "q9": {
+          "question": "Que funcionalidades tenho com o plano Gratuito?",
+          "answer": "O plano Gratuito permite registar entradas e saídas na página inicial, consultar o histórico de sessões e aceder às páginas FAQ/Sobre e Premium+ para fazer upgrade. O Calendário, as análises com exportação CSV, os cálculos financeiros e as Definições (incluindo sincronização com o Google Calendar) requerem o plano Básico ou superior. O plano Pro acrescenta intervalos de datas personalizados, suporte prioritário e a possibilidade de comprar pacotes de chamadas IA. O Premium AI inclui o Assistente IA com 75 chamadas/mês e o Enterprise acrescenta gestão de equipa com acesso Premium AI para os membros."
         }
       },
       "legalCompliance": {
@@ -987,15 +991,15 @@
       },
       "interactiveCalendar": {
         "title": "Calendário Interativo",
-        "description": "Indicadores de sessão visual e navegação rápida de datas"
+        "description": "Indicadores visuais de sessão e navegação rápida de datas (Plano Básico ou superior)"
       },
       "advancedAnalytics": {
         "title": "Análises Avançadas",
-        "description": "Relatórios diários, semanais, mensais e anuais com divisões detalhadas"
+        "description": "Relatórios diários, semanais, mensais e anuais com divisões detalhadas (Plano Básico ou superior)"
       },
       "googleCalendarIntegration": {
         "title": "Integração Google Calendar",
-        "description": "Sincronização de um clique de sessões de trabalho para o seu calendário"
+        "description": "Sincronização de um clique de sessões de trabalho para o seu calendário (Plano Básico ou superior)"
       },
       "flexibleLunchTracking": {
         "title": "Rastreamento Flexível de Almoço",
@@ -1003,7 +1007,7 @@
       },
       "expenseManagement": {
         "title": "Gestão de Despesas",
-        "description": "Rastreie despesas de almoço e jantar por sessão"
+        "description": "Rastreie despesas de almoço e jantar por sessão (Plano Básico ou superior)"
       },
       "locationNotes": {
         "title": "Notas de Localização",
@@ -1019,7 +1023,7 @@
       },
       "customizableThresholds": {
         "title": "Limites Personalizáveis",
-        "description": "Configure horas regulares, extra não remunerado e limites de horas extras remuneradas"
+        "description": "Configure horas regulares, extra não remunerado e limites de horas extras remuneradas (Plano Básico ou superior)"
       },
       "aiAdvisor": {
         "title": "Assistente IA (Premium AI)",

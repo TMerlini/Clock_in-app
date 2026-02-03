@@ -867,6 +867,10 @@
         "q8": {
           "question": "How do I change the app language?",
           "answer": "The app supports Portuguese and English:\n• Go to Settings page\n• Navigate to the 'Language' section\n• Select your preferred language (Português or English)\n• The interface updates immediately\n• Your language preference is saved and persists across devices\n• Calendar dates and formatting automatically adapt to the selected language\n\nNote: The app defaults to Portuguese (pt) as the primary language."
+        },
+        "q9": {
+          "question": "What features do I get on the Free plan?",
+          "answer": "The Free plan includes clock in/out from the Home page, your session history, and access to the FAQ/About and Premium+ upgrade page. Calendar, Analytics dashboards (with CSV export), Finance calculators, and Settings (including Google Calendar sync) require the Basic plan or higher. Pro adds custom date ranges, priority support, and the ability to buy AI call packs. Premium AI includes the AI Advisor with 75 calls/month, and Enterprise layers on team management with Premium AI seats for members."
         }
       },
       "legalCompliance": {
@@ -961,15 +965,15 @@
       },
       "interactiveCalendar": {
         "title": "Interactive Calendar",
-        "description": "Visual session indicators and quick date navigation"
+        "description": "Visual session indicators and quick date navigation (Basic plan or higher)"
       },
       "advancedAnalytics": {
         "title": "Advanced Analytics",
-        "description": "Daily, weekly, monthly, and yearly reports with detailed breakdowns"
+        "description": "Daily, weekly, monthly, and yearly reports with detailed breakdowns (Basic plan or higher)"
       },
       "googleCalendarIntegration": {
         "title": "Google Calendar Integration",
-        "description": "One-click sync of work sessions to your calendar"
+        "description": "One-click sync of work sessions to your calendar (Basic plan or higher)"
       },
       "flexibleLunchTracking": {
         "title": "Flexible Lunch Tracking",
@@ -977,7 +981,7 @@
       },
       "expenseManagement": {
         "title": "Expense Management",
-        "description": "Track lunch and dinner expenses per session"
+        "description": "Track lunch and dinner expenses per session (Basic plan or higher)"
       },
       "locationNotes": {
         "title": "Location Notes",
@@ -993,7 +997,7 @@
       },
       "customizableThresholds": {
         "title": "Customizable Thresholds",
-        "description": "Configure regular hours, unpaid extra, and paid overtime limits"
+        "description": "Configure regular hours, unpaid extra, and paid overtime limits (Basic plan or higher)"
       },
       "aiAdvisor": {
         "title": "AI Advisor (Premium AI)",

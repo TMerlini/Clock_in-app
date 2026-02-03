@@ -14,7 +14,7 @@ A comprehensive time tracking application for managing work hours, overtime, mea
 - **Lunch Break Management** - Customizable lunch duration with flexible hour/minute input (inline fields for compact UI)
 - **Weekend Detection** - Automatically identifies Saturday/Sunday sessions with automatic benefits application
 
-### 📊 Analytics & Reporting
+### 📊 Analytics & Reporting *(Basic plan or higher)*
 - **Multiple Report Types** - Daily, Weekly, Monthly, and Yearly views
 - **Interactive Calendar** - Visual indicator of days with sessions
 - **Detailed Statistics Cards**:
@@ -46,7 +46,7 @@ A comprehensive time tracking application for managing work hours, overtime, mea
 - **Automatic Application** - Benefits automatically applied to Saturday/Sunday sessions
 - **Analytics Dashboard** - Track total days off earned and bonus accumulated
 
-### 📅 Google Calendar Integration
+### 📅 Google Calendar Integration *(Basic plan or higher)*
 - **Two-Way Sync** - Automatic sync of work sessions to Google Calendar
 - **Placeholder Events** - Creates calendar events immediately on clock-in (red/in-progress status)
 - **Auto-Update Events** - Updates placeholder events on clock-out with final session details
@@ -57,7 +57,7 @@ A comprehensive time tracking application for managing work hours, overtime, mea
 - **Detailed Event Information** - Includes clock in/out times, hours breakdown, and session notes
 - **Timezone Support** - Events use browser's local timezone for accurate display
 
-### ⚙️ Customizable Settings
+### ⚙️ Customizable Settings *(Basic plan or higher)*
 - **Profile**:
   - Username/Alias - Set display name with @ prefix (shown in header instead of email)
 - **Hour Thresholds**:
@@ -93,16 +93,21 @@ A comprehensive time tracking application for managing work hours, overtime, mea
 - **Powered by OpenRouter** - Multi-model AI routing for optimal performance
 
 ### 💎 Subscription Plans
-- **Free** - Core time tracking and basic session management
-- **Basic (€0.99/month)** - Full analytics, Google Calendar sync, advanced session management
-- **Pro (€4.99/month)** - Advanced analytics, detailed reports, priority support, custom date ranges
-- **Premium AI (€9.99/month)** - All Pro features + AI Advisor with Portuguese labor law expertise:
+- **Free** – Clock in/out from the Home page (session history + FAQ/About + Premium+). Calendar, Analytics, Finance, Settings, and Google Calendar sync require an upgrade.
+- **Basic (€0.99/month)** – Unlock Calendar view/import, Analytics dashboards with CSV exports, Finance calculators, and full Settings (including Google Calendar integration).
+- **Pro (€4.99/month)** – Includes everything in Basic, plus priority support, custom date ranges, and the ability to purchase AI call packs for ad-hoc AI Advisor access.
+- **Premium AI (€9.99/month)** – All Pro features + AI Advisor with Portuguese labor law expertise:
   - 75 AI calls/month base allocation
   - Portuguese labor law compliance analysis
   - Legal limit calculations (overtime, Isenção, vacation)
   - HR best practices & work-life balance guidance
   - Compliance monitoring & proactive alerts
   - Buy additional call packs as needed (+50 calls for €4.99, never expire)
+
+### 🔄 Plan Switching & Billing
+- Switching plans automatically cancels the previous Stripe subscription (handled by server-side Stripe webhooks) to prevent double billing.
+- Upgrades can be set to take effect immediately or at period end depending on your Stripe configuration.
+- If you use customer-managed plan changes (Stripe Customer Portal), the same cancellation workflow keeps Stripe and Firestore in sync.
 
 ### 🌍 Internationalization (i18n)
 - **Multi-Language Support** - Full interface translation in Portuguese and English
