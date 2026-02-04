@@ -265,16 +265,39 @@ export function ClockInApp({ user }) {
     return () => unsubscribe();
   }, [user]);
 
-  // Refresh timer immediately when tab becomes visible (browsers throttle background tabs)
+  // Refresh timer and check for orphan placeholders when tab becomes visible
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
         setCurrentTime(Date.now());
+        // Re-check for orphan placeholders only when not clocked in (catches case where initial check ran before calendar was ready)
+        if (user && !isClockedIn && googleCalendar.isAuthorized && !isFreePlan) {
+          googleCalendar.findOrphanPlaceholderEvents().then((orphans) => {
+            if (orphans.length > 0) {
+              setOrphanPlaceholder((prev) => (prev ? prev : orphans[0]));
+            }
+          });
+        }
       }
     };
     document.addEventListener('visibilitychange', handleVisibilityChange);
     return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
-  }, []);
+  }, [user, isClockedIn, googleCalendar, isFreePlan]);
+
+  // Initial orphan check on mount - delay to allow calendar auth to load (token comes from Firestore)
+  useEffect(() => {
+    if (!user || isFreePlan || isClockedIn) return;
+    const timer = setTimeout(() => {
+      if (googleCalendar.isAuthorized) {
+        googleCalendar.findOrphanPlaceholderEvents().then((orphans) => {
+          if (orphans.length > 0) {
+            setOrphanPlaceholder((prev) => (prev ? prev : orphans[0]));
+          }
+        });
+      }
+    }, 3000);
+    return () => clearTimeout(timer);
+  }, [user, isFreePlan, isClockedIn, googleCalendar.isAuthorized]);
 
   useEffect(() => {
     let interval;

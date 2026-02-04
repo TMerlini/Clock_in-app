@@ -385,8 +385,9 @@ Paid Overtime: ${formatHoursMinutes(paidHours)}${notes ? '\n\nNotes: ' + notes :
   };
 
   /**
-   * Find orphan placeholder events: "Work Session (In Progress)" with end in the future.
+   * Find orphan placeholder events: "Work Session (In Progress)" that started recently.
    * These occur when activeClockIns was deleted but the calendar was never updated.
+   * Placeholder end time is 8h from clock-in, so we match by summary and start time, not end.
    * @returns {Promise<Array>} Array of orphan event objects { id, start, end, ... }
    */
   const findOrphanPlaceholderEvents = async () => {
@@ -395,8 +396,8 @@ Paid Overtime: ${formatHoursMinutes(paidHours)}${notes ? '\n\nNotes: ' + notes :
     try {
       window.gapi.client.setToken({ access_token: accessToken });
       const now = Date.now();
-      const timeMin = new Date(now - 24 * 60 * 60 * 1000).toISOString(); // 24h ago
-      const timeMax = new Date(now + 2 * 60 * 60 * 1000).toISOString();  // 2h from now
+      const timeMin = new Date(now - 48 * 60 * 60 * 1000).toISOString(); // 48h ago
+      const timeMax = new Date(now + 1 * 60 * 60 * 1000).toISOString();  // 1h from now (overlap with ongoing)
 
       const response = await window.gapi.client.calendar.events.list({
         calendarId: 'primary',
@@ -411,8 +412,9 @@ Paid Overtime: ${formatHoursMinutes(paidHours)}${notes ? '\n\nNotes: ' + notes :
       const events = response.result.items || [];
       const orphans = events.filter((e) => {
         const summary = (e.summary || '').trim();
-        const endTime = e.end?.dateTime ? new Date(e.end.dateTime).getTime() : 0;
-        return summary === 'Work Session (In Progress)' && endTime > now;
+        const startTime = e.start?.dateTime ? new Date(e.start.dateTime).getTime() : 0;
+        // Match "Work Session (In Progress)" - started in last 48h (placeholder end can be past if session >8h)
+        return summary === 'Work Session (In Progress)' && startTime >= now - 48 * 60 * 60 * 1000;
       });
 
       return orphans;
