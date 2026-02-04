@@ -165,8 +165,14 @@ export function ClockInApp({ user }) {
           }
         }
       } else {
-        // No active clock-in in Firestore
-        console.log('No active clock-in found in Firestore');
+        // No active clock-in in Firestore - only trust server snapshots
+        // Cached "doc doesn't exist" can be a false positive during network/cache sync
+        const fromCache = docSnap.metadata?.fromCache ?? false;
+        if (fromCache) {
+          console.log('Ignoring cached "no active clock-in" - waiting for server snapshot');
+          return;
+        }
+        console.log('No active clock-in found in Firestore (server confirmed)');
         setIsClockedIn(false);
         setClockInTime(null);
         setActiveSessionDetails(null);
@@ -177,6 +183,17 @@ export function ClockInApp({ user }) {
 
     return () => unsubscribe();
   }, [user]);
+
+  // Refresh timer immediately when tab becomes visible (browsers throttle background tabs)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        setCurrentTime(Date.now());
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, []);
 
   useEffect(() => {
     let interval;
@@ -384,13 +401,48 @@ export function ClockInApp({ user }) {
       paidExtraHours: totalHours > 10 ? totalHours - 10 : 0,
     };
 
+    const activeClockInRef = doc(db, 'activeClockIns', user.uid);
+
     try {
+      // Get calendar event ID from active clock-in before we delete it
+      const activeClockInSnap = await getDoc(activeClockInRef);
+      const storedCalendarEventId = activeClockInSnap.exists() ? activeClockInSnap.data().calendarEventId : null;
+
+      // Check if calendar auto-sync is enabled
+      let calendarAutoSync = true;
+      try {
+        const settingsRef = doc(db, 'userSettings', user.uid);
+        const settingsDoc = await getDoc(settingsRef);
+        if (settingsDoc.exists()) {
+          const s = settingsDoc.data();
+          calendarAutoSync = s.calendarAutoSync !== false;
+        }
+      } catch (e) {
+        console.error('Error loading calendarAutoSync:', e);
+      }
+
+      // Update Google Calendar event so we don't leave placeholder open
+      if (googleCalendar.isAuthorized && calendarAutoSync && storedCalendarEventId) {
+        try {
+          await googleCalendar.updateCalendarEvent(storedCalendarEventId, {
+            clockIn: clockInTimestamp,
+            clockOut: clockOutTimestamp,
+            regularHours: newSession.regularHours,
+            unpaidHours: newSession.unpaidExtraHours,
+            paidHours: newSession.paidExtraHours,
+            notes: ''
+          });
+          console.log('Auto clock-out: calendar event updated:', storedCalendarEventId);
+        } catch (calendarError) {
+          console.error('Failed to update calendar on auto clock-out:', calendarError);
+        }
+      }
+
       console.log('Saving auto-clocked session to Firebase:', newSession);
       await addDoc(collection(db, 'sessions'), newSession);
       console.log('Auto-clocked session saved successfully');
 
       // Delete active clock-in from Firestore (syncs across all devices)
-      const activeClockInRef = doc(db, 'activeClockIns', user.uid);
       await deleteDoc(activeClockInRef);
       console.log('Active clock-in deleted from Firestore');
 
