@@ -76,6 +76,8 @@ export function ClockInApp({ user }) {
   const [displayName, setDisplayName] = useState(null);
   const [showSyncOnVisitModal, setShowSyncOnVisitModal] = useState(false);
   const [syncOnVisitVariant, setSyncOnVisitVariant] = useState('not_connected');
+  const [orphanPlaceholder, setOrphanPlaceholder] = useState(null);
+  const [orphanRecoveryLoading, setOrphanRecoveryLoading] = useState(false);
 
   // Google Calendar integration
   const googleCalendar = useGoogleCalendar();
@@ -126,6 +128,76 @@ export function ClockInApp({ user }) {
     setShowSyncOnVisitModal(false);
   }, []);
 
+  const handleOrphanResume = useCallback(async () => {
+    if (!orphanPlaceholder || !user) return;
+    setOrphanRecoveryLoading(true);
+    try {
+      const clockInTime = new Date(orphanPlaceholder.start?.dateTime || orphanPlaceholder.start?.date).getTime();
+      const activeClockInRef = doc(db, 'activeClockIns', user.uid);
+      await setDoc(activeClockInRef, {
+        clockInTime,
+        calendarEventId: orphanPlaceholder.id,
+      });
+      setOrphanPlaceholder(null);
+      // Firestore listener will restore isClockedIn state
+    } catch (error) {
+      console.error('Failed to resume orphan session:', error);
+      alert('Failed to resume session: ' + error.message);
+    } finally {
+      setOrphanRecoveryLoading(false);
+    }
+  }, [orphanPlaceholder, user]);
+
+  const handleOrphanEnd = useCallback(async () => {
+    if (!orphanPlaceholder || !user) return;
+    setOrphanRecoveryLoading(true);
+    try {
+      const clockInTime = new Date(orphanPlaceholder.start?.dateTime || orphanPlaceholder.start?.date).getTime();
+      const clockOutTime = Date.now();
+      const totalHours = (clockOutTime - clockInTime) / (1000 * 60 * 60);
+      const newSession = {
+        userId: user.uid,
+        userEmail: user.email,
+        clockIn: clockInTime,
+        clockOut: clockOutTime,
+        totalHours,
+        regularHours: Math.min(totalHours, 8),
+        unpaidExtraHours: totalHours > 8 ? Math.min(totalHours - 8, 2) : 0,
+        paidExtraHours: totalHours > 10 ? totalHours - 10 : 0,
+      };
+      if (googleCalendar.isAuthorized) {
+        try {
+          await googleCalendar.updateCalendarEvent(orphanPlaceholder.id, {
+            clockIn: clockInTime,
+            clockOut: clockOutTime,
+            regularHours: newSession.regularHours,
+            unpaidHours: newSession.unpaidExtraHours,
+            paidHours: newSession.paidExtraHours,
+            notes: '',
+          });
+        } catch (e) {
+          console.error('Failed to update calendar on orphan end:', e);
+        }
+      }
+      await addDoc(collection(db, 'sessions'), {
+        ...newSession,
+        calendarEventId: orphanPlaceholder.id,
+        calendarSyncStatus: 'synced',
+      });
+      setOrphanPlaceholder(null);
+      await Promise.all([loadSessionDates(), loadSessionsForDate(selectedDate)]);
+    } catch (error) {
+      console.error('Failed to end orphan session:', error);
+      alert('Failed to end session: ' + error.message);
+    } finally {
+      setOrphanRecoveryLoading(false);
+    }
+  }, [orphanPlaceholder, user, googleCalendar, selectedDate]);
+
+  const handleOrphanDismiss = useCallback(() => {
+    setOrphanPlaceholder(null);
+  }, []);
+
   // Listen for active clock-in state from Firestore (real-time sync across devices)
   useEffect(() => {
     if (!user) return;
@@ -159,6 +231,7 @@ export function ClockInApp({ user }) {
           console.log('Syncing clock-in state from Firestore');
           setClockInTime(clockInTimestamp);
           setIsClockedIn(true);
+          setOrphanPlaceholder(null);
           // Load session details if they exist
           if (data.sessionDetails) {
             setActiveSessionDetails(data.sessionDetails);
@@ -176,6 +249,14 @@ export function ClockInApp({ user }) {
         setIsClockedIn(false);
         setClockInTime(null);
         setActiveSessionDetails(null);
+        // Check for orphan placeholders in Google Calendar (app lost state but calendar still has ongoing event)
+        if (googleCalendar.isAuthorized && !isFreePlan) {
+          googleCalendar.findOrphanPlaceholderEvents().then((orphans) => {
+            if (orphans.length > 0) {
+              setOrphanPlaceholder(orphans[0]);
+            }
+          });
+        }
       }
     }, (error) => {
       console.error('Error listening to active clock-in:', error);
@@ -996,6 +1077,41 @@ export function ClockInApp({ user }) {
       </div>
 
       <EnterpriseInviteBanner user={user} />
+
+      {orphanPlaceholder && (
+        <div className="orphan-recovery-banner">
+          <div className="orphan-recovery-content">
+            <AlertTriangle size={20} />
+            <span>Found an ongoing session in Google Calendar. Resume it in the app?</span>
+          </div>
+          <div className="orphan-recovery-actions">
+            <button
+              type="button"
+              className="orphan-btn orphan-btn-secondary"
+              onClick={handleOrphanDismiss}
+              disabled={orphanRecoveryLoading}
+            >
+              Dismiss
+            </button>
+            <button
+              type="button"
+              className="orphan-btn orphan-btn-secondary"
+              onClick={handleOrphanEnd}
+              disabled={orphanRecoveryLoading}
+            >
+              End Session
+            </button>
+            <button
+              type="button"
+              className="orphan-btn orphan-btn-primary"
+              onClick={handleOrphanResume}
+              disabled={orphanRecoveryLoading}
+            >
+              {orphanRecoveryLoading ? '...' : 'Resume'}
+            </button>
+          </div>
+        </div>
+      )}
 
       {renderContent()}
 

@@ -384,6 +384,44 @@ Paid Overtime: ${formatHoursMinutes(paidHours)}${notes ? '\n\nNotes: ' + notes :
     }
   };
 
+  /**
+   * Find orphan placeholder events: "Work Session (In Progress)" with end in the future.
+   * These occur when activeClockIns was deleted but the calendar was never updated.
+   * @returns {Promise<Array>} Array of orphan event objects { id, start, end, ... }
+   */
+  const findOrphanPlaceholderEvents = async () => {
+    if (!gapiInited || !accessToken) return [];
+
+    try {
+      window.gapi.client.setToken({ access_token: accessToken });
+      const now = Date.now();
+      const timeMin = new Date(now - 24 * 60 * 60 * 1000).toISOString(); // 24h ago
+      const timeMax = new Date(now + 2 * 60 * 60 * 1000).toISOString();  // 2h from now
+
+      const response = await window.gapi.client.calendar.events.list({
+        calendarId: 'primary',
+        timeMin,
+        timeMax,
+        maxResults: 50,
+        singleEvents: true,
+        orderBy: 'startTime',
+        timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+      });
+
+      const events = response.result.items || [];
+      const orphans = events.filter((e) => {
+        const summary = (e.summary || '').trim();
+        const endTime = e.end?.dateTime ? new Date(e.end.dateTime).getTime() : 0;
+        return summary === 'Work Session (In Progress)' && endTime > now;
+      });
+
+      return orphans;
+    } catch (error) {
+      console.error('Error finding orphan placeholders:', error);
+      return [];
+    }
+  };
+
   const listCalendars = async () => {
     if (!gapiInited) {
       throw new Error('Calendar API not initialized');
@@ -446,5 +484,6 @@ Paid Overtime: ${formatHoursMinutes(paidHours)}${notes ? '\n\nNotes: ' + notes :
     listCalendarEvents,
     getCalendarEvent,
     listCalendars,
+    findOrphanPlaceholderEvents,
   };
 }
