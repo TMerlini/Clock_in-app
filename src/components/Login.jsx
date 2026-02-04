@@ -52,6 +52,8 @@ export function Login({ onLogin }) {
           Sign in to track and manage your work sessions
           {' · '}
           <a href="/privacy" target="_blank" rel="noopener noreferrer" className="login-privacy-link">Privacy Policy</a>
+          {' · '}
+          <a href="/terms" target="_blank" rel="noopener noreferrer" className="login-privacy-link">Terms of Service</a>
         </p>
       </div>
     </div>
