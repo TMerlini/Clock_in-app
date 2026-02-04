@@ -334,6 +334,9 @@
     "callPackDescription": "Compre pacotes de chamadas adicionais que nunca expiram. Perfeito para utilizadores avançados!",
     "buyCallPacks": "Comprar Pacotes de Chamadas",
     "poweredByOpenRouter": "powered by OpenRouter",
+    "footerTrial": "Os planos pagos incluem um período de teste gratuito de 14 dias. Cancele quando quiser.",
+    "footerQuestions": "Dúvidas?",
+    "visitFaq": "Visite as nossas Perguntas Frequentes",
     "plans": {
       "mostPopular": "Mais Popular",
       "free": {

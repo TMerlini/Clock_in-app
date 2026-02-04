@@ -378,7 +378,7 @@ export function PremiumPlus({ user, onNavigate }) {
       )}
       <div className="premium-plus-header">
         <div className="header-content">
-          <Crown className="header-icon" />
+          <span className="header-icon crown-gradient" aria-hidden />
           <div>
             <h1>{t('premiumPlus.title')}</h1>
             <p>{t('premiumPlus.subtitle')}</p>
@@ -553,9 +553,12 @@ export function PremiumPlus({ user, onNavigate }) {
 
       <div className="premium-plus-footer">
         <p>
-          Paid plans include a 14-day free trial. Cancel anytime.
+          {t('premiumPlus.footerTrial')}
           <br />
-          Questions? <button className="link-button" onClick={() => onNavigate && onNavigate('faq')}>Visit our FAQ</button>
+          {t('premiumPlus.footerQuestions')}{' '}
+          <button className="link-button" onClick={() => onNavigate && onNavigate('faq')}>
+            {t('premiumPlus.visitFaq')}
+          </button>
         </p>
       </div>
     </div>

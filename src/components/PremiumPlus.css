@@ -77,10 +77,7 @@
 
 .premium-plus-header {
   margin-bottom: 3rem;
-  padding: 2rem;
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 12px;
+  padding: 0;
   text-align: center;
 }
 
@@ -95,6 +92,33 @@
   width: 64px;
   height: 64px;
   color: var(--primary);
+}
+
+/* Gold crown: gradient-filled icon with subtle animation */
+.premium-plus-header .header-icon.crown-gradient {
+  display: inline-block;
+  width: 64px;
+  height: 64px;
+  background: linear-gradient(
+    135deg,
+    #fffef7 0%,
+    #fffacd 18%,
+    #ffd700 40%,
+    #fff8dc 55%,
+    #ffd700 72%,
+    #fffacd 88%,
+    #fffef7 100%
+  );
+  background-size: 200% 200%;
+  background-position: 0% 50%;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='white' d='M2 4l3 12h14l3-12-6 7-4-7-4 7-6-7z'/%3E%3Cpath fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' d='M12 8v8'/%3E%3Cpath fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' d='m7 12 5-4 5 4'/%3E%3C/svg%3E") center / contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='white' d='M2 4l3 12h14l3-12-6 7-4-7-4 7-6-7z'/%3E%3Cpath fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' d='M12 8v8'/%3E%3Cpath fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' d='m7 12 5-4 5 4'/%3E%3C/svg%3E") center / contain no-repeat;
+  animation: crown-gradient-shine 4s ease-in-out infinite;
+}
+
+@keyframes crown-gradient-shine {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
 }
 
 .premium-plus-header h1 {
@@ -420,19 +444,20 @@
 }
 
 .call-pack-button {
-  padding: 0.875rem 1.75rem;
+  width: 100%;
+  padding: 0.875rem 1.5rem;
   background: linear-gradient(135deg, var(--primary), var(--accent));
   color: white;
   border: none;
   border-radius: 8px;
-  font-size: 1rem;
+  font-size: 0.95rem;
   font-weight: 600;
   cursor: pointer;
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 0.5rem;
   transition: all 0.2s ease;
-  white-space: nowrap;
 }
 
 .call-pack-button:hover {
@@ -569,12 +594,25 @@
     gap: 1.5rem;
   }
 
+  .call-pack-card {
+    min-height: auto;
+    overflow: visible;
+  }
+
   .call-pack-content {
     flex-direction: column;
+    flex-wrap: nowrap;
     text-align: center;
+    flex: 0 1 auto;
+  }
+
+  .call-pack-openrouter {
+    flex-basis: auto;
+    flex-shrink: 0;
   }
 
   .call-pack-button {
     width: 100%;
+    flex-shrink: 0;
   }
 }

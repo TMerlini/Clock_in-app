@@ -334,6 +334,9 @@
     "callPackDescription": "Purchase additional call packs that never expire. Perfect for power users!",
     "buyCallPacks": "Buy Call Packs",
     "poweredByOpenRouter": "powered by OpenRouter",
+    "footerTrial": "Paid plans include a 14-day free trial. Cancel anytime.",
+    "footerQuestions": "Questions?",
+    "visitFaq": "Visit our FAQ",
     "plans": {
       "mostPopular": "Most Popular",
       "free": {
