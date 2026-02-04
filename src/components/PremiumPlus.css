@@ -386,6 +386,10 @@
   padding: 1.5rem;
   transition: all 0.2s ease;
   width: 100%;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
 }
 
 .call-pack-card:hover {
@@ -399,6 +403,7 @@
   justify-content: space-between;
   gap: 2rem;
   flex-wrap: wrap;
+  flex: 1;
 }
 
 .call-pack-content h3 {
@@ -460,29 +465,25 @@
 .bottom-section {
   margin-top: 2rem;
   margin-bottom: 2rem;
-  display: flex;
-  gap: 1.5rem;
-  justify-content: center;
-  flex-wrap: wrap;
-  align-items: flex-start;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.25rem;
+  align-items: stretch;
 }
 
 .free-plan-card-wrapper {
-  flex: 1 1 400px;
-  max-width: 500px;
+  min-width: 0;
   display: flex;
-  justify-content: center;
 }
 
 .free-plan-card {
   width: 100%;
+  flex: 1;
 }
 
 .call-pack-card-wrapper {
-  flex: 1 1 400px;
-  max-width: 500px;
+  min-width: 0;
   display: flex;
-  justify-content: center;
 }
 
 .call-pack-openrouter {
@@ -564,14 +565,8 @@
   }
 
   .bottom-section {
-    flex-direction: column;
+    grid-template-columns: 1fr;
     gap: 1.5rem;
-  }
-
-  .free-plan-card-wrapper,
-  .call-pack-card-wrapper {
-    max-width: 100%;
-    flex: 1 1 100%;
   }
 
   .call-pack-content {
