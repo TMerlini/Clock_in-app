@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { doc, getDoc } from 'firebase/firestore';
 import { db, auth } from '../lib/firebase';
 import { getCallStatus, getCallPacksStatus, addCallPack } from '../lib/tokenManager';
+import { getPlanConfig } from '../lib/planConfig';
 import { STRIPE_PAYMENT_LINKS, hasPaymentLinks } from '../lib/stripeConfig';
 import { Zap, Check, AlertCircle, Loader, ShoppingCart } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -11,6 +12,7 @@ export function CallPackPurchase({ onNavigate }) {
   const { t } = useTranslation();
   const [callStatus, setCallStatus] = useState(null);
   const [packsStatus, setPacksStatus] = useState(null);
+  const [planConfig, setPlanConfig] = useState(null);
   const [loading, setLoading] = useState(true);
   const [purchasing, setPurchasing] = useState(false);
   const [successMessage, setSuccessMessage] = useState(null);
@@ -18,6 +20,7 @@ export function CallPackPurchase({ onNavigate }) {
   useEffect(() => {
     loadCallStatus();
     checkPurchaseReturn();
+    getPlanConfig().then(setPlanConfig).catch(() => setPlanConfig(null));
   }, []);
 
   // Check if returning from Stripe purchase
@@ -33,8 +36,9 @@ export function CallPackPurchase({ onNavigate }) {
       const currentUser = auth.currentUser;
       if (currentUser) {
         try {
-          // Add call pack (50 calls)
-          await addCallPack(currentUser.uid, 50);
+          const config = await getPlanConfig();
+          const packSize = config?.callPack?.packSize ?? 50;
+          await addCallPack(currentUser.uid, packSize);
           setSuccessMessage(t('callPackPurchase.packPurchased'));
           
           // Reload status
@@ -80,11 +84,10 @@ export function CallPackPurchase({ onNavigate }) {
       return;
     }
 
-    // Get Stripe payment link for call pack (need to configure this)
-    // For now, use a placeholder - you'll need to create this in Stripe
-    const CALL_PACK_PAYMENT_LINK = import.meta.env.VITE_STRIPE_PAYMENT_LINK_CALL_PACK || '';
+    // Resolve payment link: admin-configured (Firestore) then env
+    const paymentLink = (planConfig?.callPack?.paymentLink?.trim()) || (import.meta.env.VITE_STRIPE_PAYMENT_LINK_CALL_PACK || '');
 
-    if (!CALL_PACK_PAYMENT_LINK) {
+    if (!paymentLink) {
       alert(t('callPackPurchase.notConfigured'));
       return;
     }
@@ -94,7 +97,7 @@ export function CallPackPurchase({ onNavigate }) {
     try {
       // Add user ID to payment link for tracking
       const userId = currentUser.uid;
-      const checkoutUrl = CALL_PACK_PAYMENT_LINK + `?client_reference_id=${userId}&pack_purchase=true`;
+      const checkoutUrl = paymentLink + `?client_reference_id=${userId}&pack_purchase=true`;
       
       // Redirect to Stripe
       window.location.href = checkoutUrl;

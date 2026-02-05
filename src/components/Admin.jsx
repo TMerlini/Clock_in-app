@@ -49,7 +49,7 @@ export function Admin({ user }) {
   }, [user]);
 
   useEffect(() => {
-    if (activeSection === 'subscriptions' && user && isAdmin(user)) {
+    if ((activeSection === 'subscriptions' || activeSection === 'callpacks') && user && isAdmin(user)) {
       const load = async () => {
         setPlanConfigLoading(true);
         try {
@@ -282,6 +282,33 @@ export function Admin({ user }) {
         [field]: value
       }
     });
+  };
+
+  const handleUpdateCallPack = (field, value) => {
+    if (!planConfig) return;
+    setPlanConfig({
+      ...planConfig,
+      callPack: {
+        ...(planConfig.callPack || {}),
+        [field]: field === 'packSize' ? (typeof value === 'number' ? value : parseInt(value, 10) || 50) : value
+      }
+    });
+  };
+
+  const handleSaveCallPack = async () => {
+    if (!planConfig?.callPack) return;
+    setPlanConfigSaving('callPack');
+    try {
+      await savePlanConfig({ callPack: planConfig.callPack });
+      const config = await getPlanConfig();
+      setPlanConfig(config);
+      alert('Call Pack settings saved successfully.');
+    } catch (err) {
+      console.error('Error saving call pack config:', err);
+      alert('Error saving call pack config: ' + err.message);
+    } finally {
+      setPlanConfigSaving(null);
+    }
   };
 
   const handleAddFeature = (planId) => {
@@ -721,6 +748,7 @@ export function Admin({ user }) {
               <span>Loading plan config...</span>
             </div>
           ) : planConfig && (
+            <>
             <div className="plan-editor-list">
               {['basic', 'pro', 'premium_ai', 'enterprise'].map((planId) => {
                 const plan = planConfig[planId] || {};
@@ -837,6 +865,61 @@ export function Admin({ user }) {
                 );
               })}
             </div>
+            <div className="plan-editor-card">
+              <button
+                type="button"
+                className="plan-editor-header"
+                onClick={() => setExpandedPlanEditor(expandedPlanEditor === 'callPack' ? null : 'callPack')}
+              >
+                <span className="plan-editor-title">CALL PACK</span>
+                {expandedPlanEditor === 'callPack' ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+              </button>
+              {expandedPlanEditor === 'callPack' && (
+                <div className="plan-editor-body">
+                  <div className="form-group">
+                    <label>Payment link (Stripe)</label>
+                    <input
+                      type="url"
+                      value={planConfig?.callPack?.paymentLink ?? ''}
+                      onChange={(e) => handleUpdateCallPack('paymentLink', e.target.value)}
+                      placeholder="https://buy.stripe.com/..."
+                    />
+                    <span className="plan-config-field-hint">Stripe checkout link for call pack purchase. Leave empty to use the link from environment (VITE_STRIPE_PAYMENT_LINK_CALL_PACK).</span>
+                  </div>
+                  <div className="form-group">
+                    <label>Calls per pack</label>
+                    <input
+                      type="number"
+                      min={1}
+                      value={planConfig?.callPack?.packSize ?? 50}
+                      onChange={(e) => handleUpdateCallPack('packSize', e.target.value)}
+                    />
+                    <span className="plan-config-field-hint">Number of AI calls added when a user purchases one call pack.</span>
+                  </div>
+                  <div className="plan-editor-actions">
+                    <button
+                      type="button"
+                      className="submit-button"
+                      disabled={planConfigSaving === 'callPack'}
+                      onClick={handleSaveCallPack}
+                    >
+                      {planConfigSaving === 'callPack' ? (
+                        <>
+                          <Loader className="spinning" size={16} />
+                          <span>Saving...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Check size={16} />
+                          <span>Save Call Pack</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+            </>
           )}
         </div>
       )}
@@ -1043,11 +1126,11 @@ export function Admin({ user }) {
                             <td>
                               <button
                                 className="action-button add"
-                                onClick={() => handleAddCallPack(userItem.id, 50)}
-                                title="Add +50 calls pack"
+                                onClick={() => handleAddCallPack(userItem.id, planConfig?.callPack?.packSize ?? 50)}
+                                title={`Add +${planConfig?.callPack?.packSize ?? 50} calls pack`}
                               >
                                 <Package size={16} />
-                                <span>+50 Calls</span>
+                                <span>+{planConfig?.callPack?.packSize ?? 50} Calls</span>
                               </button>
                             </td>
                           </tr>

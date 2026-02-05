@@ -63,6 +63,10 @@ const DEFAULTS = {
       'Centralized team dashboard',
       'Export per member (CSV)'
     ]
+  },
+  callPack: {
+    paymentLink: '',
+    packSize: 50
   }
 };
 
@@ -80,6 +84,7 @@ export async function getPlanConfig() {
     const data = snap.data();
     const merged = {};
     for (const planId of Object.keys(DEFAULTS)) {
+      if (planId === 'callPack') continue;
       const defaultPlan = DEFAULTS[planId];
       const stored = data[planId] || {};
       merged[planId] = {
@@ -88,6 +93,7 @@ export async function getPlanConfig() {
         features: Array.isArray(stored.features) ? stored.features : (defaultPlan.features || [])
       };
     }
+    merged.callPack = { ...(DEFAULTS.callPack || {}), ...(data.callPack || {}) };
     return merged;
   } catch (error) {
     console.error('Error loading plan config:', error);
