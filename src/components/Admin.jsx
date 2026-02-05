@@ -771,6 +771,16 @@ export function Admin({ user }) {
                           )}
                         </div>
                         <div className="form-group">
+                          <label>Payment link (Stripe)</label>
+                          <input
+                            type="url"
+                            value={plan.paymentLink || ''}
+                            onChange={(e) => handleUpdatePlanEditor(planId, 'paymentLink', e.target.value)}
+                            placeholder="https://buy.stripe.com/..."
+                          />
+                          <span className="plan-config-field-hint">Override the default Stripe checkout link for this plan. Leave empty to use the link from environment/config.</span>
+                        </div>
+                        <div className="form-group">
                           <label>Features</label>
                           <div className="plan-features-list">
                             {features.map((f, i) => (

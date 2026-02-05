@@ -13,6 +13,7 @@ const DEFAULTS = {
   basic: {
     price: '€0.99',
     period: 'month',
+    paymentLink: '',
     features: [
       'Everything in Free',
       'Calendar view and import',
@@ -24,6 +25,7 @@ const DEFAULTS = {
   pro: {
     price: '€4.99',
     period: 'month',
+    paymentLink: '',
     features: [
       'Everything in Basic',
       'AI Advisor (buy call packs to use)',
@@ -36,6 +38,7 @@ const DEFAULTS = {
   premium_ai: {
     price: '€9.99',
     period: 'month',
+    paymentLink: '',
     features: [
       'Everything in Pro',
       'AI Advisor access (75 calls/month base)',
@@ -49,6 +52,7 @@ const DEFAULTS = {
   enterprise: {
     price: '€199',
     period: 'month',
+    paymentLink: '',
     maxPremiumUsers: 10,
     features: [
       'Everything in Premium AI',

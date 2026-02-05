@@ -150,8 +150,9 @@ export function PremiumPlus({ user, onNavigate }) {
     setRedirecting(true);
 
     try {
-      // Option 1: Use Stripe Payment Links (simplest, no backend needed)
-      const paymentLink = STRIPE_PAYMENT_LINKS[planId];
+      // Option 1: Use Stripe Payment Links (admin-configured or env fallback)
+      const configKey = planId.toLowerCase();
+      const paymentLink = (planConfig?.[configKey]?.paymentLink?.trim()) || STRIPE_PAYMENT_LINKS[planId];
       if (paymentLink) {
         const currentUser = auth.currentUser;
         const userId = currentUser?.uid || '';
