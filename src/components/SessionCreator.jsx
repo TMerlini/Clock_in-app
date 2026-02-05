@@ -4,9 +4,11 @@ import { db, auth } from '../lib/firebase';
 import { X, Save, AlertCircle, Plus, MapPin } from 'lucide-react';
 import { format, startOfDay, endOfDay } from 'date-fns';
 import { formatHoursMinutes, calculateUsedIsencaoHours } from '../lib/utils';
+import { useTranslation } from 'react-i18next';
 import './SessionEditor.css';
 
 export function SessionCreator({ user, selectedDate, onClose, onUpdate }) {
+  const { t, i18n } = useTranslation();
   const defaultDate = format(selectedDate, 'yyyy-MM-dd');
   const [clockInTime, setClockInTime] = useState(`${defaultDate}T09:00`);
   const [clockOutTime, setClockOutTime] = useState(`${defaultDate}T17:00`);
@@ -75,7 +77,7 @@ export function SessionCreator({ user, selectedDate, onClose, onUpdate }) {
     const newClockOut = new Date(clockOutTime).getTime();
 
     if (newClockOut <= newClockIn) {
-      setError('Clock out time must be after clock in time');
+      setError(t('sessionCreator.clockOutMustBeAfter'));
       return;
     }
 
@@ -103,9 +105,7 @@ export function SessionCreator({ user, selectedDate, onClose, onUpdate }) {
       });
 
       if (overlaps.length > 0) {
-        const confirmed = window.confirm(
-          'This session overlaps with an existing session on this date. Create anyway?'
-        );
+        const confirmed = window.confirm(t('sessionCreator.overlapConfirm'));
         if (!confirmed) return;
       }
     } catch (err) {
@@ -207,7 +207,7 @@ export function SessionCreator({ user, selectedDate, onClose, onUpdate }) {
       onClose();
     } catch (err) {
       console.error('Error creating session:', err);
-      setError('Failed to create session. Please try again.');
+      setError(t('sessionCreator.failedCreate'));
     } finally {
       setSaving(false);
     }
@@ -217,7 +217,7 @@ export function SessionCreator({ user, selectedDate, onClose, onUpdate }) {
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
-          <h2>Add Manual Session</h2>
+          <h2>{t('sessionCreator.title')}</h2>
           <button className="close-button" onClick={onClose}>
             <X />
           </button>
@@ -233,11 +233,11 @@ export function SessionCreator({ user, selectedDate, onClose, onUpdate }) {
 
           <div className="info-message">
             <Plus />
-            <span>Creating session for {format(selectedDate, 'MMM dd, yyyy')}</span>
+            <span>{t('sessionCreator.creatingFor', { date: selectedDate.toLocaleDateString(i18n.language === 'pt' ? 'pt-PT' : 'en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) })}</span>
           </div>
 
           <div className="form-group">
-            <label>Clock In Time</label>
+            <label>{t('sessionCreator.clockInTime')}</label>
             <input
               type="datetime-local"
               value={clockInTime}
@@ -247,7 +247,7 @@ export function SessionCreator({ user, selectedDate, onClose, onUpdate }) {
           </div>
 
           <div className="form-group">
-            <label>Clock Out Time</label>
+            <label>{t('sessionCreator.clockOutTime')}</label>
             <input
               type="datetime-local"
               value={clockOutTime}
@@ -264,14 +264,14 @@ export function SessionCreator({ user, selectedDate, onClose, onUpdate }) {
                 onChange={(e) => setIncludeLunchTime(e.target.checked)}
                 className="checkbox-input"
               />
-              <span>Lunch time ({formatHoursMinutes(defaultLunchDuration)})</span>
+              <span>{t('sessionCreator.lunchTime', { duration: formatHoursMinutes(defaultLunchDuration) })}</span>
             </label>
           </div>
 
           {includeLunchTime && (
             <div className="form-group form-group-inline">
               <div className="inline-field">
-                <label>Lunch Duration</label>
+                <label>{t('sessionCreator.lunchDuration')}</label>
                 <div className="lunch-duration-inputs">
                   <div className="time-input-wrapper">
                     <input
@@ -301,7 +301,7 @@ export function SessionCreator({ user, selectedDate, onClose, onUpdate }) {
               </div>
 
               <div className="inline-field">
-                <label htmlFor="lunchAmount">Lunch Amount (€)</label>
+                <label htmlFor="lunchAmount">{t('sessionCreator.lunchAmount')}</label>
                 <input
                   id="lunchAmount"
                   type="number"
@@ -325,13 +325,13 @@ export function SessionCreator({ user, selectedDate, onClose, onUpdate }) {
                   onChange={(e) => setHadDinner(e.target.checked)}
                   className="checkbox-input"
                 />
-                <span>Had dinner</span>
+                <span>{t('sessionCreator.hadDinner')}</span>
               </label>
             </div>
 
             {hadDinner && (
               <div className="inline-field">
-                <label htmlFor="dinnerAmount">Dinner Amount (€)</label>
+                <label htmlFor="dinnerAmount">{t('sessionCreator.dinnerAmount')}</label>
                 <input
                   id="dinnerAmount"
                   type="number"
@@ -349,14 +349,14 @@ export function SessionCreator({ user, selectedDate, onClose, onUpdate }) {
           <div className="form-group">
             <label>
               <MapPin className="label-icon" />
-              Location (optional)
+              {t('sessionCreator.locationOptional')}
             </label>
             <input
               type="text"
               value={location}
               onChange={(e) => setLocation(e.target.value)}
               className="time-input"
-              placeholder="Add location (e.g., Office, Home, Client site, etc.)"
+              placeholder={t('sessionCreator.locationPlaceholder')}
             />
           </div>
 
@@ -369,7 +369,7 @@ export function SessionCreator({ user, selectedDate, onClose, onUpdate }) {
                   onChange={(e) => setIsWeekend(e.target.checked)}
                   className="checkbox-input"
                 />
-                <span>Weekend</span>
+                <span>{t('sessionCreator.weekend')}</span>
               </label>
             </div>
 
@@ -381,7 +381,7 @@ export function SessionCreator({ user, selectedDate, onClose, onUpdate }) {
                   onChange={(e) => setIsBankHoliday(e.target.checked)}
                   className="checkbox-input"
                 />
-                <span>Bank Holiday</span>
+                <span>{t('sessionCreator.bankHoliday')}</span>
               </label>
             </div>
           </div>
@@ -389,17 +389,17 @@ export function SessionCreator({ user, selectedDate, onClose, onUpdate }) {
           {(isWeekend || isBankHoliday) && (
             <div className="info-message" style={{ marginBottom: '1rem' }}>
               <AlertCircle />
-              <span>Isenção does not apply on weekends/bank holidays. Only overwork hours will be counted.</span>
+              <span>{t('sessionCreator.isencaoNoWeekendInfo')}</span>
             </div>
           )}
 
           <div className="form-group">
-            <label>Notes (optional)</label>
+            <label>{t('sessionCreator.notesOptional')}</label>
             <textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               className="notes-input"
-              placeholder="Add notes about this session (project, tasks, client, etc.)"
+              placeholder={t('sessionCreator.notesPlaceholder')}
               rows="3"
             />
           </div>
@@ -407,7 +407,7 @@ export function SessionCreator({ user, selectedDate, onClose, onUpdate }) {
 
         <div className="modal-footer">
           <button className="cancel-button" onClick={onClose}>
-            Cancel
+            {t('sessionCreator.cancel')}
           </button>
           <button
             className="save-button"
@@ -415,7 +415,7 @@ export function SessionCreator({ user, selectedDate, onClose, onUpdate }) {
             disabled={saving}
           >
             <Save />
-            {saving ? 'Creating...' : 'Create Session'}
+            {saving ? t('sessionCreator.creating') : t('sessionCreator.createSession')}
           </button>
         </div>
       </div>
