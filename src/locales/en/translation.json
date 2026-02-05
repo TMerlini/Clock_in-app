@@ -215,6 +215,22 @@
     "noData": "--:--",
     "maxHoursWarning": "You're about to log {{hours}} for this session. Continue?"
   },
+  "activeSessionCard": {
+    "inProgress": "IN PROGRESS",
+    "saving": "Saving...",
+    "saved": "Saved",
+    "clockIn": "Clock In",
+    "elapsedTime": "Elapsed Time",
+    "mealDetails": "Meal Details",
+    "lunchTime": "Lunch time",
+    "hadDinner": "Had dinner",
+    "weekend": "Weekend",
+    "bankHoliday": "Bank Holiday",
+    "isencaoNoWeekendInfo": "Isenção does not apply on weekends/bank holidays. Only overwork hours will be counted.",
+    "locationOptional": "Location (optional)",
+    "notesOptional": "Notes (optional)",
+    "changesSaveAutomatically": "Changes save automatically"
+  },
   "aiAdvisor": {
     "title": "AI Advisor",
     "subtitle": "Get intelligent insights and recommendations about your time tracking",

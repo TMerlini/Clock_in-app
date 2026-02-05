@@ -4,9 +4,11 @@ import { db, auth } from '../lib/firebase';
 import { Clock, MapPin, FileText, Coffee, UtensilsCrossed, Calendar, Save } from 'lucide-react';
 import { format } from 'date-fns';
 import { formatHoursMinutes } from '../lib/utils';
+import { useTranslation } from 'react-i18next';
 import './ActiveSessionCard.css';
 
 export const ActiveSessionCard = memo(function ActiveSessionCard({ clockInTime, sessionDetails, onDetailsChange }) {
+  const { t } = useTranslation();
   const [elapsedTime, setElapsedTime] = useState('00:00:00');
   const [includeLunchTime, setIncludeLunchTime] = useState(sessionDetails?.includeLunchTime ?? false);
   const [lunchHours, setLunchHours] = useState(sessionDetails?.lunchHours ?? 1);
@@ -123,13 +125,13 @@ export const ActiveSessionCard = memo(function ActiveSessionCard({ clockInTime, 
       <div className="active-session-header">
         <div className="active-badge">
           <span className="pulse-dot"></span>
-          IN PROGRESS
+          {t('activeSessionCard.inProgress')}
         </div>
-        {saving && <span className="saving-indicator">Saving...</span>}
+        {saving && <span className="saving-indicator">{t('activeSessionCard.saving')}</span>}
         {!saving && lastSaved && (
           <span className="saved-indicator">
             <Save size={12} />
-            Saved
+            {t('activeSessionCard.saved')}
           </span>
         )}
       </div>
@@ -138,19 +140,19 @@ export const ActiveSessionCard = memo(function ActiveSessionCard({ clockInTime, 
         <div className="time-display">
           <Clock className="time-icon" />
           <div className="time-info">
-            <span className="time-label">Clock In</span>
+            <span className="time-label">{t('activeSessionCard.clockIn')}</span>
             <span className="time-value">{format(new Date(clockInTime), 'HH:mm:ss')}</span>
           </div>
         </div>
         <div className="elapsed-display">
-          <div className="elapsed-label">Elapsed Time</div>
+          <div className="elapsed-label">{t('activeSessionCard.elapsedTime')}</div>
           <div className="elapsed-value">{elapsedTime}</div>
         </div>
       </div>
 
       <div className="active-session-details">
         <div className="detail-section">
-          <h4>Meal Details</h4>
+          <h4>{t('activeSessionCard.mealDetails')}</h4>
           
           <div className="detail-row">
             <label className="checkbox-label">
@@ -161,7 +163,7 @@ export const ActiveSessionCard = memo(function ActiveSessionCard({ clockInTime, 
                 className="checkbox-input"
               />
               <Coffee size={16} />
-              <span>Lunch time</span>
+              <span>{t('activeSessionCard.lunchTime')}</span>
             </label>
             
             {includeLunchTime && (
@@ -213,7 +215,7 @@ export const ActiveSessionCard = memo(function ActiveSessionCard({ clockInTime, 
                 className="checkbox-input"
               />
               <UtensilsCrossed size={16} />
-              <span>Had dinner</span>
+              <span>{t('activeSessionCard.hadDinner')}</span>
             </label>
             
             {hadDinner && (
@@ -245,7 +247,7 @@ export const ActiveSessionCard = memo(function ActiveSessionCard({ clockInTime, 
                 className="checkbox-input"
               />
               <Calendar size={16} />
-              <span>Weekend</span>
+              <span>{t('activeSessionCard.weekend')}</span>
             </label>
           </div>
           
@@ -258,13 +260,13 @@ export const ActiveSessionCard = memo(function ActiveSessionCard({ clockInTime, 
                 className="checkbox-input"
               />
               <Calendar size={16} />
-              <span>Bank Holiday</span>
+              <span>{t('activeSessionCard.bankHoliday')}</span>
             </label>
           </div>
           
           {(isWeekend || isBankHoliday) && (
             <div className="weekend-notice" style={{ marginTop: '0.5rem', padding: '0.5rem', background: 'rgba(139, 92, 246, 0.1)', borderRadius: '4px', fontSize: '0.85rem', color: '#8b5cf6' }}>
-              <span>⚠️ Isenção does not apply on weekends/bank holidays. Only overwork hours will be counted.</span>
+              <span>⚠️ {t('activeSessionCard.isencaoNoWeekendInfo')}</span>
             </div>
           )}
         </div>
@@ -276,7 +278,7 @@ export const ActiveSessionCard = memo(function ActiveSessionCard({ clockInTime, 
               type="text"
               value={location}
               onChange={(e) => setLocation(e.target.value)}
-              placeholder="Location (optional)"
+              placeholder={t('activeSessionCard.locationOptional')}
               className="text-input"
             />
           </div>
@@ -288,7 +290,7 @@ export const ActiveSessionCard = memo(function ActiveSessionCard({ clockInTime, 
             <textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              placeholder="Notes (optional)"
+              placeholder={t('activeSessionCard.notesOptional')}
               className="notes-input"
               rows={2}
             />
@@ -297,7 +299,7 @@ export const ActiveSessionCard = memo(function ActiveSessionCard({ clockInTime, 
       </div>
 
       <div className="active-session-footer">
-        <span className="auto-save-note">Changes save automatically</span>
+        <span className="auto-save-note">{t('activeSessionCard.changesSaveAutomatically')}</span>
       </div>
     </div>
   );

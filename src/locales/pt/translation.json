@@ -215,6 +215,22 @@
     "noData": "--:--",
     "maxHoursWarning": "Está prestes a registar {{hours}} para esta sessão. Continuar?"
   },
+  "activeSessionCard": {
+    "inProgress": "EM CURSO",
+    "saving": "A guardar...",
+    "saved": "Guardado",
+    "clockIn": "Entrada",
+    "elapsedTime": "Tempo Decorrido",
+    "mealDetails": "Detalhes das Refeições",
+    "lunchTime": "Tempo de almoço",
+    "hadDinner": "Teve jantar",
+    "weekend": "Fim de Semana",
+    "bankHoliday": "Feriado",
+    "isencaoNoWeekendInfo": "A Isenção não se aplica em fins de semana/feriados. Apenas as horas de trabalho extra serão contabilizadas.",
+    "locationOptional": "Localização (opcional)",
+    "notesOptional": "Notas (opcional)",
+    "changesSaveAutomatically": "As alterações são guardadas automaticamente"
+  },
   "aiAdvisor": {
     "title": "Assistente IA",
     "subtitle": "Obtenha informações e recomendações inteligentes sobre o seu rastreamento de tempo",
