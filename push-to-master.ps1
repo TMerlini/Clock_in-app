@@ -6,5 +6,5 @@ $git = "C:\Program Files\Git\cmd\git.exe"
 
 & $git add .
 & $git status
-& $git commit -m "Update contact email to contacto@clock-in.pt and fix plan card translations"
+& $git commit -m "Fix Google indexing: add canonical tags, configure Vercel redirects, update sitemap"
 & $git push origin master
