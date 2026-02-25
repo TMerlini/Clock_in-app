@@ -472,6 +472,21 @@
   font-size: 0.9rem;
 }
 
+.premium-plus-contact {
+  margin-top: 0.5rem;
+  font-size: 0.85rem;
+}
+
+.premium-plus-contact a {
+  color: var(--primary);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.premium-plus-contact a:hover {
+  text-decoration: underline;
+}
+
 .link-button {
   background: none;
   border: none;

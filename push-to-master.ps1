@@ -6,5 +6,5 @@ $git = "C:\Program Files\Git\cmd\git.exe"
 
 & $git add .
 & $git status
-& $git commit -m "Add Enterprise AI Assistant, member data access, alias display"
+& $git commit -m "Update contact email to contacto@clock-in.pt and fix plan card translations"
 & $git push origin master

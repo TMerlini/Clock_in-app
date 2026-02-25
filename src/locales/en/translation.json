@@ -353,6 +353,7 @@
     "footerTrial": "Paid plans include a 14-day free trial. Cancel anytime.",
     "footerQuestions": "Questions?",
     "visitFaq": "Visit our FAQ",
+    "footerContact": "Contact us:",
     "plans": {
       "mostPopular": "Most Popular",
       "free": {
@@ -817,6 +818,7 @@
       "legalCompliance": "Legal Compliance"
     },
     "additionalResources": "Additional Resources",
+    "stillHaveQuestions": "Still have questions? Contact us at",
     "resources": {
       "act": "ACT - Autoridade para as Condições do Trabalho",
       "laborCode": "Código do Trabalho (Labor Code PDF)",
@@ -1233,7 +1235,8 @@
     "footer": {
       "version": "Version 2.2.0 - January 2026",
       "copyright": "© 2026 Clock In - Intelligent Time Manager. Built for professionals who value their time.",
-      "latestUpdate": "Latest update: AI Advisor with Portuguese labor law expertise, Premium AI plans, and call pack system"
+      "latestUpdate": "Latest update: AI Advisor with Portuguese labor law expertise, Premium AI plans, and call pack system",
+      "contact": "Contact us:"
     }
   }
 }

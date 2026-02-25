@@ -229,7 +229,7 @@ export function PremiumPlus({ user, onNavigate }) {
       price: cfg('basic')?.price ?? '€0.99',
       period: cfg('basic')?.period ?? t('premiumPlus.plans.basic.period', { defaultValue: 'month' }),
       icon: Zap,
-      features: (cfg('basic')?.features?.length && cfg('basic').features.filter(Boolean).length) ? cfg('basic').features : [
+      features: [
         t('premiumPlus.plans.basic.feature1'),
         t('premiumPlus.plans.basic.feature2'),
         t('premiumPlus.plans.basic.feature3'),
@@ -244,7 +244,7 @@ export function PremiumPlus({ user, onNavigate }) {
       price: cfg('pro')?.price ?? '€4.99',
       period: cfg('pro')?.period ?? t('premiumPlus.plans.pro.period', { defaultValue: 'month' }),
       icon: Sparkles,
-      features: (cfg('pro')?.features?.length && cfg('pro').features.filter(Boolean).length) ? cfg('pro').features : [
+      features: [
         t('premiumPlus.plans.pro.feature1'),
         t('premiumPlus.plans.pro.feature2'),
         t('premiumPlus.plans.pro.feature3'),
@@ -261,7 +261,7 @@ export function PremiumPlus({ user, onNavigate }) {
       price: cfg('premium_ai')?.price ?? '€9.99',
       period: cfg('premium_ai')?.period ?? t('premiumPlus.plans.premiumAi.period', { defaultValue: 'month' }),
       icon: Crown,
-      features: (cfg('premium_ai')?.features?.length && cfg('premium_ai').features.filter(Boolean).length) ? cfg('premium_ai').features : [
+      features: [
         t('premiumPlus.plans.premiumAi.feature1'),
         t('premiumPlus.plans.premiumAi.feature2'),
         t('premiumPlus.plans.premiumAi.feature3'),
@@ -280,19 +280,15 @@ export function PremiumPlus({ user, onNavigate }) {
       icon: Building2,
       features: (() => {
         const maxCount = cfg('enterprise')?.maxPremiumUsers ?? 10;
-        const replaceCount = (s) => (typeof s === 'string' ? s.replace(/\{\{count\}\}/g, String(maxCount)) : s);
-        const raw = (cfg('enterprise')?.features?.length && cfg('enterprise').features.filter(Boolean).length)
-          ? cfg('enterprise').features
-          : [
-              t('premiumPlus.plans.enterprise.feature1'),
-              t('premiumPlus.plans.enterprise.feature2'),
-              t('premiumPlus.plans.enterprise.feature3', { count: maxCount }),
-              t('premiumPlus.plans.enterprise.feature4'),
-              t('premiumPlus.plans.enterprise.feature5'),
-              t('premiumPlus.plans.enterprise.feature6'),
-              t('premiumPlus.plans.enterprise.feature7')
-            ];
-        return raw.map(replaceCount);
+        return [
+          t('premiumPlus.plans.enterprise.feature1'),
+          t('premiumPlus.plans.enterprise.feature2'),
+          t('premiumPlus.plans.enterprise.feature3', { count: maxCount }),
+          t('premiumPlus.plans.enterprise.feature4'),
+          t('premiumPlus.plans.enterprise.feature5'),
+          t('premiumPlus.plans.enterprise.feature6'),
+          t('premiumPlus.plans.enterprise.feature7')
+        ];
       })(),
       color: 'indigo'
     }
@@ -560,6 +556,10 @@ export function PremiumPlus({ user, onNavigate }) {
           <button className="link-button" onClick={() => onNavigate && onNavigate('faq')}>
             {t('premiumPlus.visitFaq')}
           </button>
+        </p>
+        <p className="premium-plus-contact">
+          {t('premiumPlus.footerContact')}{' '}
+          <a href="mailto:contacto@clock-in.pt">contacto@clock-in.pt</a>
         </p>
       </div>
     </div>

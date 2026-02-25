@@ -353,6 +353,7 @@
     "footerTrial": "Os planos pagos incluem um período de teste gratuito de 14 dias. Cancele quando quiser.",
     "footerQuestions": "Dúvidas?",
     "visitFaq": "Visite as nossas Perguntas Frequentes",
+    "footerContact": "Contacte-nos:",
     "plans": {
       "mostPopular": "Mais Popular",
       "free": {
@@ -817,6 +818,7 @@
       "legalCompliance": "Cumprimento Legal"
     },
     "additionalResources": "Recursos Adicionais",
+    "stillHaveQuestions": "Ainda tem dúvidas? Contacte-nos em",
     "resources": {
       "act": "ACT - Autoridade para as Condições do Trabalho",
       "laborCode": "Código do Trabalho (PDF)",
@@ -1259,7 +1261,8 @@
     "footer": {
       "version": "Versão 2.2.0 - Janeiro 2026",
       "copyright": "© 2026 Clock In - Gestor de Tempo Inteligente. Construído para profissionais que valorizam o seu tempo.",
-      "latestUpdate": "Última atualização: Assistente IA com experiência em lei laboral portuguesa, planos Premium AI e sistema de pacotes de chamadas"
+      "latestUpdate": "Última atualização: Assistente IA com experiência em lei laboral portuguesa, planos Premium AI e sistema de pacotes de chamadas",
+      "contact": "Contacte-nos:"
     }
   }
 }

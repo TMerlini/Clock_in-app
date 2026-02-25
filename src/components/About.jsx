@@ -375,6 +375,10 @@ export function About() {
           <p style={{ marginTop: '0.5rem', fontSize: '0.9rem', color: 'var(--muted-foreground)' }}>
             {t('about.footer.latestUpdate')}
           </p>
+          <p className="about-contact">
+            {t('about.footer.contact')}{' '}
+            <a href="mailto:contacto@clock-in.pt">contacto@clock-in.pt</a>
+          </p>
         </section>
       </div>
     </div>

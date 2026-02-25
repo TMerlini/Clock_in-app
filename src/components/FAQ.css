@@ -225,6 +225,22 @@
   transform: translateX(4px);
 }
 
+.faq-contact {
+  margin-top: 1.5rem;
+  font-size: 0.95rem;
+  color: var(--muted-foreground);
+}
+
+.faq-contact a {
+  color: var(--primary);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.faq-contact a:hover {
+  text-decoration: underline;
+}
+
 /* Mobile Responsive */
 @media (max-width: 768px) {
   .faq-header {

@@ -147,6 +147,10 @@ export function FAQ() {
               </a>
             </li>
           </ul>
+          <p className="faq-contact">
+            {t('faq.stillHaveQuestions')}{' '}
+            <a href="mailto:contacto@clock-in.pt">contacto@clock-in.pt</a>
+          </p>
         </div>
       </div>
     </div>
