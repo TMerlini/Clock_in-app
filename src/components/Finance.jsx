@@ -153,9 +153,10 @@ export const Finance = memo(function Finance({ user, onNavigate }) {
     }
     
     try {
+      const now = new Date();
       const chartRange = {
         start: startOfYear(selectedDate),
-        end: endOfYear(selectedDate)
+        end: endOfMonth(selectedDate.getFullYear() === now.getFullYear() ? now : selectedDate)
       };
       const data = aggregateFinanceByPeriod(sessions, chartRange, 'monthly', financeSettings, getDateFnsLocale());
       let cumGross = 0, cumNet = 0, cumTax = 0;
