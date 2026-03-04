@@ -6,5 +6,5 @@ $git = "C:\Program Files\Git\cmd\git.exe"
 
 & $git add .
 & $git status
-& $git commit -m "Cap finance chart at current month instead of showing future months"
+& $git commit -m "Add login page image slideshow and admin image manager"
 & $git push origin master

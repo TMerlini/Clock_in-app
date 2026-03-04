@@ -1,10 +1,11 @@
 import { useState, useEffect, useMemo } from 'react';
-import { collection, getDocs, doc, getDoc, setDoc, deleteDoc } from 'firebase/firestore';
-import { db, auth } from '../lib/firebase';
+import { collection, getDocs, doc, getDoc, setDoc, deleteDoc, addDoc, updateDoc, query, orderBy } from 'firebase/firestore';
+import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
+import { db, auth, storage } from '../lib/firebase';
 import { isAdmin } from '../lib/adminUtils';
 import { addCallPack } from '../lib/tokenManager';
 import { getPlanConfig, savePlanConfig } from '../lib/planConfig';
-import { Shield, Users, UserPlus, Crown, BarChart3, Package, Settings, Search, Trash2, Edit2, Eye, Loader, AlertCircle, Check, X, Plus, ChevronDown, ChevronUp } from 'lucide-react';
+import { Shield, Users, UserPlus, Crown, BarChart3, Package, Settings, Search, Trash2, Edit2, Eye, Loader, AlertCircle, Check, X, Plus, ChevronDown, ChevronUp, ImageIcon, Upload, ArrowUp, ArrowDown } from 'lucide-react';
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { format, startOfDay, startOfMonth, subDays, eachDayOfInterval } from 'date-fns';
 import { useTranslation } from 'react-i18next';
@@ -39,6 +40,11 @@ export function Admin({ user }) {
   const [planConfigSaving, setPlanConfigSaving] = useState(null);
   const [expandedPlanEditor, setExpandedPlanEditor] = useState(null);
   const [analyticsDateRange, setAnalyticsDateRange] = useState('30d');
+  const [loginImages, setLoginImages] = useState([]);
+  const [loginImagesLoading, setLoginImagesLoading] = useState(false);
+  const [imageUploading, setImageUploading] = useState(false);
+  const [imagePreview, setImagePreview] = useState(null);
+  const [imageFile, setImageFile] = useState(null);
 
   useEffect(() => {
     if (user && isAdmin(user)) {
@@ -62,6 +68,9 @@ export function Admin({ user }) {
         }
       };
       load();
+    }
+    if (activeSection === 'images' && user && isAdmin(user)) {
+      loadLoginImages();
     }
   }, [activeSection, user]);
 
@@ -311,6 +320,100 @@ export function Admin({ user }) {
     }
   };
 
+  const loadLoginImages = async () => {
+    setLoginImagesLoading(true);
+    try {
+      const q = query(collection(db, 'loginImages'), orderBy('order', 'asc'));
+      const snap = await getDocs(q);
+      const imgs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      setLoginImages(imgs);
+    } catch (err) {
+      console.error('Error loading login images:', err);
+    } finally {
+      setLoginImagesLoading(false);
+    }
+  };
+
+  const handleImageFileChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const maxSize = 5 * 1024 * 1024;
+    if (file.size > maxSize) {
+      alert('File is too large. Maximum size is 5 MB.');
+      return;
+    }
+    if (!file.type.startsWith('image/')) {
+      alert('Please select an image file (jpg, png, webp, gif).');
+      return;
+    }
+    setImageFile(file);
+    const reader = new FileReader();
+    reader.onload = (ev) => setImagePreview(ev.target.result);
+    reader.readAsDataURL(file);
+  };
+
+  const handleUploadImage = async () => {
+    if (!imageFile) return;
+    setImageUploading(true);
+    try {
+      const timestamp = Date.now();
+      const safeName = imageFile.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+      const storagePath = `loginImages/${timestamp}_${safeName}`;
+      const storageRef = ref(storage, storagePath);
+      await uploadBytes(storageRef, imageFile);
+      const url = await getDownloadURL(storageRef);
+      const nextOrder = loginImages.length > 0
+        ? Math.max(...loginImages.map(i => i.order ?? 0)) + 1
+        : 0;
+      await addDoc(collection(db, 'loginImages'), {
+        url,
+        fileName: imageFile.name,
+        storagePath,
+        order: nextOrder,
+        createdAt: new Date()
+      });
+      setImageFile(null);
+      setImagePreview(null);
+      await loadLoginImages();
+    } catch (err) {
+      console.error('Error uploading image:', err);
+      alert('Error uploading image: ' + err.message);
+    } finally {
+      setImageUploading(false);
+    }
+  };
+
+  const handleDeleteImage = async (image) => {
+    if (!confirm(`Delete image "${image.fileName}"?`)) return;
+    try {
+      if (image.storagePath) {
+        const storageRef = ref(storage, image.storagePath);
+        await deleteObject(storageRef).catch(() => {});
+      }
+      await deleteDoc(doc(db, 'loginImages', image.id));
+      await loadLoginImages();
+    } catch (err) {
+      console.error('Error deleting image:', err);
+      alert('Error deleting image: ' + err.message);
+    }
+  };
+
+  const handleReorderImage = async (image, direction) => {
+    const sorted = [...loginImages].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+    const idx = sorted.findIndex(i => i.id === image.id);
+    const swapIdx = direction === 'up' ? idx - 1 : idx + 1;
+    if (swapIdx < 0 || swapIdx >= sorted.length) return;
+    const current = sorted[idx];
+    const swap = sorted[swapIdx];
+    try {
+      await updateDoc(doc(db, 'loginImages', current.id), { order: swap.order ?? swapIdx });
+      await updateDoc(doc(db, 'loginImages', swap.id), { order: current.order ?? idx });
+      await loadLoginImages();
+    } catch (err) {
+      console.error('Error reordering images:', err);
+    }
+  };
+
   const handleAddFeature = (planId) => {
     const plan = planConfig?.[planId];
     const features = Array.isArray(plan?.features) ? [...plan.features, ''] : [''];
@@ -514,6 +617,13 @@ export function Admin({ user }) {
         >
           <BarChart3 size={18} />
           <span>Analytics</span>
+        </button>
+        <button
+          className={`admin-tab ${activeSection === 'images' ? 'active' : ''}`}
+          onClick={() => setActiveSection('images')}
+        >
+          <ImageIcon size={18} />
+          <span>Images</span>
         </button>
         <button
           className={`admin-tab ${activeSection === 'callpacks' ? 'active' : ''}`}
@@ -1070,6 +1180,101 @@ export function Admin({ user }) {
             </div>
           ) : (
             <div className="analytics-charts-empty">{t('admin.analytics.noData', { defaultValue: 'No analytics data available.' })}</div>
+          )}
+        </div>
+      )}
+
+      {/* Login Images Management Section */}
+      {activeSection === 'images' && (
+        <div className="admin-section">
+          <div className="section-header">
+            <h2>Login Page Images</h2>
+          </div>
+          <p className="plan-config-hint">Upload promotional images that appear on the sign-in page. Users scroll through them behind the login card. Drag to reorder.</p>
+
+          <div className="image-upload-area">
+            <div className="image-upload-controls">
+              <label className="image-file-label">
+                <Upload size={18} />
+                <span>{imageFile ? imageFile.name : 'Choose image...'}</span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageFileChange}
+                  style={{ display: 'none' }}
+                />
+              </label>
+              <button
+                className="submit-button"
+                disabled={!imageFile || imageUploading}
+                onClick={handleUploadImage}
+              >
+                {imageUploading ? (
+                  <><Loader className="spinning" size={16} /><span>Uploading...</span></>
+                ) : (
+                  <><Upload size={16} /><span>Upload</span></>
+                )}
+              </button>
+            </div>
+            {imagePreview && (
+              <div className="image-preview-box">
+                <img src={imagePreview} alt="Preview" />
+                <button
+                  className="image-preview-clear"
+                  onClick={() => { setImageFile(null); setImagePreview(null); }}
+                >
+                  <X size={16} />
+                </button>
+              </div>
+            )}
+          </div>
+
+          {loginImagesLoading ? (
+            <div className="plan-editor-loading">
+              <Loader className="spinning" size={24} />
+              <span>Loading images...</span>
+            </div>
+          ) : loginImages.length === 0 ? (
+            <div className="empty-state">No images uploaded yet</div>
+          ) : (
+            <div className="login-images-grid">
+              {loginImages.map((img, idx) => (
+                <div key={img.id} className="login-image-card">
+                  <div className="login-image-thumb">
+                    <img src={img.url} alt={img.fileName} />
+                  </div>
+                  <div className="login-image-info">
+                    <span className="login-image-name" title={img.fileName}>{img.fileName}</span>
+                    <span className="login-image-order">#{idx + 1}</span>
+                  </div>
+                  <div className="login-image-actions">
+                    <button
+                      className="action-button"
+                      disabled={idx === 0}
+                      onClick={() => handleReorderImage(img, 'up')}
+                      title="Move up"
+                    >
+                      <ArrowUp size={16} />
+                    </button>
+                    <button
+                      className="action-button"
+                      disabled={idx === loginImages.length - 1}
+                      onClick={() => handleReorderImage(img, 'down')}
+                      title="Move down"
+                    >
+                      <ArrowDown size={16} />
+                    </button>
+                    <button
+                      className="action-button delete"
+                      onClick={() => handleDeleteImage(img)}
+                      title="Delete image"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
           )}
         </div>
       )}
