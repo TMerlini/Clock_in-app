@@ -667,6 +667,7 @@
     "usageDate": "Date of Usage",
     "reasonOptional": "Reason (optional)",
     "reasonPlaceholder": "e.g., Personal time off, Late arrival compensation",
+    "noReasonProvided": "No reason provided",
     "submit": "Submit",
     "usageHistory": "Usage History",
     "noOverworkUsed": "No overwork hours used yet",

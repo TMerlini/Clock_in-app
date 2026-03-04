@@ -667,6 +667,7 @@
     "usageDate": "Data de Utilização",
     "reasonOptional": "Motivo (opcional)",
     "reasonPlaceholder": "ex., Tempo pessoal, Compensação por atraso",
+    "noReasonProvided": "Sem motivo indicado",
     "submit": "Submeter",
     "usageHistory": "Histórico de Uso",
     "noOverworkUsed": "Ainda não foram usadas horas de trabalho extra",

@@ -6,5 +6,5 @@ $git = "C:\Program Files\Git\cmd\git.exe"
 
 & $git add .
 & $git status
-& $git commit -m "Move date after reason in usage form, add edit button to usage history"
+& $git commit -m "Translate 'No reason provided' fallback in overwork usage"
 & $git push origin master

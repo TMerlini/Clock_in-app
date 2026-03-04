@@ -383,7 +383,7 @@ export const Analytics = memo(function Analytics({ user }) {
         hours: totalHours,
         daysOffUsed: daysOffToUse,
         overworkHoursUsed: overworkHoursToUse,
-        reason: deductionReason || 'No reason provided',
+        reason: deductionReason || t('analytics.noReasonProvided'),
         usageDate: deductionDate,
         timestamp: Date.now(),
         createdAt: new Date().toISOString()
@@ -459,7 +459,7 @@ export const Analytics = memo(function Analytics({ user }) {
     try {
       const deductionRef = doc(db, 'overworkDeductions', editingDeduction.id);
       await updateDoc(deductionRef, {
-        reason: editingDeduction.reason || 'No reason provided',
+        reason: editingDeduction.reason || t('analytics.noReasonProvided'),
         usageDate: editingDeduction.usageDate,
       });
 
