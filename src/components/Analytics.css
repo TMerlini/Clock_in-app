@@ -722,6 +722,14 @@ tbody tr:hover {
   margin-top: 0.25rem;
 }
 
+.deduction-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-left: 1rem;
+  flex-shrink: 0;
+}
+
+.edit-deduction-button,
 .delete-deduction-button {
   padding: 0.5rem;
   background: transparent;
@@ -733,7 +741,13 @@ tbody tr:hover {
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-left: 1rem;
+}
+
+.edit-deduction-button:hover {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: white;
+  transform: translateY(-1px);
 }
 
 .delete-deduction-button:hover {
@@ -743,9 +757,47 @@ tbody tr:hover {
   transform: translateY(-1px);
 }
 
-.delete-deduction-button svg {
-  width: 18px;
-  height: 18px;
+.deduction-edit-form {
+  display: flex;
+  gap: 0.5rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.edit-reason-input {
+  flex: 1;
+  min-width: 0;
+}
+
+.edit-date-input {
+  width: auto;
+  flex-shrink: 0;
+}
+
+.save-edit-button,
+.cancel-edit-button {
+  padding: 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  color: var(--muted-foreground);
+}
+
+.save-edit-button:hover {
+  background: #22c55e;
+  border-color: #22c55e;
+  color: white;
+}
+
+.cancel-edit-button:hover {
+  background: #ef4444;
+  border-color: #ef4444;
+  color: white;
 }
 
 @media (max-width: 768px) {
@@ -902,8 +954,13 @@ tbody tr:hover {
     flex: 1;
   }
 
-  .delete-deduction-button {
+  .deduction-actions {
     margin-left: 0;
+  }
+
+  .deduction-edit-form {
+    flex-direction: column;
+    flex: 1 1 100%;
   }
 
   .table-footer {

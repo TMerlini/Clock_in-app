@@ -1,8 +1,8 @@
 import { useState, useEffect, memo, useMemo } from 'react';
-import { collection, query, where, getDocs, addDoc, doc, getDoc, deleteDoc } from 'firebase/firestore';
+import { collection, query, where, getDocs, addDoc, doc, getDoc, deleteDoc, updateDoc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { getCachedQuery, invalidateCache } from '../lib/queryCache';
-import { Download, TrendingUp, Clock, AlertTriangle, DollarSign, Coffee, Calendar as CalendarIcon, MinusCircle, UtensilsCrossed, CalendarDays, Trash2, Search, Filter, ArrowUp, ArrowDown } from 'lucide-react';
+import { Download, TrendingUp, Clock, AlertTriangle, DollarSign, Coffee, Calendar as CalendarIcon, MinusCircle, UtensilsCrossed, CalendarDays, Trash2, Pencil, Check, X, Search, Filter, ArrowUp, ArrowDown } from 'lucide-react';
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfYear, endOfYear, eachDayOfInterval } from 'date-fns';
 import { formatHoursMinutes, calculateUsedIsencaoHours } from '../lib/utils';
 import { useTranslation } from 'react-i18next';
@@ -21,6 +21,7 @@ export const Analytics = memo(function Analytics({ user }) {
   const [deductionDate, setDeductionDate] = useState(() => format(new Date(), 'yyyy-MM-dd'));
   const [deductionReason, setDeductionReason] = useState('');
   const [showDeductionForm, setShowDeductionForm] = useState(false);
+  const [editingDeduction, setEditingDeduction] = useState(null);
   const [lunchDuration, setLunchDuration] = useState(1);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState('all');
@@ -445,6 +446,44 @@ export const Analytics = memo(function Analytics({ user }) {
     }
   };
 
+  const handleStartEditDeduction = (deduction) => {
+    setEditingDeduction({
+      id: deduction.id,
+      reason: deduction.reason || '',
+      usageDate: deduction.usageDate || format(new Date(deduction.timestamp), 'yyyy-MM-dd'),
+    });
+  };
+
+  const handleSaveEditDeduction = async () => {
+    if (!editingDeduction) return;
+    try {
+      const deductionRef = doc(db, 'overworkDeductions', editingDeduction.id);
+      await updateDoc(deductionRef, {
+        reason: editingDeduction.reason || 'No reason provided',
+        usageDate: editingDeduction.usageDate,
+      });
+
+      invalidateCache('overworkDeductions', { userId: user.uid });
+      const deductionsRef = collection(db, 'overworkDeductions');
+      const q = query(deductionsRef, where('userId', '==', user.uid));
+      const querySnapshot = await getDocs(q);
+      const deductions = [];
+      querySnapshot.forEach((d) => {
+        deductions.push({ id: d.id, ...d.data() });
+      });
+      deductions.sort((a, b) => {
+        const dateA = a.usageDate || new Date(a.timestamp).toISOString().slice(0, 10);
+        const dateB = b.usageDate || new Date(b.timestamp).toISOString().slice(0, 10);
+        return dateB.localeCompare(dateA) || b.timestamp - a.timestamp;
+      });
+      setOverworkDeductions(deductions);
+      setEditingDeduction(null);
+    } catch (error) {
+      console.error('Error updating deduction:', error);
+      alert(t('analytics.failedToEdit'));
+    }
+  };
+
   const exportToCSV = () => {
     const filtered = filteredSessions;
     const { start, end } = dateRange;
@@ -845,17 +884,6 @@ export const Analytics = memo(function Analytics({ user }) {
                   />
                 </div>
 
-                <div className="form-group">
-                  <label htmlFor="deductionDate">{t('analytics.usageDate')}</label>
-                  <input
-                    id="deductionDate"
-                    type="date"
-                    value={deductionDate}
-                    onChange={(e) => setDeductionDate(e.target.value)}
-                    className="form-input"
-                  />
-                </div>
-
                 <div className="form-group reason-group">
                   <label htmlFor="deductionReason">{t('analytics.reasonOptional')}</label>
                   <input
@@ -864,6 +892,17 @@ export const Analytics = memo(function Analytics({ user }) {
                     value={deductionReason}
                     onChange={(e) => setDeductionReason(e.target.value)}
                     placeholder={t('analytics.reasonPlaceholder')}
+                    className="form-input"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="deductionDate">{t('analytics.usageDate')}</label>
+                  <input
+                    id="deductionDate"
+                    type="date"
+                    value={deductionDate}
+                    onChange={(e) => setDeductionDate(e.target.value)}
                     className="form-input"
                   />
                 </div>
@@ -884,25 +923,76 @@ export const Analytics = memo(function Analytics({ user }) {
               <div className="deductions-list">
                 {overworkDeductions.map((deduction) => (
                   <div key={deduction.id} className="deduction-item">
-                    <div className="deduction-info">
-                      <div className="deduction-date">
-                        {deduction.usageDate
-                          ? format(new Date(deduction.usageDate + 'T00:00:00'), 'MMM dd, yyyy', { locale: getDateFnsLocale() })
-                          : format(new Date(deduction.timestamp), 'MMM dd, yyyy', { locale: getDateFnsLocale() })}
-                      </div>
-                      <div className="deduction-reason">{deduction.reason}</div>
-                    </div>
-                    <div className="deduction-hours">
-                      -{formatHoursMinutes(deduction.hours)}
-                      <span className="deduction-days">({(deduction.hours / 8).toFixed(2)} days)</span>
-                    </div>
-                    <button
-                      className="delete-deduction-button"
-                      onClick={() => handleDeleteDeduction(deduction.id)}
-                      title={t('analytics.deleteEntry')}
-                    >
-                      <Trash2 />
-                    </button>
+                    {editingDeduction?.id === deduction.id ? (
+                      <>
+                        <div className="deduction-edit-form">
+                          <input
+                            type="text"
+                            value={editingDeduction.reason}
+                            onChange={(e) => setEditingDeduction(prev => ({ ...prev, reason: e.target.value }))}
+                            className="form-input edit-reason-input"
+                            placeholder={t('analytics.reasonPlaceholder')}
+                          />
+                          <input
+                            type="date"
+                            value={editingDeduction.usageDate}
+                            onChange={(e) => setEditingDeduction(prev => ({ ...prev, usageDate: e.target.value }))}
+                            className="form-input edit-date-input"
+                          />
+                        </div>
+                        <div className="deduction-hours">
+                          -{formatHoursMinutes(deduction.hours)}
+                          <span className="deduction-days">({(deduction.hours / 8).toFixed(2)} days)</span>
+                        </div>
+                        <div className="deduction-actions">
+                          <button
+                            className="save-edit-button"
+                            onClick={handleSaveEditDeduction}
+                            title={t('common.save')}
+                          >
+                            <Check size={16} />
+                          </button>
+                          <button
+                            className="cancel-edit-button"
+                            onClick={() => setEditingDeduction(null)}
+                            title={t('analytics.cancelEdit')}
+                          >
+                            <X size={16} />
+                          </button>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <div className="deduction-info">
+                          <div className="deduction-date">
+                            {deduction.usageDate
+                              ? format(new Date(deduction.usageDate + 'T00:00:00'), 'MMM dd, yyyy', { locale: getDateFnsLocale() })
+                              : format(new Date(deduction.timestamp), 'MMM dd, yyyy', { locale: getDateFnsLocale() })}
+                          </div>
+                          <div className="deduction-reason">{deduction.reason}</div>
+                        </div>
+                        <div className="deduction-hours">
+                          -{formatHoursMinutes(deduction.hours)}
+                          <span className="deduction-days">({(deduction.hours / 8).toFixed(2)} days)</span>
+                        </div>
+                        <div className="deduction-actions">
+                          <button
+                            className="edit-deduction-button"
+                            onClick={() => handleStartEditDeduction(deduction)}
+                            title={t('analytics.editEntry')}
+                          >
+                            <Pencil size={16} />
+                          </button>
+                          <button
+                            className="delete-deduction-button"
+                            onClick={() => handleDeleteDeduction(deduction.id)}
+                            title={t('analytics.deleteEntry')}
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
+                      </>
+                    )}
                   </div>
                 ))}
               </div>

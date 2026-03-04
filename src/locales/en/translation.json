@@ -670,6 +670,8 @@
     "submit": "Submit",
     "usageHistory": "Usage History",
     "noOverworkUsed": "No overwork hours used yet",
+    "editEntry": "Edit this entry",
+    "cancelEdit": "Cancel editing",
     "deleteEntry": "Delete this entry",
     "detailedSessions": "Detailed Sessions",
     "searchPlaceholder": "Search by date or notes...",
@@ -705,6 +707,7 @@
     "tryingToDeduct": "Trying to deduct",
     "failedToAdd": "Failed to add deduction. Please try again.",
     "confirmDelete": "Are you sure you want to delete this overwork usage entry?",
+    "failedToEdit": "Failed to update entry. Please try again.",
     "failedToDelete": "Failed to delete entry. Please try again."
   },
   "finance": {
