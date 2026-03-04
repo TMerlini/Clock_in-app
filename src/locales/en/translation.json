@@ -664,6 +664,7 @@
     "addUsage": "+ Add Usage",
     "daysToUse": "Days to Use",
     "hoursToUse": "Hours to Use",
+    "usageDate": "Date of Usage",
     "reasonOptional": "Reason (optional)",
     "reasonPlaceholder": "e.g., Personal time off, Late arrival compensation",
     "submit": "Submit",

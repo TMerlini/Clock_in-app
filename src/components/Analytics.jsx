@@ -18,6 +18,7 @@ export const Analytics = memo(function Analytics({ user }) {
   const [overworkDeductions, setOverworkDeductions] = useState([]);
   const [deductionDays, setDeductionDays] = useState('');
   const [deductionHours, setDeductionHours] = useState('');
+  const [deductionDate, setDeductionDate] = useState(() => format(new Date(), 'yyyy-MM-dd'));
   const [deductionReason, setDeductionReason] = useState('');
   const [showDeductionForm, setShowDeductionForm] = useState(false);
   const [lunchDuration, setLunchDuration] = useState(1);
@@ -56,8 +57,12 @@ export const Analytics = memo(function Analytics({ user }) {
             querySnapshot.forEach((doc) => {
               deductions.push({ id: doc.id, ...doc.data() });
             });
-            // Sort by date descending (newest first)
-            deductions.sort((a, b) => b.timestamp - a.timestamp);
+            // Sort by usage date descending (newest first), fall back to timestamp for old entries
+            deductions.sort((a, b) => {
+              const dateA = a.usageDate || new Date(a.timestamp).toISOString().slice(0, 10);
+              const dateB = b.usageDate || new Date(b.timestamp).toISOString().slice(0, 10);
+              return dateB.localeCompare(dateA) || b.timestamp - a.timestamp;
+            });
             return deductions;
           }),
           // Load settings with caching
@@ -378,6 +383,7 @@ export const Analytics = memo(function Analytics({ user }) {
         daysOffUsed: daysOffToUse,
         overworkHoursUsed: overworkHoursToUse,
         reason: deductionReason || 'No reason provided',
+        usageDate: deductionDate,
         timestamp: Date.now(),
         createdAt: new Date().toISOString()
       });
@@ -385,6 +391,7 @@ export const Analytics = memo(function Analytics({ user }) {
       // Reset form
       setDeductionDays('');
       setDeductionHours('');
+      setDeductionDate(format(new Date(), 'yyyy-MM-dd'));
       setDeductionReason('');
       setShowDeductionForm(false);
 
@@ -396,7 +403,11 @@ export const Analytics = memo(function Analytics({ user }) {
       reloadSnapshot.forEach((doc) => {
         reloadedDeductions.push({ id: doc.id, ...doc.data() });
       });
-      reloadedDeductions.sort((a, b) => b.timestamp - a.timestamp);
+      reloadedDeductions.sort((a, b) => {
+        const dateA = a.usageDate || new Date(a.timestamp).toISOString().slice(0, 10);
+        const dateB = b.usageDate || new Date(b.timestamp).toISOString().slice(0, 10);
+        return dateB.localeCompare(dateA) || b.timestamp - a.timestamp;
+      });
       setOverworkDeductions(reloadedDeductions);
     } catch (error) {
       console.error('Error adding deduction:', error);
@@ -422,7 +433,11 @@ export const Analytics = memo(function Analytics({ user }) {
       querySnapshot.forEach((doc) => {
         deductions.push({ id: doc.id, ...doc.data() });
       });
-      deductions.sort((a, b) => b.timestamp - a.timestamp);
+      deductions.sort((a, b) => {
+        const dateA = a.usageDate || new Date(a.timestamp).toISOString().slice(0, 10);
+        const dateB = b.usageDate || new Date(b.timestamp).toISOString().slice(0, 10);
+        return dateB.localeCompare(dateA) || b.timestamp - a.timestamp;
+      });
       setOverworkDeductions(deductions);
     } catch (error) {
       console.error('Error deleting deduction:', error);
@@ -830,6 +845,17 @@ export const Analytics = memo(function Analytics({ user }) {
                   />
                 </div>
 
+                <div className="form-group">
+                  <label htmlFor="deductionDate">{t('analytics.usageDate')}</label>
+                  <input
+                    id="deductionDate"
+                    type="date"
+                    value={deductionDate}
+                    onChange={(e) => setDeductionDate(e.target.value)}
+                    className="form-input"
+                  />
+                </div>
+
                 <div className="form-group reason-group">
                   <label htmlFor="deductionReason">{t('analytics.reasonOptional')}</label>
                   <input
@@ -860,7 +886,9 @@ export const Analytics = memo(function Analytics({ user }) {
                   <div key={deduction.id} className="deduction-item">
                     <div className="deduction-info">
                       <div className="deduction-date">
-                        {format(new Date(deduction.timestamp), 'MMM dd, yyyy HH:mm', { locale: getDateFnsLocale() })}
+                        {deduction.usageDate
+                          ? format(new Date(deduction.usageDate + 'T00:00:00'), 'MMM dd, yyyy', { locale: getDateFnsLocale() })
+                          : format(new Date(deduction.timestamp), 'MMM dd, yyyy', { locale: getDateFnsLocale() })}
                       </div>
                       <div className="deduction-reason">{deduction.reason}</div>
                     </div>

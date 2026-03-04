@@ -664,6 +664,7 @@
     "addUsage": "+ Adicionar Uso",
     "daysToUse": "Dias a Usar",
     "hoursToUse": "Horas a Usar",
+    "usageDate": "Data de Utilização",
     "reasonOptional": "Motivo (opcional)",
     "reasonPlaceholder": "ex., Tempo pessoal, Compensação por atraso",
     "submit": "Submeter",

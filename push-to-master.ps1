@@ -6,5 +6,5 @@ $git = "C:\Program Files\Git\cmd\git.exe"
 
 & $git add .
 & $git status
-& $git commit -m "Fix Google indexing: add canonical tags, configure Vercel redirects, update sitemap"
+& $git commit -m "Add date picker to overwork usage form in Analytics"
 & $git push origin master
