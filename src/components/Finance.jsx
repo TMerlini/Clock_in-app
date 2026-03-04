@@ -155,13 +155,13 @@ export const Finance = memo(function Finance({ user, onNavigate }) {
     
     try {
       const data = aggregateFinanceByPeriod(sessions, dateRange, reportType, financeSettings, getDateFnsLocale());
-      console.log('Chart data calculated:', { 
-        dataPoints: data.length, 
-        reportType, 
-        dateRange: { start: dateRange.start, end: dateRange.end },
-        sampleData: data[0] 
-      });
-      return data;
+      let cumGross = 0, cumNet = 0, cumTax = 0;
+      return data.map(point => ({
+        date: point.date,
+        grossIncome: (cumGross += point.grossIncome),
+        netIncome: (cumNet += point.netIncome),
+        taxes: (cumTax += point.taxes),
+      }));
     } catch (error) {
       console.error('Error calculating chart data:', error);
       return [];

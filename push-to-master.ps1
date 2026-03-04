@@ -6,5 +6,5 @@ $git = "C:\Program Files\Git\cmd\git.exe"
 
 & $git add .
 & $git status
-& $git commit -m "Translate 'No reason provided' fallback in overwork usage"
+& $git commit -m "Make finance chart show cumulative running totals over time"
 & $git push origin master
