@@ -6,5 +6,5 @@ $git = "C:\Program Files\Git\cmd\git.exe"
 
 & $git add .
 & $git status
-& $git commit -m "Make finance chart show cumulative running totals over time"
+& $git commit -m "Show full year-to-date cumulative trend in finance chart"
 & $git push origin master

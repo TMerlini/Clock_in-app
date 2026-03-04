@@ -146,15 +146,18 @@ export const Finance = memo(function Finance({ user, onNavigate }) {
     return sorted;
   }, [financeData, dateSortOrder]);
 
-  // Calculate chart data
+  // Chart always shows cumulative year-to-date by month for a meaningful trend
   const chartData = useMemo(() => {
     if (!sessions.length || !settings) {
-      console.log('Chart data: No sessions or settings', { sessionsLength: sessions.length, hasSettings: !!settings });
       return [];
     }
     
     try {
-      const data = aggregateFinanceByPeriod(sessions, dateRange, reportType, financeSettings, getDateFnsLocale());
+      const chartRange = {
+        start: startOfYear(selectedDate),
+        end: endOfYear(selectedDate)
+      };
+      const data = aggregateFinanceByPeriod(sessions, chartRange, 'monthly', financeSettings, getDateFnsLocale());
       let cumGross = 0, cumNet = 0, cumTax = 0;
       return data.map(point => ({
         date: point.date,
@@ -166,7 +169,7 @@ export const Finance = memo(function Finance({ user, onNavigate }) {
       console.error('Error calculating chart data:', error);
       return [];
     }
-  }, [sessions, dateRange, reportType, financeSettings, settings]);
+  }, [sessions, selectedDate, financeSettings, settings]);
 
   const handleExportCSV = () => {
     if (!financeData) return;
