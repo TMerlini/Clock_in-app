@@ -922,6 +922,30 @@
   flex-shrink: 0;
 }
 
+.login-image-url {
+  padding: 0 0.75rem 0.5rem;
+}
+
+.login-image-url-input {
+  width: 100%;
+  padding: 0.4rem 0.6rem;
+  font-size: 0.8rem;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  color: rgba(255, 255, 255, 0.8);
+  transition: border-color 0.2s;
+}
+
+.login-image-url-input::placeholder {
+  color: rgba(255, 255, 255, 0.3);
+}
+
+.login-image-url-input:focus {
+  outline: none;
+  border-color: rgba(139, 92, 246, 0.5);
+}
+
 .login-image-actions {
   display: flex;
   gap: 0.4rem;

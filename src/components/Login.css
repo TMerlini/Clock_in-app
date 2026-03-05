@@ -275,8 +275,13 @@
 }
 
 .login-slide--visible img {
-  opacity: 0.3;
+  opacity: 0.55;
   transform: translateX(0);
+}
+
+.login-slide-link {
+  pointer-events: auto;
+  display: contents;
 }
 
 /* Scroll indicator dot */

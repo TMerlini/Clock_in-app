@@ -87,7 +87,13 @@ export function Login({ onLogin }) {
             data-slide-index={idx}
             ref={el => { slideRefs.current[idx] = el; }}
           >
-            <img src={img.url} alt={img.fileName || `Slide ${idx + 1}`} />
+            {img.linkUrl ? (
+              <a href={img.linkUrl} target="_blank" rel="noopener noreferrer" className="login-slide-link">
+                <img src={img.url} alt={img.fileName || `Slide ${idx + 1}`} />
+              </a>
+            ) : (
+              <img src={img.url} alt={img.fileName || `Slide ${idx + 1}`} />
+            )}
           </div>
         ))}
       </div>

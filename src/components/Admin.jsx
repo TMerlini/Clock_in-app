@@ -370,6 +370,7 @@ export function Admin({ user }) {
         fileName: imageFile.name,
         storagePath,
         order: nextOrder,
+        linkUrl: '',
         createdAt: new Date()
       });
       setImageFile(null);
@@ -411,6 +412,15 @@ export function Admin({ user }) {
       await loadLoginImages();
     } catch (err) {
       console.error('Error reordering images:', err);
+    }
+  };
+
+  const handleUpdateImageLink = async (imageId, linkUrl) => {
+    try {
+      await updateDoc(doc(db, 'loginImages', imageId), { linkUrl });
+      setLoginImages(prev => prev.map(img => img.id === imageId ? { ...img, linkUrl } : img));
+    } catch (err) {
+      console.error('Error updating image link:', err);
     }
   };
 
@@ -1246,6 +1256,15 @@ export function Admin({ user }) {
                   <div className="login-image-info">
                     <span className="login-image-name" title={img.fileName}>{img.fileName}</span>
                     <span className="login-image-order">#{idx + 1}</span>
+                  </div>
+                  <div className="login-image-url">
+                    <input
+                      type="url"
+                      className="login-image-url-input"
+                      placeholder="Link URL (optional)"
+                      defaultValue={img.linkUrl || ''}
+                      onBlur={(e) => handleUpdateImageLink(img.id, e.target.value)}
+                    />
                   </div>
                   <div className="login-image-actions">
                     <button
