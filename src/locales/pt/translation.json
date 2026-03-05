@@ -960,6 +960,14 @@
         "q9": {
           "question": "Que funcionalidades tenho com o plano Gratuito?",
           "answer": "O plano Gratuito permite registar entradas e saídas na página inicial, consultar o histórico de sessões e aceder às páginas FAQ/Sobre e Premium+ para fazer upgrade. O Calendário, as análises com exportação CSV, os cálculos financeiros e as Definições (incluindo sincronização com o Google Calendar) requerem o plano Básico ou superior. O plano Pro acrescenta intervalos de datas personalizados, suporte prioritário e a possibilidade de comprar pacotes de chamadas IA. O Premium AI inclui o Assistente IA com 75 chamadas/mês e o Enterprise acrescenta gestão de equipa com acesso Premium AI para os membros."
+        },
+        "q10": {
+          "question": "Como funciona o rastreamento de localização GPS?",
+          "answer": "O Clock In pode capturar automaticamente as suas coordenadas GPS quando regista entrada e saída:\n• Captura automática: Ativada por defeito em Definições > Localização GPS. A sua posição é registada automaticamente a cada entrada/saída.\n• Captura manual: Pressione o botão 'Usar a minha localização' no criador de sessões ou no cartão de sessão ativa para capturar a sua posição atual.\n• Geocodificação reversa: As coordenadas GPS são convertidas num endereço legível usando OpenStreetMap.\n• Mini-mapas: Mapas interativos Leaflet exibem as suas localizações de entrada (marcador verde) e saída (marcador vermelho) nos detalhes da sessão, na lista de sessões e no cartão de sessão ativa.\n• Enterprise: Administradores de equipa podem ver as localizações GPS dos membros por sessão através de um botão na tabela de sessões.\n• Privacidade: A captura GPS pode ser desativada a qualquer momento nas Definições. Os dados de localização são armazenados de forma segura nos seus registos de sessão."
+        },
+        "q11": {
+          "question": "Como funcionam as fotos de perfil?",
+          "answer": "Pode carregar uma foto de perfil em Definições > Perfil:\n• Formatos suportados: JPEG, PNG, GIF, WebP (máx 2MB)\n• A sua foto aparece no cabeçalho da aplicação junto ao seu nome com uma borda roxa rotativa\n• Administradores Enterprise podem ver as fotos de perfil dos membros da equipa na lista e vista de detalhes\n• Pode alterar ou remover a sua foto a qualquer momento\n• As fotos são armazenadas de forma segura no Firebase Storage"
         }
       },
       "legalCompliance": {
@@ -1078,7 +1086,7 @@
       "title": "Como Funciona",
       "step1": {
         "title": "Entrar",
-        "description": "Clique no botão grande na página inicial para começar a rastrear o seu tempo."
+        "description": "Clique no botão grande na página inicial para começar a rastrear o seu tempo. A sua localização GPS é capturada automaticamente se estiver ativada."
       },
       "step2": {
         "title": "Trabalhar",
@@ -1086,7 +1094,7 @@
       },
       "step3": {
         "title": "Sair",
-        "description": "Clique no botão novamente para parar o rastreamento. A sua sessão é guardada automaticamente."
+        "description": "Clique no botão novamente para parar o rastreamento. A sua sessão é guardada automaticamente com coordenadas GPS e exibida num mini-mapa."
       }
     },
     "hourCategories": {
@@ -1134,9 +1142,13 @@
         "title": "Gestão de Despesas",
         "description": "Rastreie despesas de almoço e jantar por sessão (Plano Básico ou superior)"
       },
-      "locationNotes": {
-        "title": "Notas de Localização",
-        "description": "Adicione localização de trabalho às sessões (escritório, casa, local do cliente, etc.)"
+      "gpsLocationTracking": {
+        "title": "Rastreamento de Localização GPS",
+        "description": "Captura automática de coordenadas GPS ao entrar/sair com mini-mapas interativos, endereços por geocodificação reversa e captura manual de localização"
+      },
+      "profilePictures": {
+        "title": "Fotos de Perfil",
+        "description": "Carregue e exiba fotos de perfil no cabeçalho e no painel Enterprise da equipa"
       },
       "weekendWorkBenefits": {
         "title": "Benefícios de Trabalho ao Fim de Semana",
@@ -1144,7 +1156,11 @@
       },
       "overworkManagement": {
         "title": "Gestão de Trabalho Extra",
-        "description": "Rastreie horas extras acumuladas e histórico de uso (8h = 1 dia de descanso)"
+        "description": "Rastreie horas extras acumuladas, edite histórico de uso com datas personalizadas e converta em dias de descanso (8h = 1 dia)"
+      },
+      "financeCharts": {
+        "title": "Gráficos de Finanças e Impostos",
+        "description": "Gráficos cumulativos de rendimento, salário líquido e impostos ao longo do ano com granularidade mensal"
       },
       "customizableThresholds": {
         "title": "Limites Personalizáveis",
@@ -1219,6 +1235,18 @@
         "memberAnalytics": {
           "title": "Análises e Finanças por Membro",
           "description": "Veja análises detalhadas, cálculos financeiros e histórico de sessões para cada membro da equipa. Exporte relatórios CSV por membro para folha de pagamento e documentação de conformidade."
+        },
+        "gpsLocationTracking": {
+          "title": "Rastreamento de Localização GPS",
+          "description": "Veja onde os membros da equipa registaram entrada e saída com mini-mapas interativos. Ative mapas de localização por sessão para verificar locais de trabalho, endereços e coordenadas."
+        },
+        "calendarEvents": {
+          "title": "Eventos do Google Calendar",
+          "description": "Secção colapsável de eventos do calendário com vistas diárias, semanais e mensais. Acompanhe reuniões e eventos junto com a gestão da equipa."
+        },
+        "memberProfiles": {
+          "title": "Fotos de Perfil dos Membros",
+          "description": "As fotos de perfil dos membros da equipa são exibidas na lista de membros e na vista de detalhes para fácil identificação."
         }
       }
     },
@@ -1257,6 +1285,7 @@
       "firebase": "Firebase - Base de dados em tempo real e autenticação",
       "googleCalendar": "Google Calendar API - Integração perfeita de calendário",
       "openRouter": "OpenRouter API - Encaminhamento multi-modelo IA para Assistente IA (alimentado por OpenRouter)",
+      "leaflet": "Leaflet e OpenStreetMap - Mapas interativos com rastreamento de localização GPS e geocodificação reversa",
       "vite": "Vite - Ferramenta de construção extremamente rápida com divisão de código",
       "vercel": "Vercel - Implementação de rede global edge",
       "optimized": "Otimizado seguindo as melhores práticas React da Vercel para máximo desempenho e experiência do utilizador."
@@ -1290,9 +1319,9 @@
       }
     },
     "footer": {
-      "version": "Versão 2.2.0 - Janeiro 2026",
+      "version": "Versão 2.3.0 - Fevereiro 2026",
       "copyright": "© 2026 Clock In - Gestor de Tempo Inteligente. Construído para profissionais que valorizam o seu tempo.",
-      "latestUpdate": "Última atualização: Assistente IA com experiência em lei laboral portuguesa, planos Premium AI e sistema de pacotes de chamadas",
+      "latestUpdate": "Última atualização: Rastreamento de localização GPS com mini-mapas, fotos de perfil, gráficos financeiros cumulativos, eventos do calendário Enterprise e edição de uso de trabalho extra",
       "contact": "Contacte-nos:"
     }
   }

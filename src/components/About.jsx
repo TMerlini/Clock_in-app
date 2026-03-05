@@ -1,4 +1,4 @@
-import { Clock, Coffee, AlertTriangle, DollarSign, TrendingUp, Calendar, BarChart3, Info, UtensilsCrossed, MapPin, Globe, Bot, Crown, Building2, Users, Shield } from 'lucide-react';
+import { Clock, Coffee, AlertTriangle, DollarSign, TrendingUp, Calendar, BarChart3, Info, UtensilsCrossed, MapPin, Globe, Bot, Crown, Building2, Users, Shield, Camera, Map, LineChart } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import './About.css';
 
@@ -155,8 +155,15 @@ export function About() {
             <div className="feature-item">
               <MapPin />
               <div>
-                <strong>{t('about.keyFeatures.locationNotes.title')}</strong>
-                <p>{t('about.keyFeatures.locationNotes.description')}</p>
+                <strong>{t('about.keyFeatures.gpsLocationTracking.title')}</strong>
+                <p>{t('about.keyFeatures.gpsLocationTracking.description')}</p>
+              </div>
+            </div>
+            <div className="feature-item">
+              <Camera />
+              <div>
+                <strong>{t('about.keyFeatures.profilePictures.title')}</strong>
+                <p>{t('about.keyFeatures.profilePictures.description')}</p>
               </div>
             </div>
             <div className="feature-item">
@@ -171,6 +178,13 @@ export function About() {
               <div>
                 <strong>{t('about.keyFeatures.overworkManagement.title')}</strong>
                 <p>{t('about.keyFeatures.overworkManagement.description')}</p>
+              </div>
+            </div>
+            <div className="feature-item">
+              <LineChart />
+              <div>
+                <strong>{t('about.keyFeatures.financeCharts.title')}</strong>
+                <p>{t('about.keyFeatures.financeCharts.description')}</p>
               </div>
             </div>
             <div className="feature-item">
@@ -273,6 +287,18 @@ export function About() {
               <h4>{t('about.enterpriseSection.features.memberAnalytics.title')}</h4>
               <p>{t('about.enterpriseSection.features.memberAnalytics.description')}</p>
             </div>
+            <div className="analytics-item">
+              <h4>{t('about.enterpriseSection.features.gpsLocationTracking.title')}</h4>
+              <p>{t('about.enterpriseSection.features.gpsLocationTracking.description')}</p>
+            </div>
+            <div className="analytics-item">
+              <h4>{t('about.enterpriseSection.features.calendarEvents.title')}</h4>
+              <p>{t('about.enterpriseSection.features.calendarEvents.description')}</p>
+            </div>
+            <div className="analytics-item">
+              <h4>{t('about.enterpriseSection.features.memberProfiles.title')}</h4>
+              <p>{t('about.enterpriseSection.features.memberProfiles.description')}</p>
+            </div>
           </div>
         </section>
 
@@ -325,6 +351,7 @@ export function About() {
             <li><strong>{t('about.technologyStack.firebase')}</strong></li>
             <li><strong>{t('about.technologyStack.googleCalendar')}</strong></li>
             <li><strong>{t('about.technologyStack.openRouter')}</strong></li>
+            <li><strong>{t('about.technologyStack.leaflet')}</strong></li>
             <li><strong>{t('about.technologyStack.vite')}</strong></li>
             <li><strong>{t('about.technologyStack.vercel')}</strong></li>
           </ul>

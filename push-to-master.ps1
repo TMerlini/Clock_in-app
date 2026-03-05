@@ -6,5 +6,5 @@ $git = "C:\Program Files\Git\cmd\git.exe"
 
 & $git add .
 & $git status
-& $git commit -m "Fix hardcoded days text in Analytics overwork usage to use translation"
+& $git commit -m "Update About, FAQ, and README with GPS tracking, mini-maps, profile pictures, and recent features"
 & $git push origin master

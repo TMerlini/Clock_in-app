@@ -960,6 +960,14 @@
         "q9": {
           "question": "What features do I get on the Free plan?",
           "answer": "The Free plan includes clock in/out from the Home page, your session history, and access to the FAQ/About and Premium+ upgrade page. Calendar, Analytics dashboards (with CSV export), Finance calculators, and Settings (including Google Calendar sync) require the Basic plan or higher. Pro adds custom date ranges, priority support, and the ability to buy AI call packs. Premium AI includes the AI Advisor with 75 calls/month, and Enterprise layers on team management with Premium AI seats for members."
+        },
+        "q10": {
+          "question": "How does GPS location tracking work?",
+          "answer": "Clock In can automatically capture your GPS coordinates when you clock in and clock out:\n• Auto-capture: Enabled by default in Settings > GPS Location. Your position is recorded automatically on each clock-in/out.\n• Manual capture: Press the 'Use my location' button in the session creator or active session card to capture your current position.\n• Reverse geocoding: GPS coordinates are converted to a readable street address using OpenStreetMap.\n• Mini-maps: Interactive Leaflet maps display your clock-in (green marker) and clock-out (red marker) locations in session details, the session list, and the active session card.\n• Enterprise: Team admins can view members' GPS locations per session via a toggle button in the sessions table.\n• Privacy: GPS capture can be disabled at any time in Settings. Location data is stored securely in your session records."
+        },
+        "q11": {
+          "question": "How do profile pictures work?",
+          "answer": "You can upload a profile picture in Settings > Profile:\n• Supported formats: JPEG, PNG, GIF, WebP (max 2MB)\n• Your picture appears in the app header next to your name with a rotating purple border\n• Enterprise admins can see team members' profile pictures in the members list and detail view\n• You can change or remove your picture at any time\n• Pictures are stored securely in Firebase Storage"
         }
       },
       "legalCompliance": {
@@ -1052,7 +1060,7 @@
       "title": "How It Works",
       "step1": {
         "title": "Clock In",
-        "description": "Click the large button on the home page to start tracking your time."
+        "description": "Click the large button on the home page to start tracking your time. Your GPS location is automatically captured if enabled."
       },
       "step2": {
         "title": "Work",
@@ -1060,7 +1068,7 @@
       },
       "step3": {
         "title": "Clock Out",
-        "description": "Click the button again to stop tracking. Your session is saved automatically."
+        "description": "Click the button again to stop tracking. Your session is saved automatically with GPS coordinates and displayed on a mini-map."
       }
     },
     "hourCategories": {
@@ -1108,9 +1116,13 @@
         "title": "Expense Management",
         "description": "Track lunch and dinner expenses per session (Basic plan or higher)"
       },
-      "locationNotes": {
-        "title": "Location Notes",
-        "description": "Add work location to sessions (office, home, client site, etc.)"
+      "gpsLocationTracking": {
+        "title": "GPS Location Tracking",
+        "description": "Auto-capture GPS coordinates on clock-in/out with interactive mini-maps, reverse geocoding addresses, and manual location capture"
+      },
+      "profilePictures": {
+        "title": "Profile Pictures",
+        "description": "Upload and display profile pictures in your header and across the Enterprise team dashboard"
       },
       "weekendWorkBenefits": {
         "title": "Weekend Work Benefits",
@@ -1118,7 +1130,11 @@
       },
       "overworkManagement": {
         "title": "Overwork Management",
-        "description": "Track accumulated overtime and usage history (8h = 1 day off)"
+        "description": "Track accumulated overtime, edit usage history with custom dates, and convert to days off (8h = 1 day)"
+      },
+      "financeCharts": {
+        "title": "Finance & Tax Charts",
+        "description": "Cumulative year-to-date income, net pay, and tax charts with monthly granularity"
       },
       "customizableThresholds": {
         "title": "Customizable Thresholds",
@@ -1193,6 +1209,18 @@
         "memberAnalytics": {
           "title": "Per-Member Analytics & Finance",
           "description": "View detailed analytics, finance calculations, and session history for each team member. Export per-member CSV reports for payroll and compliance documentation."
+        },
+        "gpsLocationTracking": {
+          "title": "GPS Location Tracking",
+          "description": "View where team members clocked in and out with interactive mini-maps. Toggle location maps per session to verify work locations, addresses, and coordinates."
+        },
+        "calendarEvents": {
+          "title": "Google Calendar Events",
+          "description": "Collapsible calendar events section with daily, weekly, and monthly views. Stay on top of meetings and events alongside team management."
+        },
+        "memberProfiles": {
+          "title": "Member Profile Pictures",
+          "description": "Team members' profile pictures are displayed in the members list and detail view for easy identification."
         }
       }
     },
@@ -1231,6 +1259,7 @@
       "firebase": "Firebase - Real-time database and authentication",
       "googleCalendar": "Google Calendar API - Seamless calendar integration",
       "openRouter": "OpenRouter API - Multi-model AI routing for AI Advisor (powered by OpenRouter)",
+      "leaflet": "Leaflet & OpenStreetMap - Interactive maps with GPS location tracking and reverse geocoding",
       "vite": "Vite - Lightning-fast build tool with code splitting",
       "vercel": "Vercel - Global edge network deployment",
       "optimized": "Optimized following Vercel's React best practices for maximum performance and user experience."
@@ -1264,9 +1293,9 @@
       }
     },
     "footer": {
-      "version": "Version 2.2.0 - January 2026",
+      "version": "Version 2.3.0 - February 2026",
       "copyright": "© 2026 Clock In - Intelligent Time Manager. Built for professionals who value their time.",
-      "latestUpdate": "Latest update: AI Advisor with Portuguese labor law expertise, Premium AI plans, and call pack system",
+      "latestUpdate": "Latest update: GPS location tracking with mini-maps, profile pictures, cumulative finance charts, Enterprise calendar events, and overwork usage editing",
       "contact": "Contact us:"
     }
   }
