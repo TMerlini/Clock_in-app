@@ -477,3 +477,49 @@
     width: 60px !important;
   }
 }
+
+/* Location input row with GPS button */
+.location-input-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.location-input-row .time-input {
+  flex: 1;
+}
+
+.location-input-row .gps-capture-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--secondary);
+  color: var(--muted-foreground);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.2s, color 0.2s, border-color 0.2s;
+}
+
+.location-input-row .gps-capture-btn:hover {
+  background: var(--primary);
+  color: var(--primary-foreground);
+  border-color: var(--primary);
+}
+
+.location-input-row .gps-capture-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.location-input-row .gps-capture-btn .spinning {
+  animation: gps-spin 1s linear infinite;
+}
+
+@keyframes gps-spin {
+  to { transform: rotate(360deg); }
+}

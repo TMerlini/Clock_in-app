@@ -183,6 +183,12 @@
       "settingsSaved": "Definições guardadas com sucesso! As alterações aplicar-se-ão a novas sessões.",
       "loadingSettings": "A carregar definições..."
     },
+    "gps": {
+      "title": "Localização GPS",
+      "description": "Capturar automaticamente a sua localização GPS ao registar entrada e saída.",
+      "autoCapture": "Captura automática de GPS",
+      "autoCaptureDescription": "Registar automaticamente a sua localização quando faz entrada ou saída."
+    },
     "dataExport": {
       "title": "Dados e Cópia de Segurança",
       "description": "Descarregue uma cópia dos seus dados (sessões, definições, deduções de horas extras) em JSON. Útil para cópia de segurança ou portabilidade de dados.",
@@ -228,6 +234,7 @@
     "bankHoliday": "Feriado",
     "isencaoNoWeekendInfo": "A Isenção não se aplica em fins de semana/feriados. Apenas as horas de trabalho extra serão contabilizadas.",
     "locationOptional": "Localização (opcional)",
+    "useMyLocation": "Usar a minha localização",
     "notesOptional": "Notas (opcional)",
     "changesSaveAutomatically": "As alterações são guardadas automaticamente"
   },
@@ -430,6 +437,7 @@
     "dinnerAmount": "Valor do Jantar (€)",
     "locationOptional": "Localização (opcional)",
     "locationPlaceholder": "Adicionar local (ex.: Escritório, Casa, Cliente, etc.)",
+    "useMyLocation": "Usar a minha localização",
     "weekend": "Fim de Semana",
     "bankHoliday": "Feriado",
     "isencaoNoWeekendInfo": "A Isenção não se aplica em fins de semana/feriados. Apenas as horas de trabalho extra serão contabilizadas.",
@@ -601,6 +609,10 @@
     "extendedHours": "Horas estendidas - Período de trabalho extra não pago",
     "under8Hours": "Menos de 8 horas trabalhadas",
     "working": "Trabalho"
+  },
+  "session": {
+    "clockInLocation": "Entrada",
+    "clockOutLocation": "Saída"
   },
   "calendar": {
     "title": "Eventos Google Calendar",

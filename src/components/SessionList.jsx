@@ -1,6 +1,6 @@
 import { memo } from 'react';
 import { format } from 'date-fns';
-import { Edit2, Trash2, Plus, CheckCircle, AlertTriangle, Info } from 'lucide-react';
+import { Edit2, Trash2, Plus, CheckCircle, AlertTriangle, Info, MapPin } from 'lucide-react';
 import { formatHoursMinutes } from '../lib/utils';
 import { ActiveSessionCard } from './ActiveSessionCard';
 import { useTranslation } from 'react-i18next';
@@ -184,6 +184,15 @@ export const SessionList = memo(function SessionList({
                     </span>
                   )}
                 </div>
+                {(session.clockInCoords?.address || session.clockOutCoords?.address) && (
+                  <div className="session-location-row" title={[
+                    session.clockInCoords?.address && `${t('session.clockInLocation')}: ${session.clockInCoords.address}`,
+                    session.clockOutCoords?.address && `${t('session.clockOutLocation')}: ${session.clockOutCoords.address}`
+                  ].filter(Boolean).join('\n')}>
+                    <MapPin size={12} />
+                    <span>{session.clockInCoords?.address || session.clockOutCoords?.address}</span>
+                  </div>
+                )}
                 {session.notes && (
                   <div className="session-notes">
                     {session.notes}

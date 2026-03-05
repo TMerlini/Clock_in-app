@@ -3,7 +3,7 @@ import { doc, getDoc, setDoc, collection, query, where, getDocs, updateDoc } fro
 import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import { db, auth, storage } from '../lib/firebase';
 import { CalendarAuthButton } from './CalendarAuthButton';
-import { Settings as SettingsIcon, Save, RotateCcw, Clock, Coffee, AlertTriangle, DollarSign, Calendar, CheckCircle, XCircle, AlertCircle, RefreshCw, User, AtSign, Download, Crown, Globe, Database, Camera, Trash2 } from 'lucide-react';
+import { Settings as SettingsIcon, Save, RotateCcw, Clock, Coffee, AlertTriangle, DollarSign, Calendar, CheckCircle, XCircle, AlertCircle, RefreshCw, User, AtSign, Download, Crown, Globe, Database, Camera, Trash2, MapPin } from 'lucide-react';
 import { format } from 'date-fns';
 import { useTranslation } from 'react-i18next';
 import i18n from '../lib/i18n';
@@ -27,6 +27,7 @@ export function Settings({ googleCalendar, onUsernameChange, onProfilePicChange,
   const [bankHolidayApplyBonus, setBankHolidayApplyBonus] = useState(true);
   const [isPremium, setIsPremium] = useState(false);
   const [language, setLanguage] = useState('en');
+  const [gpsAutoCapture, setGpsAutoCapture] = useState(true);
   // Finance settings
   const [hourlyRate, setHourlyRate] = useState(0);
   const [isencaoRate, setIsencaoRate] = useState(0);
@@ -127,6 +128,7 @@ export function Settings({ googleCalendar, onUsernameChange, onProfilePicChange,
         setDailyMealSubsidy(financeSettings.dailyMealSubsidy || 0);
         setMealCardDeduction(financeSettings.mealCardDeduction || 0);
         setCalendarAutoSync(settings.calendarAutoSync !== false);
+        setGpsAutoCapture(settings.gpsAutoCapture !== false);
         setProfilePicture(settings.profilePicture || null);
 
         // Notify parent of username
@@ -316,6 +318,7 @@ export function Settings({ googleCalendar, onUsernameChange, onProfilePicChange,
         isPremium,
         language,
         calendarAutoSync,
+        gpsAutoCapture,
         financeSettings: {
           hourlyRate,
           isencaoRate,
@@ -378,6 +381,7 @@ export function Settings({ googleCalendar, onUsernameChange, onProfilePicChange,
     setBankHolidayApplyBonus(true);
     setIsPremium(false);
     setLanguage('en');
+    setGpsAutoCapture(true);
     // Reset finance settings
     setHourlyRate(0);
     setIsencaoRate(0);
@@ -661,6 +665,35 @@ export function Settings({ googleCalendar, onUsernameChange, onProfilePicChange,
               <option value="en">{t('settings.language.english')}</option>
               <option value="pt">{t('settings.language.portuguese')}</option>
             </select>
+          </div>
+        </section>
+
+        <section className="settings-section">
+          <div className="section-title">
+            <MapPin />
+            <h2>{t('settings.gps.title')}</h2>
+          </div>
+          <p className="section-description">
+            {t('settings.gps.description')}
+          </p>
+
+          <div className="setting-item checkbox-setting">
+            <div className="setting-header">
+              <MapPin className="setting-icon" />
+              <div>
+                <label htmlFor="gpsAutoCapture">{t('settings.gps.autoCapture')}</label>
+                <p className="setting-description">{t('settings.gps.autoCaptureDescription')}</p>
+              </div>
+            </div>
+            <label className="toggle-switch">
+              <input
+                id="gpsAutoCapture"
+                type="checkbox"
+                checked={gpsAutoCapture}
+                onChange={(e) => setGpsAutoCapture(e.target.checked)}
+              />
+              <span className="toggle-slider"></span>
+            </label>
           </div>
         </section>
 

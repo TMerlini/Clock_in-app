@@ -1,7 +1,8 @@
 import { useState, useEffect, memo } from 'react';
 import { doc, updateDoc } from 'firebase/firestore';
 import { db, auth } from '../lib/firebase';
-import { Clock, MapPin, FileText, Coffee, UtensilsCrossed, Calendar, Save } from 'lucide-react';
+import { Clock, MapPin, FileText, Coffee, UtensilsCrossed, Calendar, Save, Crosshair, Loader2 } from 'lucide-react';
+import { captureLocation, isGeolocationAvailable } from '../lib/geolocation';
 import { format } from 'date-fns';
 import { formatHoursMinutes } from '../lib/utils';
 import { useTranslation } from 'react-i18next';
@@ -22,6 +23,7 @@ export const ActiveSessionCard = memo(function ActiveSessionCard({ clockInTime, 
   const [isBankHoliday, setIsBankHoliday] = useState(sessionDetails?.isBankHoliday ?? false);
   const [saving, setSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState(null);
+  const [capturingGps, setCapturingGps] = useState(false);
 
   // Sync sessionDetails prop changes to state (e.g., when returning from another tab)
   useEffect(() => {
@@ -64,6 +66,19 @@ export const ActiveSessionCard = memo(function ActiveSessionCard({ clockInTime, 
     const weekendDay = dayOfWeek === 0 || dayOfWeek === 6;
     setIsWeekend(weekendDay);
   }, [clockInTime]);
+
+  const handleUseMyLocation = async () => {
+    if (!isGeolocationAvailable()) return;
+    setCapturingGps(true);
+    try {
+      const coords = await captureLocation();
+      setLocation(coords.address);
+    } catch (err) {
+      console.warn('GPS capture failed:', err.message);
+    } finally {
+      setCapturingGps(false);
+    }
+  };
 
   // Auto-save details to Firestore
   const saveDetails = async () => {
@@ -281,6 +296,17 @@ export const ActiveSessionCard = memo(function ActiveSessionCard({ clockInTime, 
               placeholder={t('activeSessionCard.locationOptional')}
               className="text-input"
             />
+            {isGeolocationAvailable() && (
+              <button
+                type="button"
+                className="gps-capture-btn"
+                onClick={handleUseMyLocation}
+                disabled={capturingGps}
+                title={t('activeSessionCard.useMyLocation')}
+              >
+                {capturingGps ? <Loader2 size={14} className="spinning" /> : <Crosshair size={14} />}
+              </button>
+            )}
           </div>
         </div>
 

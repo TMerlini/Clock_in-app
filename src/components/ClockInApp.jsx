@@ -1,7 +1,8 @@
 import { useState, useEffect, Suspense, lazy, useCallback } from 'react';
 import { signOut } from 'firebase/auth';
-import { collection, addDoc, query, where, getDocs, orderBy, doc, setDoc, deleteDoc, onSnapshot, getDoc } from 'firebase/firestore';
+import { collection, addDoc, query, where, getDocs, orderBy, doc, setDoc, deleteDoc, onSnapshot, getDoc, updateDoc } from 'firebase/firestore';
 import { auth, db } from '../lib/firebase';
+import { captureLocation } from '../lib/geolocation';
 import i18n from '../lib/i18n';
 import { useTranslation } from 'react-i18next';
 import { useGoogleCalendar } from '../hooks/useGoogleCalendar';
@@ -79,6 +80,7 @@ export function ClockInApp({ user }) {
   const [syncOnVisitVariant, setSyncOnVisitVariant] = useState('not_connected');
   const [orphanPlaceholder, setOrphanPlaceholder] = useState(null);
   const [orphanRecoveryLoading, setOrphanRecoveryLoading] = useState(false);
+  const [gpsAutoCapture, setGpsAutoCapture] = useState(true);
 
   // Google Calendar integration
   const googleCalendar = useGoogleCalendar();
@@ -374,6 +376,7 @@ export function ClockInApp({ user }) {
         }
 
         setProfilePicture(settings.profilePicture || null);
+        setGpsAutoCapture(settings.gpsAutoCapture !== false);
 
         // Load language preference
         if (settings.language && i18n.language !== settings.language) {
@@ -629,6 +632,15 @@ export function ClockInApp({ user }) {
         });
         console.log('Active clock-in saved to Firestore');
 
+        // Non-blocking GPS capture on clock-in
+        if (gpsAutoCapture) {
+          captureLocation().then(coords => {
+            updateDoc(activeClockInRef, { clockInCoords: coords }).catch(err =>
+              console.error('Failed to save clock-in GPS:', err)
+            );
+          }).catch(err => console.warn('GPS capture skipped:', err.message));
+        }
+
         // State will be updated by the Firestore listener
       } catch (error) {
         console.error('Error saving clock-in to Firestore:', error);
@@ -768,7 +780,9 @@ export function ClockInApp({ user }) {
         // Get the calendar event ID from active clock-in
         const activeClockInRef = doc(db, 'activeClockIns', user.uid);
         const activeClockInSnap = await getDoc(activeClockInRef);
-        const storedCalendarEventId = activeClockInSnap.exists() ? activeClockInSnap.data().calendarEventId : null;
+        const activeClockInData = activeClockInSnap.exists() ? activeClockInSnap.data() : {};
+        const storedCalendarEventId = activeClockInData.calendarEventId || null;
+        const storedClockInCoords = activeClockInData.clockInCoords || null;
         
         console.log('Clock-out Google Calendar status:', { 
           isReady: googleCalendar.isReady, 
@@ -815,9 +829,34 @@ export function ClockInApp({ user }) {
           }
         }
 
+        // Carry clock-in GPS coords from active clock-in document
+        if (storedClockInCoords) {
+          newSession.clockInCoords = storedClockInCoords;
+        }
+
+        // Non-blocking GPS capture on clock-out
+        let clockOutCoordsPromise = null;
+        if (gpsAutoCapture) {
+          clockOutCoordsPromise = captureLocation().catch(err => {
+            console.warn('Clock-out GPS capture skipped:', err.message);
+            return null;
+          });
+        }
+
         console.log('Saving session to Firebase:', newSession);
         const docRef = await addDoc(collection(db, 'sessions'), newSession);
         console.log('Session saved successfully with ID:', docRef.id);
+
+        // Save clock-out coords once captured (non-blocking)
+        if (clockOutCoordsPromise) {
+          clockOutCoordsPromise.then(coords => {
+            if (coords) {
+              updateDoc(doc(db, 'sessions', docRef.id), { clockOutCoords: coords }).catch(err =>
+                console.error('Failed to save clock-out GPS:', err)
+              );
+            }
+          });
+        }
 
         // Delete active clock-in from Firestore (syncs across all devices)
         await deleteDoc(activeClockInRef);

@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { addDoc, collection, doc, getDoc, query, where, getDocs } from 'firebase/firestore';
 import { db, auth } from '../lib/firebase';
-import { X, Save, AlertCircle, Plus, MapPin } from 'lucide-react';
+import { X, Save, AlertCircle, Plus, MapPin, Crosshair, Loader2 } from 'lucide-react';
+import { captureLocation, isGeolocationAvailable } from '../lib/geolocation';
 import { format, startOfDay, endOfDay } from 'date-fns';
 import { formatHoursMinutes, calculateUsedIsencaoHours } from '../lib/utils';
 import { useTranslation } from 'react-i18next';
@@ -17,6 +18,7 @@ export function SessionCreator({ user, selectedDate, onClose, onUpdate }) {
   const [hadDinner, setHadDinner] = useState(false);
   const [dinnerAmount, setDinnerAmount] = useState('');
   const [location, setLocation] = useState('');
+  const [capturingGps, setCapturingGps] = useState(false);
   const [notes, setNotes] = useState('');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
@@ -69,6 +71,19 @@ export function SessionCreator({ user, selectedDate, onClose, onUpdate }) {
       }
     } catch (error) {
       console.error('Error loading settings:', error);
+    }
+  };
+
+  const handleUseMyLocation = async () => {
+    if (!isGeolocationAvailable()) return;
+    setCapturingGps(true);
+    try {
+      const coords = await captureLocation();
+      setLocation(coords.address);
+    } catch (err) {
+      console.warn('GPS capture failed:', err.message);
+    } finally {
+      setCapturingGps(false);
     }
   };
 
@@ -351,13 +366,26 @@ export function SessionCreator({ user, selectedDate, onClose, onUpdate }) {
               <MapPin className="label-icon" />
               {t('sessionCreator.locationOptional')}
             </label>
-            <input
-              type="text"
-              value={location}
-              onChange={(e) => setLocation(e.target.value)}
-              className="time-input"
-              placeholder={t('sessionCreator.locationPlaceholder')}
-            />
+            <div className="location-input-row">
+              <input
+                type="text"
+                value={location}
+                onChange={(e) => setLocation(e.target.value)}
+                className="time-input"
+                placeholder={t('sessionCreator.locationPlaceholder')}
+              />
+              {isGeolocationAvailable() && (
+                <button
+                  type="button"
+                  className="gps-capture-btn"
+                  onClick={handleUseMyLocation}
+                  disabled={capturingGps}
+                  title={t('sessionCreator.useMyLocation')}
+                >
+                  {capturingGps ? <Loader2 size={14} className="spinning" /> : <Crosshair size={14} />}
+                </button>
+              )}
+            </div>
           </div>
 
           <div className="form-group form-group-inline">

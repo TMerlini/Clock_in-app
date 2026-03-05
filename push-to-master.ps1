@@ -6,5 +6,5 @@ $git = "C:\Program Files\Git\cmd\git.exe"
 
 & $git add .
 & $git status
-& $git commit -m "Add rotating purple border to header profile picture avatar"
+& $git commit -m "Add GPS location tracking on clock-in/clock-out with Leaflet maps"
 & $git push origin master

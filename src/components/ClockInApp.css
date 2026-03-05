@@ -1258,6 +1258,28 @@
   gap: 0.5rem;
 }
 
+.session-location-row {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: 0.5rem;
+  font-size: 0.8rem;
+  color: var(--muted-foreground);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.session-location-row svg {
+  flex-shrink: 0;
+  color: var(--primary);
+}
+
+.session-location-row span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .session-notes {
   margin-top: 0.75rem;
   padding: 0.75rem;

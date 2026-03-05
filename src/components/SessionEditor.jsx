@@ -1,7 +1,9 @@
 import { useState, useEffect, memo } from 'react';
 import { doc, updateDoc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
 import { db, auth } from '../lib/firebase';
-import { X, Save, AlertCircle, MapPin } from 'lucide-react';
+import { X, Save, AlertCircle, MapPin, Crosshair, Loader2 } from 'lucide-react';
+import { captureLocation, isGeolocationAvailable } from '../lib/geolocation';
+import { LocationMiniMap } from './LocationMiniMap';
 import { format } from 'date-fns';
 import { formatHoursMinutes, calculateUsedIsencaoHours } from '../lib/utils';
 import './SessionEditor.css';
@@ -18,6 +20,7 @@ export const SessionEditor = memo(function SessionEditor({ session, onClose, onU
   const [hadDinner, setHadDinner] = useState(session.hadDinner || false);
   const [dinnerAmount, setDinnerAmount] = useState(session.dinnerAmount ? session.dinnerAmount.toString() : '');
   const [location, setLocation] = useState(session.location || '');
+  const [capturingGps, setCapturingGps] = useState(false);
   const [notes, setNotes] = useState(session.notes || '');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
@@ -76,6 +79,19 @@ export const SessionEditor = memo(function SessionEditor({ session, onClose, onU
       }
     } catch (error) {
       console.error('Error loading settings:', error);
+    }
+  };
+
+  const handleUseMyLocation = async () => {
+    if (!isGeolocationAvailable()) return;
+    setCapturingGps(true);
+    try {
+      const coords = await captureLocation();
+      setLocation(coords.address);
+    } catch (err) {
+      console.warn('GPS capture failed:', err.message);
+    } finally {
+      setCapturingGps(false);
     }
   };
 
@@ -321,13 +337,33 @@ export const SessionEditor = memo(function SessionEditor({ session, onClose, onU
               <MapPin className="label-icon" />
               Location (optional)
             </label>
-            <input
-              type="text"
-              value={location}
-              onChange={(e) => setLocation(e.target.value)}
-              className="time-input"
-              placeholder="Add location (e.g., Office, Home, Client site, etc.)"
-            />
+            <div className="location-input-row">
+              <input
+                type="text"
+                value={location}
+                onChange={(e) => setLocation(e.target.value)}
+                className="time-input"
+                placeholder="Add location (e.g., Office, Home, Client site, etc.)"
+              />
+              {isGeolocationAvailable() && (
+                <button
+                  type="button"
+                  className="gps-capture-btn"
+                  onClick={handleUseMyLocation}
+                  disabled={capturingGps}
+                  title="Use my location"
+                >
+                  {capturingGps ? <Loader2 size={14} className="spinning" /> : <Crosshair size={14} />}
+                </button>
+              )}
+            </div>
+            {(session.clockInCoords || session.clockOutCoords) && (
+              <LocationMiniMap
+                clockInCoords={session.clockInCoords}
+                clockOutCoords={session.clockOutCoords}
+                height={160}
+              />
+            )}
           </div>
 
           <div className="form-group form-group-inline">

@@ -1,0 +1,20 @@
+.location-mini-map {
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  margin-top: 0.5rem;
+}
+
+.location-mini-map .leaflet-container {
+  background: var(--secondary);
+}
+
+.location-mini-map .leaflet-popup-content {
+  font-size: 0.8rem;
+  line-height: 1.4;
+  margin: 8px 12px;
+}
+
+.location-mini-map .leaflet-popup-content strong {
+  font-weight: 600;
+}
