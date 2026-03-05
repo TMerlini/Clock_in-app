@@ -6,5 +6,5 @@ $git = "C:\Program Files\Git\cmd\git.exe"
 
 & $git add .
 & $git status
-& $git commit -m "Add member profile pictures to Enterprise members list and detail header"
+& $git commit -m "Fix hardcoded days text in Analytics overwork usage to use translation"
 & $git push origin master

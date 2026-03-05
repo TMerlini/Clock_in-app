@@ -942,7 +942,7 @@ export const Analytics = memo(function Analytics({ user }) {
                         </div>
                         <div className="deduction-hours">
                           -{formatHoursMinutes(deduction.hours)}
-                          <span className="deduction-days">({(deduction.hours / 8).toFixed(2)} days)</span>
+                          <span className="deduction-days">({(deduction.hours / 8).toFixed(2)} {t('analytics.days')})</span>
                         </div>
                         <div className="deduction-actions">
                           <button
@@ -973,7 +973,7 @@ export const Analytics = memo(function Analytics({ user }) {
                         </div>
                         <div className="deduction-hours">
                           -{formatHoursMinutes(deduction.hours)}
-                          <span className="deduction-days">({(deduction.hours / 8).toFixed(2)} days)</span>
+                          <span className="deduction-days">({(deduction.hours / 8).toFixed(2)} {t('analytics.days')})</span>
                         </div>
                         <div className="deduction-actions">
                           <button
