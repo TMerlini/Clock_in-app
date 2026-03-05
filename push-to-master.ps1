@@ -6,5 +6,5 @@ $git = "C:\Program Files\Git\cmd\git.exe"
 
 & $git add .
 & $git status
-& $git commit -m "Improve Enterprise GPS location button with visible MapPin icon and purple styling"
+& $git commit -m "Add global dark-themed scrollbar styling to match app theme"
 & $git push origin master
