@@ -1372,6 +1372,11 @@ export function Enterprise({ user, onNavigate }) {
             <span>{t('enterprise.back')}</span>
           </button>
           <h2 className="enterprise-member-detail-title">
+            {(selectedMember.profilePicture || memberSettings?.profilePicture) ? (
+              <img src={selectedMember.profilePicture || memberSettings.profilePicture} alt="" className="enterprise-member-detail-avatar" />
+            ) : (
+              <div className="enterprise-member-detail-avatar-fallback"><Users size={20} /></div>
+            )}
             {t('enterprise.memberDetail')}: {getMemberDisplayName(selectedMember)}
           </h2>
           <div className="enterprise-member-tabs">
@@ -1750,6 +1755,11 @@ export function Enterprise({ user, onNavigate }) {
                 const isUpdatingRole = updatingRoleId === m.id;
                 return (
                   <li key={m.id}>
+                    {m.profilePicture ? (
+                      <img src={m.profilePicture} alt="" className="enterprise-member-avatar" />
+                    ) : (
+                      <div className="enterprise-member-avatar-fallback"><Users size={16} /></div>
+                    )}
                     <span>{getMemberDisplayName(m)}</span>
                     <div className="enterprise-member-actions">
                       <span className="enterprise-role-badge">{m.enterpriseRole === 'admin' ? t('enterprise.admin') : t('enterprise.member')}</span>

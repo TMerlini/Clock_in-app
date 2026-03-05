@@ -102,7 +102,8 @@ export async function listMembers(enterpriseId) {
       id: d.id,
       email: data.email || '',
       username: data.username || '',
-      enterpriseRole: data.enterpriseRole || 'member'
+      enterpriseRole: data.enterpriseRole || 'member',
+      profilePicture: data.profilePicture || null
     });
   });
   return members;

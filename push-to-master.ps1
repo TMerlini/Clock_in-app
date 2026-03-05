@@ -6,5 +6,5 @@ $git = "C:\Program Files\Git\cmd\git.exe"
 
 & $git add .
 & $git status
-& $git commit -m "Add collapsible Google Calendar events section to Enterprise page"
+& $git commit -m "Add member profile pictures to Enterprise members list and detail header"
 & $git push origin master
