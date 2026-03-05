@@ -487,6 +487,8 @@
     "finance": "Finance",
     "overwork": "Overwork",
     "location": "Location",
+    "viewLocation": "View location on map",
+    "hideLocation": "Hide map",
     "notes": "Notes",
     "viewMember": "View",
     "remove": "Remove",

@@ -6,5 +6,5 @@ $git = "C:\Program Files\Git\cmd\git.exe"
 
 & $git add .
 & $git status
-& $git commit -m "Add mini-map to session list cards and active session card"
+& $git commit -m "Add location map toggle to Enterprise member sessions table"
 & $git push origin master

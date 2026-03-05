@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useRef } from 'react';
+import { useState, useEffect, useMemo, useRef, Fragment } from 'react';
 import { collection, doc, getDoc, getDocs, query, where, setDoc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import {
@@ -20,7 +20,8 @@ import { calculatePeriodFinance } from '../lib/financeCalculator';
 import { startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfYear, endOfYear, format, formatDistanceToNow, eachMonthOfInterval, subMonths, subWeeks, subDays, subYears } from 'date-fns';
 import { getDateFnsLocale } from '../lib/i18n';
 import { formatHoursMinutes } from '../lib/utils';
-import { Building2, UserPlus, Users, Loader, AlertCircle, Crown, ArrowRight, ArrowLeft, Eye, BarChart3, DollarSign, Clock, Download, Trash2, X, Shield, UserMinus, TrendingUp, AlertTriangle, Bot } from 'lucide-react';
+import { Building2, UserPlus, Users, Loader, AlertCircle, Crown, ArrowRight, ArrowLeft, Eye, BarChart3, DollarSign, Clock, Download, Trash2, X, Shield, UserMinus, TrendingUp, AlertTriangle, Bot, MapPin } from 'lucide-react';
+import { LocationMiniMap } from './LocationMiniMap';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { useTranslation } from 'react-i18next';
 import { EnterpriseAISection } from './EnterpriseAISection';
@@ -85,6 +86,7 @@ export function Enterprise({ user, onNavigate }) {
   const [memberReportType, setMemberReportType] = useState('monthly');
   const [memberSelectedDate, setMemberSelectedDate] = useState(new Date());
   const [bulkExportLoading, setBulkExportLoading] = useState(false);
+  const [expandedMapSession, setExpandedMapSession] = useState(null);
 
   useEffect(() => {
     if (!user) {
@@ -1258,16 +1260,44 @@ export function Enterprise({ user, onNavigate }) {
                           <tbody>
                             {memberFilteredSessions.map((s) => {
                               const raw = rawSessionById.get(s.id);
+                              const hasCoords = raw?.clockInCoords || raw?.clockOutCoords;
+                              const isMapOpen = expandedMapSession === s.id;
                               return (
-                                <tr key={s.id || s.date?.getTime()}>
-                                  <td>{s.date ? format(s.date, 'yyyy-MM-dd') : '-'}</td>
-                                  <td>{(s.regularHours || 0).toFixed(2)}</td>
-                                  <td>{(s.isencaoHours || 0).toFixed(2)}</td>
-                                  <td>{(s.paidExtraHours || 0).toFixed(2)}</td>
-                                  <td>€{(s.totalEarnings || 0).toFixed(2)}</td>
-                                  <td className="enterprise-cell-ellipsis" title={raw?.location || ''}>{raw?.location || '-'}</td>
-                                  <td className="enterprise-cell-ellipsis" title={raw?.notes || ''}>{raw?.notes || '-'}</td>
-                                </tr>
+                                <Fragment key={s.id || s.date?.getTime()}>
+                                  <tr>
+                                    <td>{s.date ? format(s.date, 'yyyy-MM-dd') : '-'}</td>
+                                    <td>{(s.regularHours || 0).toFixed(2)}</td>
+                                    <td>{(s.isencaoHours || 0).toFixed(2)}</td>
+                                    <td>{(s.paidExtraHours || 0).toFixed(2)}</td>
+                                    <td>€{(s.totalEarnings || 0).toFixed(2)}</td>
+                                    <td className="enterprise-cell-ellipsis" title={raw?.location || raw?.clockInCoords?.address || ''}>
+                                      <div className="enterprise-location-cell">
+                                        <span>{raw?.location || raw?.clockInCoords?.address || '-'}</span>
+                                        {hasCoords && (
+                                          <button
+                                            className={`enterprise-location-btn${isMapOpen ? ' active' : ''}`}
+                                            onClick={() => setExpandedMapSession(isMapOpen ? null : s.id)}
+                                            title={t(isMapOpen ? 'enterprise.hideLocation' : 'enterprise.viewLocation')}
+                                          >
+                                            <MapPin size={14} />
+                                          </button>
+                                        )}
+                                      </div>
+                                    </td>
+                                    <td className="enterprise-cell-ellipsis" title={raw?.notes || ''}>{raw?.notes || '-'}</td>
+                                  </tr>
+                                  {isMapOpen && hasCoords && (
+                                    <tr className="enterprise-map-row">
+                                      <td colSpan={7}>
+                                        <LocationMiniMap
+                                          clockInCoords={raw.clockInCoords}
+                                          clockOutCoords={raw.clockOutCoords}
+                                          height={180}
+                                        />
+                                      </td>
+                                    </tr>
+                                  )}
+                                </Fragment>
                               );
                             })}
                           </tbody>

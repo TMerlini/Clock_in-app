@@ -487,6 +487,8 @@
     "finance": "Finanças",
     "overwork": "Horas extras",
     "location": "Local",
+    "viewLocation": "Ver localização no mapa",
+    "hideLocation": "Ocultar mapa",
     "notes": "Notas",
     "viewMember": "Ver",
     "remove": "Remover",
