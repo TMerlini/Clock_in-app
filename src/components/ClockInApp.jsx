@@ -74,6 +74,7 @@ export function ClockInApp({ user }) {
   const [syncingSession, setSyncingSession] = useState(null);
   const [activeSessionDetails, setActiveSessionDetails] = useState(null);
   const [displayName, setDisplayName] = useState(null);
+  const [profilePicture, setProfilePicture] = useState(null);
   const [showSyncOnVisitModal, setShowSyncOnVisitModal] = useState(false);
   const [syncOnVisitVariant, setSyncOnVisitVariant] = useState('not_connected');
   const [orphanPlaceholder, setOrphanPlaceholder] = useState(null);
@@ -92,6 +93,10 @@ export function ClockInApp({ user }) {
 
   const handleDisplayNameChange = useCallback((name) => {
     setDisplayName(name);
+  }, []);
+
+  const handleProfilePicChange = useCallback((url) => {
+    setProfilePicture(url);
   }, []);
 
   const handleSessionUpdate = useCallback(async () => {
@@ -367,7 +372,9 @@ export function ClockInApp({ user }) {
         } else {
           setDisplayName(null);
         }
-        
+
+        setProfilePicture(settings.profilePicture || null);
+
         // Load language preference
         if (settings.language && i18n.language !== settings.language) {
           await i18n.changeLanguage(settings.language);
@@ -990,7 +997,7 @@ export function ClockInApp({ user }) {
         return (
           <ErrorBoundary>
             <Suspense fallback={<Loader />}>
-              <Settings googleCalendar={googleCalendar} onUsernameChange={handleDisplayNameChange} onNavigate={handlePageChange} />
+              <Settings googleCalendar={googleCalendar} onUsernameChange={handleDisplayNameChange} onProfilePicChange={handleProfilePicChange} onNavigate={handlePageChange} />
             </Suspense>
           </ErrorBoundary>
         );
@@ -1088,7 +1095,11 @@ export function ClockInApp({ user }) {
           <div className="header-right">
             {!isFreePlan && <SyncStatusIndicator googleCalendar={googleCalendar} />}
             <div className="user-info" title={user.email}>
-              <User />
+              {profilePicture ? (
+                <img src={profilePicture} alt="" className="header-avatar" />
+              ) : (
+                <User />
+              )}
               <span>{displayName ? `@${displayName}` : user.email}</span>
             </div>
             <button onClick={handleSignOut} className="sign-out-button">

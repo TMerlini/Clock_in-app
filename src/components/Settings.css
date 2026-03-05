@@ -608,4 +608,152 @@
     width: 100%;
     justify-content: center;
   }
+
+  .profile-picture-section {
+    flex-direction: column;
+  }
+}
+
+/* Profile Picture */
+.profile-picture-section {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  padding: 1rem 0;
+}
+
+.profile-avatar-preview {
+  position: relative;
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  overflow: hidden;
+  cursor: pointer;
+  border: 2px solid var(--border);
+  background: var(--secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: border-color 0.2s;
+}
+
+.profile-avatar-preview:hover {
+  border-color: var(--primary);
+}
+
+.profile-avatar-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.profile-avatar-fallback-icon {
+  width: 36px;
+  height: 36px;
+  color: var(--muted-foreground);
+}
+
+.profile-avatar-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.profile-avatar-preview:hover .profile-avatar-overlay {
+  opacity: 1;
+}
+
+.profile-avatar-overlay svg {
+  width: 24px;
+  height: 24px;
+  color: #fff;
+}
+
+.profile-avatar-preview.uploading {
+  pointer-events: none;
+  opacity: 0.6;
+}
+
+.profile-pic-spinner {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.profile-pic-spinner::after {
+  content: '';
+  width: 24px;
+  height: 24px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.profile-pic-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.profile-pic-change-btn {
+  padding: 0.4rem 0.85rem;
+  font-size: 0.8rem;
+  background: var(--primary);
+  color: var(--primary-foreground);
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.profile-pic-change-btn:hover {
+  opacity: 0.85;
+}
+
+.profile-pic-change-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.profile-pic-remove-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.3rem 0.6rem;
+  font-size: 0.75rem;
+  background: transparent;
+  color: var(--destructive, #ef4444);
+  border: 1px solid var(--destructive, #ef4444);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+.profile-pic-remove-btn svg {
+  width: 13px;
+  height: 13px;
+}
+
+.profile-pic-remove-btn:hover {
+  background: var(--destructive, #ef4444);
+  color: #fff;
+}
+
+.profile-pic-remove-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }

@@ -6,5 +6,5 @@ $git = "C:\Program Files\Git\cmd\git.exe"
 
 & $git add .
 & $git status
-& $git commit -m "Add URL field to login images, increase slide opacity, make images clickable"
+& $git commit -m "Add profile picture upload in Settings with header avatar display"
 & $git push origin master

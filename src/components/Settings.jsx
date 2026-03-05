@@ -1,14 +1,15 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { doc, getDoc, setDoc, collection, query, where, getDocs, updateDoc } from 'firebase/firestore';
-import { db, auth } from '../lib/firebase';
+import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
+import { db, auth, storage } from '../lib/firebase';
 import { CalendarAuthButton } from './CalendarAuthButton';
-import { Settings as SettingsIcon, Save, RotateCcw, Clock, Coffee, AlertTriangle, DollarSign, Calendar, CheckCircle, XCircle, AlertCircle, RefreshCw, User, AtSign, Download, Crown, Globe, Database } from 'lucide-react';
+import { Settings as SettingsIcon, Save, RotateCcw, Clock, Coffee, AlertTriangle, DollarSign, Calendar, CheckCircle, XCircle, AlertCircle, RefreshCw, User, AtSign, Download, Crown, Globe, Database, Camera, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { useTranslation } from 'react-i18next';
 import i18n from '../lib/i18n';
 import './Settings.css';
 
-export function Settings({ googleCalendar, onUsernameChange, onNavigate }) {
+export function Settings({ googleCalendar, onUsernameChange, onProfilePicChange, onNavigate }) {
   const { t } = useTranslation();
   const [username, setUsername] = useState('');
   const [regularHoursThreshold, setRegularHoursThreshold] = useState(8);
@@ -46,6 +47,9 @@ export function Settings({ googleCalendar, onUsernameChange, onNavigate }) {
   const [fixedBonus, setFixedBonus] = useState(0);
   const [dailyMealSubsidy, setDailyMealSubsidy] = useState(0);
   const [mealCardDeduction, setMealCardDeduction] = useState(0);
+  const [profilePicture, setProfilePicture] = useState(null);
+  const [profilePicUploading, setProfilePicUploading] = useState(false);
+  const profilePicInputRef = useRef(null);
   const [saved, setSaved] = useState(false);
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
@@ -123,6 +127,7 @@ export function Settings({ googleCalendar, onUsernameChange, onNavigate }) {
         setDailyMealSubsidy(financeSettings.dailyMealSubsidy || 0);
         setMealCardDeduction(financeSettings.mealCardDeduction || 0);
         setCalendarAutoSync(settings.calendarAutoSync !== false);
+        setProfilePicture(settings.profilePicture || null);
 
         // Notify parent of username
         if (settings.username && onUsernameChange) {
@@ -436,6 +441,67 @@ export function Settings({ googleCalendar, onUsernameChange, onNavigate }) {
     }
   };
 
+  const handleProfilePicChange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      alert(t('settings.profile.invalidFileType', { defaultValue: 'Please select an image file.' }));
+      return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      alert(t('settings.profile.fileTooLarge', { defaultValue: 'Image must be under 2MB.' }));
+      return;
+    }
+
+    const user = auth.currentUser;
+    if (!user) return;
+
+    setProfilePicUploading(true);
+    try {
+      const storageRef = ref(storage, `profilePictures/${user.uid}`);
+      await uploadBytes(storageRef, file);
+      const url = await getDownloadURL(storageRef);
+
+      const settingsRef = doc(db, 'userSettings', user.uid);
+      await setDoc(settingsRef, { profilePicture: url }, { merge: true });
+
+      setProfilePicture(url);
+      if (onProfilePicChange) onProfilePicChange(url);
+    } catch (error) {
+      console.error('Error uploading profile picture:', error);
+      alert(t('settings.profile.uploadError', { defaultValue: 'Failed to upload profile picture.' }));
+    } finally {
+      setProfilePicUploading(false);
+      if (profilePicInputRef.current) profilePicInputRef.current.value = '';
+    }
+  };
+
+  const handleRemoveProfilePic = async () => {
+    const user = auth.currentUser;
+    if (!user) return;
+
+    setProfilePicUploading(true);
+    try {
+      const storageRef = ref(storage, `profilePictures/${user.uid}`);
+      try {
+        await deleteObject(storageRef);
+      } catch (err) {
+        if (err.code !== 'storage/object-not-found') throw err;
+      }
+
+      const settingsRef = doc(db, 'userSettings', user.uid);
+      await setDoc(settingsRef, { profilePicture: null }, { merge: true });
+
+      setProfilePicture(null);
+      if (onProfilePicChange) onProfilePicChange(null);
+    } catch (error) {
+      console.error('Error removing profile picture:', error);
+    } finally {
+      setProfilePicUploading(false);
+    }
+  };
+
   const handleLanguageChange = async (newLanguage) => {
     setLanguage(newLanguage);
     // Update i18n immediately for instant UI update
@@ -471,6 +537,51 @@ export function Settings({ googleCalendar, onUsernameChange, onNavigate }) {
           <p className="section-description">
             {t('settings.profile.description')}
           </p>
+
+          <div className="profile-picture-section">
+            <div
+              className={`profile-avatar-preview ${profilePicUploading ? 'uploading' : ''}`}
+              onClick={() => !profilePicUploading && profilePicInputRef.current?.click()}
+            >
+              {profilePicture ? (
+                <img src={profilePicture} alt="Profile" />
+              ) : (
+                <User className="profile-avatar-fallback-icon" />
+              )}
+              <div className="profile-avatar-overlay">
+                <Camera />
+              </div>
+              {profilePicUploading && <div className="profile-pic-spinner" />}
+            </div>
+            <input
+              ref={profilePicInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleProfilePicChange}
+              style={{ display: 'none' }}
+            />
+            <div className="profile-pic-actions">
+              <button
+                type="button"
+                className="profile-pic-change-btn"
+                onClick={() => profilePicInputRef.current?.click()}
+                disabled={profilePicUploading}
+              >
+                {t('settings.profile.changePhoto', { defaultValue: 'Change photo' })}
+              </button>
+              {profilePicture && (
+                <button
+                  type="button"
+                  className="profile-pic-remove-btn"
+                  onClick={handleRemoveProfilePic}
+                  disabled={profilePicUploading}
+                >
+                  <Trash2 />
+                  {t('settings.profile.removePhoto', { defaultValue: 'Remove' })}
+                </button>
+              )}
+            </div>
+          </div>
 
           <div className="setting-item">
             <div className="setting-header">
