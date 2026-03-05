@@ -489,6 +489,18 @@
     "location": "Location",
     "viewLocation": "View location on map",
     "hideLocation": "Hide map",
+    "calendarSection": {
+      "title": "Calendar Events",
+      "empty": "No events for this period",
+      "daily": "Daily",
+      "weekly": "Weekly",
+      "monthly": "Monthly",
+      "notAuthorized": "Connect Google Calendar to view events",
+      "eventCount": "{{count}} events",
+      "today": "Today",
+      "noTitle": "(No title)",
+      "allDay": "All day"
+    },
     "notes": "Notes",
     "viewMember": "View",
     "remove": "Remove",

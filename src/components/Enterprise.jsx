@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useRef, Fragment } from 'react';
+import { useState, useEffect, useMemo, useRef, useCallback, Fragment } from 'react';
 import { collection, doc, getDoc, getDocs, query, where, setDoc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import {
@@ -17,13 +17,14 @@ import {
 import { getEnterpriseMaxPremiumUsers } from '../lib/planConfig';
 import { getEnterpriseStats, getEnterpriseTeamWarnings } from '../lib/enterpriseMembersContext';
 import { calculatePeriodFinance } from '../lib/financeCalculator';
-import { startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfYear, endOfYear, format, formatDistanceToNow, eachMonthOfInterval, subMonths, subWeeks, subDays, subYears } from 'date-fns';
+import { startOfDay, endOfDay, startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfYear, endOfYear, format, formatDistanceToNow, eachMonthOfInterval, subMonths, subWeeks, subDays, subYears, addDays, addWeeks } from 'date-fns';
 import { getDateFnsLocale } from '../lib/i18n';
 import { formatHoursMinutes } from '../lib/utils';
-import { Building2, UserPlus, Users, Loader, AlertCircle, Crown, ArrowRight, ArrowLeft, Eye, BarChart3, DollarSign, Clock, Download, Trash2, X, Shield, UserMinus, TrendingUp, AlertTriangle, Bot, MapPin } from 'lucide-react';
+import { Building2, UserPlus, Users, Loader, AlertCircle, Crown, ArrowRight, ArrowLeft, Eye, BarChart3, DollarSign, Clock, Download, Trash2, X, Shield, UserMinus, TrendingUp, AlertTriangle, Bot, MapPin, Calendar as CalendarIcon, ChevronDown, ChevronUp, ChevronLeft, ChevronRight } from 'lucide-react';
 import { LocationMiniMap } from './LocationMiniMap';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { useTranslation } from 'react-i18next';
+import { useGoogleCalendar } from '../hooks/useGoogleCalendar';
 import { EnterpriseAISection } from './EnterpriseAISection';
 import './Enterprise.css';
 
@@ -88,6 +89,14 @@ export function Enterprise({ user, onNavigate }) {
   const [bulkExportLoading, setBulkExportLoading] = useState(false);
   const [expandedMapSession, setExpandedMapSession] = useState(null);
 
+  const googleCalendar = useGoogleCalendar();
+  const [calendarEvents, setCalendarEvents] = useState([]);
+  const [calendarEventsLoading, setCalendarEventsLoading] = useState(false);
+  const [calendarViewMode, setCalendarViewMode] = useState('daily');
+  const [calendarDate, setCalendarDate] = useState(new Date());
+  const [calendarCollapsed, setCalendarCollapsed] = useState(true);
+  const [calendarList, setCalendarList] = useState([]);
+
   useEffect(() => {
     if (!user) {
       setLoading(false);
@@ -136,6 +145,91 @@ export function Enterprise({ user, onNavigate }) {
   }, [enterprise?.name]);
 
   const hasAccess = plan === 'enterprise' || !!enterpriseId;
+
+  // Google Calendar: load calendars and events
+  useEffect(() => {
+    if (!googleCalendar.isAuthorized) return;
+    const load = async () => {
+      try {
+        const cals = await googleCalendar.listCalendars();
+        setCalendarList(cals);
+      } catch (err) {
+        console.error('Error loading calendars:', err);
+      }
+    };
+    load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [googleCalendar.isAuthorized]);
+
+  useEffect(() => {
+    if (!googleCalendar.isAuthorized || calendarList.length === 0) return;
+    const load = async () => {
+      setCalendarEventsLoading(true);
+      try {
+        const now = new Date();
+        const timeMin = subDays(now, 90);
+        const timeMax = addDays(now, 30);
+        const calendarIds = calendarList.map(c => c.id);
+        const events = await googleCalendar.listCalendarEvents(
+          timeMin.toISOString(),
+          timeMax.toISOString(),
+          250,
+          calendarIds
+        );
+        setCalendarEvents(events);
+      } catch (err) {
+        console.error('Error loading calendar events:', err);
+      } finally {
+        setCalendarEventsLoading(false);
+      }
+    };
+    load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [googleCalendar.isAuthorized, calendarList.length]);
+
+  const calendarPeriodEvents = useMemo(() => {
+    if (!calendarEvents.length) return [];
+    let start, end;
+    if (calendarViewMode === 'daily') {
+      start = startOfDay(calendarDate);
+      end = endOfDay(calendarDate);
+    } else if (calendarViewMode === 'weekly') {
+      start = startOfWeek(calendarDate, { weekStartsOn: 1 });
+      end = endOfDay(endOfWeek(calendarDate, { weekStartsOn: 1 }));
+    } else {
+      start = startOfMonth(calendarDate);
+      end = endOfDay(endOfMonth(calendarDate));
+    }
+    return calendarEvents
+      .filter(ev => {
+        const evStart = new Date(ev.start.dateTime || ev.start.date);
+        return evStart >= start && evStart <= end;
+      })
+      .sort((a, b) => {
+        const aStart = new Date(a.start.dateTime || a.start.date).getTime();
+        const bStart = new Date(b.start.dateTime || b.start.date).getTime();
+        return bStart - aStart;
+      });
+  }, [calendarEvents, calendarDate, calendarViewMode]);
+
+  const handleCalendarNav = useCallback((direction) => {
+    setCalendarDate(prev => {
+      if (calendarViewMode === 'daily') return direction > 0 ? addDays(prev, 1) : subDays(prev, 1);
+      if (calendarViewMode === 'weekly') return direction > 0 ? addWeeks(prev, 1) : subWeeks(prev, 1);
+      return direction > 0 ? new Date(prev.getFullYear(), prev.getMonth() + 1, 1) : new Date(prev.getFullYear(), prev.getMonth() - 1, 1);
+    });
+  }, [calendarViewMode]);
+
+  const calendarDateLabel = useMemo(() => {
+    const loc = getDateFnsLocale();
+    if (calendarViewMode === 'daily') return format(calendarDate, 'EEEE, MMM d, yyyy', { locale: loc });
+    if (calendarViewMode === 'weekly') {
+      const ws = startOfWeek(calendarDate, { weekStartsOn: 1 });
+      const we = endOfWeek(calendarDate, { weekStartsOn: 1 });
+      return `${format(ws, 'MMM d', { locale: loc })} – ${format(we, 'MMM d, yyyy', { locale: loc })}`;
+    }
+    return format(calendarDate, 'MMMM yyyy', { locale: loc });
+  }, [calendarDate, calendarViewMode]);
 
   const handleCreateOrg = async (e) => {
     e.preventDefault();
@@ -1049,6 +1143,125 @@ export function Enterprise({ user, onNavigate }) {
             </div>
           </div>
         ) : null}
+
+        {/* Calendar Events Section */}
+        <div className="enterprise-calendar-section">
+          <button
+            type="button"
+            className="enterprise-calendar-header"
+            onClick={() => setCalendarCollapsed(prev => !prev)}
+          >
+            <div className="enterprise-calendar-title-wrap">
+              <CalendarIcon size={22} className="enterprise-calendar-icon" />
+              <h2 className="enterprise-calendar-title">{t('enterprise.calendarSection.title')}</h2>
+              {calendarPeriodEvents.length > 0 && (
+                <span className="enterprise-calendar-badge">{calendarPeriodEvents.length}</span>
+              )}
+            </div>
+            {calendarCollapsed ? <ChevronDown size={20} /> : <ChevronUp size={20} />}
+          </button>
+          {!calendarCollapsed && (
+            <div className="enterprise-calendar-body">
+              {!googleCalendar.isAuthorized ? (
+                <div className="enterprise-calendar-empty">
+                  <CalendarIcon size={32} />
+                  <p>{t('enterprise.calendarSection.notAuthorized')}</p>
+                </div>
+              ) : (
+                <>
+                  <div className="enterprise-calendar-controls">
+                    <div className="enterprise-calendar-tabs">
+                      {['daily', 'weekly', 'monthly'].map(mode => (
+                        <button
+                          key={mode}
+                          type="button"
+                          className={`enterprise-calendar-tab ${calendarViewMode === mode ? 'active' : ''}`}
+                          onClick={() => setCalendarViewMode(mode)}
+                        >
+                          {t(`enterprise.calendarSection.${mode}`)}
+                        </button>
+                      ))}
+                    </div>
+                    <div className="enterprise-calendar-nav">
+                      <button type="button" className="enterprise-calendar-nav-btn" onClick={() => handleCalendarNav(-1)}>
+                        <ChevronLeft size={18} />
+                      </button>
+                      <span className="enterprise-calendar-date-label">{calendarDateLabel}</span>
+                      <button type="button" className="enterprise-calendar-nav-btn" onClick={() => handleCalendarNav(1)}>
+                        <ChevronRight size={18} />
+                      </button>
+                      <button
+                        type="button"
+                        className="enterprise-calendar-today-btn"
+                        onClick={() => setCalendarDate(new Date())}
+                      >
+                        {t('enterprise.calendarSection.today')}
+                      </button>
+                    </div>
+                  </div>
+                  {calendarEventsLoading ? (
+                    <div className="enterprise-calendar-loading">
+                      <Loader size={24} className="spinning" />
+                    </div>
+                  ) : calendarPeriodEvents.length === 0 ? (
+                    <div className="enterprise-calendar-empty">
+                      <CalendarIcon size={28} />
+                      <p>{t('enterprise.calendarSection.empty')}</p>
+                    </div>
+                  ) : (
+                    <div className="enterprise-calendar-events">
+                      {calendarPeriodEvents.map(event => {
+                        const evStart = event.start.dateTime ? new Date(event.start.dateTime) : null;
+                        const evEnd = event.end.dateTime ? new Date(event.end.dateTime) : null;
+                        const isAllDay = !event.start.dateTime;
+                        const sourceCal = calendarList.find(c => c.id === event.sourceCalendarId);
+                        return (
+                          <div key={event.id} className="enterprise-event-card">
+                            <div className="enterprise-event-header">
+                              <span className="enterprise-event-title">{event.summary || t('enterprise.calendarSection.noTitle')}</span>
+                              <span className="enterprise-event-time">
+                                {isAllDay
+                                  ? t('enterprise.calendarSection.allDay')
+                                  : evStart && evEnd
+                                    ? `${format(evStart, 'HH:mm')} – ${format(evEnd, 'HH:mm')}`
+                                    : evStart ? format(evStart, 'HH:mm') : ''}
+                              </span>
+                            </div>
+                            {evStart && calendarViewMode !== 'daily' && (
+                              <div className="enterprise-event-date">
+                                {format(evStart, 'EEE, MMM d', { locale: getDateFnsLocale() })}
+                              </div>
+                            )}
+                            {sourceCal && (
+                              <div className="enterprise-event-source">
+                                <CalendarIcon size={12} />
+                                <span>{sourceCal.summary}</span>
+                              </div>
+                            )}
+                            {event.location && (
+                              <div className="enterprise-event-location">
+                                <MapPin size={12} />
+                                <span>{event.location}</span>
+                              </div>
+                            )}
+                            {event.description && (
+                              <div
+                                className="enterprise-event-description"
+                                dangerouslySetInnerHTML={{
+                                  __html: (event.description || '').replace(/\r\n/g, '\n').replace(/\n/g, '<br>')
+                                }}
+                              />
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          )}
+        </div>
 
         <div className="enterprise-overwork-section">
           <div className="enterprise-overwork-header">

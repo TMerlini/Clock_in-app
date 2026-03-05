@@ -6,5 +6,5 @@ $git = "C:\Program Files\Git\cmd\git.exe"
 
 & $git add .
 & $git status
-& $git commit -m "Add global dark-themed scrollbar styling to match app theme"
+& $git commit -m "Add collapsible Google Calendar events section to Enterprise page"
 & $git push origin master
