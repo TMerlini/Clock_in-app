@@ -6,5 +6,5 @@ $git = "C:\Program Files\Git\cmd\git.exe"
 
 & $git add .
 & $git status
-& $git commit -m "Add login page image slideshow and admin image manager"
+& $git commit -m "Add contact link to login footer, add storage rules and CORS config"
 & $git push origin master

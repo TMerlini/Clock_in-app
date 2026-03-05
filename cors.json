@@ -1,0 +1,8 @@
+[
+  {
+    "origin": ["https://clock-in.pt", "https://www.clock-in.pt", "http://localhost:5173"],
+    "method": ["GET", "POST", "PUT", "DELETE", "HEAD"],
+    "maxAgeSeconds": 3600,
+    "responseHeader": ["Content-Type", "Authorization", "Content-Length", "X-Requested-With"]
+  }
+]

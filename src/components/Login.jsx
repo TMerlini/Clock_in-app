@@ -136,6 +136,8 @@ function LoginContent({ onSignIn }) {
         <a href="/privacy" target="_blank" rel="noopener noreferrer" className="login-privacy-link">Privacy Policy</a>
         {' · '}
         <a href="/terms" target="_blank" rel="noopener noreferrer" className="login-privacy-link">Terms of Service</a>
+        {' · '}
+        <a href="mailto:contacto@clock-in.pt" className="login-privacy-link">Contact</a>
       </p>
     </>
   );
