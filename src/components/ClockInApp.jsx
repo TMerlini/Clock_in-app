@@ -81,6 +81,7 @@ export function ClockInApp({ user }) {
   const [orphanPlaceholder, setOrphanPlaceholder] = useState(null);
   const [orphanRecoveryLoading, setOrphanRecoveryLoading] = useState(false);
   const [gpsAutoCapture, setGpsAutoCapture] = useState(true);
+  const [activeClockInCoords, setActiveClockInCoords] = useState(null);
 
   // Google Calendar integration
   const googleCalendar = useGoogleCalendar();
@@ -243,6 +244,7 @@ export function ClockInApp({ user }) {
           if (data.sessionDetails) {
             setActiveSessionDetails(data.sessionDetails);
           }
+          setActiveClockInCoords(data.clockInCoords || null);
         }
       } else {
         // No active clock-in in Firestore - only trust server snapshots
@@ -256,6 +258,7 @@ export function ClockInApp({ user }) {
         setIsClockedIn(false);
         setClockInTime(null);
         setActiveSessionDetails(null);
+        setActiveClockInCoords(null);
         // Check for orphan placeholders in Google Calendar (app lost state but calendar still has ongoing event)
         if (googleCalendar.isAuthorized && !isFreePlan) {
           googleCalendar.findOrphanPlaceholderEvents().then((orphans) => {
@@ -1104,6 +1107,7 @@ export function ClockInApp({ user }) {
                 isClockedIn={isClockedIn}
                 clockInTime={clockInTime}
                 activeSessionDetails={activeSessionDetails}
+                activeClockInCoords={activeClockInCoords}
                 onDetailsChange={setActiveSessionDetails}
                 onEditSession={setEditingSession}
                 onDeleteSession={setDeletingSession}

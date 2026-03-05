@@ -3,12 +3,13 @@ import { doc, updateDoc } from 'firebase/firestore';
 import { db, auth } from '../lib/firebase';
 import { Clock, MapPin, FileText, Coffee, UtensilsCrossed, Calendar, Save, Crosshair, Loader2 } from 'lucide-react';
 import { captureLocation, isGeolocationAvailable } from '../lib/geolocation';
+import { LocationMiniMap } from './LocationMiniMap';
 import { format } from 'date-fns';
 import { formatHoursMinutes } from '../lib/utils';
 import { useTranslation } from 'react-i18next';
 import './ActiveSessionCard.css';
 
-export const ActiveSessionCard = memo(function ActiveSessionCard({ clockInTime, sessionDetails, onDetailsChange }) {
+export const ActiveSessionCard = memo(function ActiveSessionCard({ clockInTime, sessionDetails, clockInCoords, onDetailsChange }) {
   const { t } = useTranslation();
   const [elapsedTime, setElapsedTime] = useState('00:00:00');
   const [includeLunchTime, setIncludeLunchTime] = useState(sessionDetails?.includeLunchTime ?? false);
@@ -308,6 +309,12 @@ export const ActiveSessionCard = memo(function ActiveSessionCard({ clockInTime, 
               </button>
             )}
           </div>
+          {clockInCoords && (
+            <LocationMiniMap
+              clockInCoords={clockInCoords}
+              height={120}
+            />
+          )}
         </div>
 
         <div className="detail-section">

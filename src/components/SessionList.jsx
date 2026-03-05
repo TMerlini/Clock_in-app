@@ -3,6 +3,7 @@ import { format } from 'date-fns';
 import { Edit2, Trash2, Plus, CheckCircle, AlertTriangle, Info, MapPin } from 'lucide-react';
 import { formatHoursMinutes } from '../lib/utils';
 import { ActiveSessionCard } from './ActiveSessionCard';
+import { LocationMiniMap } from './LocationMiniMap';
 import { useTranslation } from 'react-i18next';
 import { getDateFnsLocale } from '../lib/i18n';
 import './ClockInApp.css';
@@ -27,6 +28,7 @@ export const SessionList = memo(function SessionList({
   isClockedIn,
   clockInTime,
   activeSessionDetails,
+  activeClockInCoords,
   onDetailsChange,
   onEditSession,
   onDeleteSession,
@@ -126,6 +128,7 @@ export const SessionList = memo(function SessionList({
             <ActiveSessionCard
               clockInTime={clockInTime}
               sessionDetails={activeSessionDetails}
+              clockInCoords={activeClockInCoords}
               onDetailsChange={onDetailsChange}
             />
           )}
@@ -192,6 +195,13 @@ export const SessionList = memo(function SessionList({
                     <MapPin size={12} />
                     <span>{session.clockInCoords?.address || session.clockOutCoords?.address}</span>
                   </div>
+                )}
+                {(session.clockInCoords || session.clockOutCoords) && (
+                  <LocationMiniMap
+                    clockInCoords={session.clockInCoords}
+                    clockOutCoords={session.clockOutCoords}
+                    height={120}
+                  />
                 )}
                 {session.notes && (
                   <div className="session-notes">
