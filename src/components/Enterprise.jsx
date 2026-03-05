@@ -1279,7 +1279,7 @@ export function Enterprise({ user, onNavigate }) {
                                             onClick={() => setExpandedMapSession(isMapOpen ? null : s.id)}
                                             title={t(isMapOpen ? 'enterprise.hideLocation' : 'enterprise.viewLocation')}
                                           >
-                                            <MapPin size={14} />
+                                            <MapPin size={16} />
                                           </button>
                                         )}
                                       </div>

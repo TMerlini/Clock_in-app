@@ -1109,23 +1109,28 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 24px;
-  height: 24px;
+  width: 28px;
+  height: 28px;
   padding: 0;
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  background: transparent;
-  color: var(--muted-foreground);
+  border: 1px solid #6d28d9;
+  border-radius: 6px;
+  background: rgba(109, 40, 217, 0.1);
+  color: #8b5cf6;
   cursor: pointer;
   flex-shrink: 0;
-  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  transition: background 0.15s, color 0.15s, border-color 0.15s, transform 0.15s;
 }
 
-.enterprise-location-btn:hover,
+.enterprise-location-btn:hover {
+  background: rgba(109, 40, 217, 0.25);
+  color: #a78bfa;
+  transform: scale(1.1);
+}
+
 .enterprise-location-btn.active {
-  background: var(--primary);
-  color: var(--primary-foreground);
-  border-color: var(--primary);
+  background: #6d28d9;
+  color: #fff;
+  border-color: #6d28d9;
 }
 
 .enterprise-map-row td {

@@ -6,5 +6,5 @@ $git = "C:\Program Files\Git\cmd\git.exe"
 
 & $git add .
 & $git status
-& $git commit -m "Add location map toggle to Enterprise member sessions table"
+& $git commit -m "Improve Enterprise GPS location button with visible MapPin icon and purple styling"
 & $git push origin master
