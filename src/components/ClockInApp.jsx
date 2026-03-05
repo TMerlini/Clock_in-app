@@ -1096,7 +1096,9 @@ export function ClockInApp({ user }) {
             {!isFreePlan && <SyncStatusIndicator googleCalendar={googleCalendar} />}
             <div className="user-info" title={user.email}>
               {profilePicture ? (
-                <img src={profilePicture} alt="" className="header-avatar" />
+                <div className="header-avatar-wrapper">
+                  <img src={profilePicture} alt="" className="header-avatar" />
+                </div>
               ) : (
                 <User />
               )}

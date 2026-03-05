@@ -6,5 +6,5 @@ $git = "C:\Program Files\Git\cmd\git.exe"
 
 & $git add .
 & $git status
-& $git commit -m "Add profile picture upload in Settings with header avatar display"
+& $git commit -m "Add rotating purple border to header profile picture avatar"
 & $git push origin master
