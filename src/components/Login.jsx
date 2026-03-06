@@ -4,9 +4,23 @@ import { collection, getDocs, query, orderBy } from 'firebase/firestore';
 import { auth, googleProvider, db } from '../lib/firebase';
 import './Login.css';
 
+function extractYouTubeId(url) {
+  if (!url) return null;
+  const patterns = [
+    /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/,
+    /^([a-zA-Z0-9_-]{11})$/,
+  ];
+  for (const p of patterns) {
+    const m = url.match(p);
+    if (m) return m[1];
+  }
+  return null;
+}
+
 export function Login({ onLogin }) {
   const [loginImages, setLoginImages] = useState([]);
   const [visibleSlides, setVisibleSlides] = useState(new Set());
+  const [activeVideo, setActiveVideo] = useState(null);
   const slideRefs = useRef([]);
 
   useEffect(() => {
@@ -80,22 +94,76 @@ export function Login({ onLogin }) {
       </div>
 
       <div className="login-slideshow">
-        {loginImages.map((img, idx) => (
-          <div
-            key={img.id}
-            className={`login-slide ${visibleSlides.has(String(idx)) ? 'login-slide--visible' : ''}`}
-            data-slide-index={idx}
-            ref={el => { slideRefs.current[idx] = el; }}
-          >
-            {img.linkUrl ? (
-              <a href={img.linkUrl} target="_blank" rel="noopener noreferrer" className="login-slide-link">
-                <img src={img.url} alt={img.fileName || `Slide ${idx + 1}`} />
-              </a>
+        {loginImages.map((img, idx) => {
+          const hasText = img.title || img.description;
+          const alignment = img.alignment || 'right';
+          const isYoutube = img.mediaType === 'youtube';
+          const videoId = isYoutube ? extractYouTubeId(img.youtubeUrl) : null;
+          const isVideoActive = activeVideo === img.id;
+
+          const mediaElement = isYoutube && videoId ? (
+            isVideoActive ? (
+              <div className="login-slide-youtube-player">
+                <iframe
+                  src={`https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&rel=0`}
+                  title={img.title || `Video ${idx + 1}`}
+                  allow="autoplay; encrypted-media"
+                  allowFullScreen
+                />
+              </div>
             ) : (
+              <div
+                className="login-slide-youtube"
+                onClick={() => setActiveVideo(img.id)}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => { if (e.key === 'Enter') setActiveVideo(img.id); }}
+              >
+                <img
+                  src={`https://img.youtube.com/vi/${videoId}/hqdefault.jpg`}
+                  alt={img.title || `Video ${idx + 1}`}
+                />
+                <div className="login-slide-youtube-play">
+                  <svg viewBox="0 0 68 48" width="68" height="48">
+                    <path d="M66.52 7.74c-.78-2.93-2.49-5.41-5.42-6.19C55.79.13 34 0 34 0S12.21.13 6.9 1.55c-2.93.78-4.63 3.26-5.42 6.19C.06 13.05 0 24 0 24s.06 10.95 1.48 16.26c.78 2.93 2.49 5.41 5.42 6.19C12.21 47.87 34 48 34 48s21.79-.13 27.1-1.55c2.93-.78 4.64-3.26 5.42-6.19C67.94 34.95 68 24 68 24s-.06-10.95-1.48-16.26z" fill="#212121" fillOpacity="0.8" />
+                    <path d="M45 24L27 14v20" fill="#fff" />
+                  </svg>
+                </div>
+              </div>
+            )
+          ) : img.linkUrl ? (
+            <a href={img.linkUrl} target="_blank" rel="noopener noreferrer" className="login-slide-link">
               <img src={img.url} alt={img.fileName || `Slide ${idx + 1}`} />
-            )}
-          </div>
-        ))}
+            </a>
+          ) : (
+            <img src={img.url} alt={img.fileName || `Slide ${idx + 1}`} />
+          );
+
+          return (
+            <div
+              key={img.id}
+              className={`login-slide ${visibleSlides.has(String(idx)) ? 'login-slide--visible' : ''}`}
+              data-slide-index={idx}
+              ref={el => { slideRefs.current[idx] = el; }}
+            >
+              {hasText ? (
+                <div className={`login-slide-content ${alignment === 'left' ? 'login-slide-content--text-left' : 'login-slide-content--text-right'}`}>
+                  <div className="login-slide-text">
+                    {img.title && <h2>{img.title}</h2>}
+                    {img.description && <p>{img.description}</p>}
+                  </div>
+                  <div className="login-slide-media">
+                    {mediaElement}
+                  </div>
+                </div>
+              ) : (
+                <div className="login-slide-media login-slide-media--full">
+                  {mediaElement}
+                </div>
+              )}
+            </div>
+          );
+        })}
       </div>
     </div>
   );

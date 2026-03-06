@@ -6,5 +6,5 @@ $git = "C:\Program Files\Git\cmd\git.exe"
 
 & $git add .
 & $git status
-& $git commit -m "Update About, FAQ, and README with GPS tracking, mini-maps, profile pictures, and recent features"
+& $git commit -m "Add slide titles, descriptions, alignment, and YouTube video support to login page and admin images tab"
 & $git push origin master

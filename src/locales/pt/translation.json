@@ -1039,6 +1039,22 @@
     }
   },
   "admin": {
+    "images": {
+      "pageTitle": "Mídia da Página de Login",
+      "hint": "Carregue imagens ou adicione vídeos do YouTube que aparecem na página de login. Cada slide pode ter um título, descrição e alinhamento de texto configurável.",
+      "uploadImage": "Carregar Imagem",
+      "addYouTube": "Adicionar Vídeo YouTube",
+      "slideTitle": "Título do slide (opcional)",
+      "description": "Descrição (opcional)",
+      "textAlignment": "Alinhamento do texto",
+      "left": "Esquerda",
+      "right": "Direita",
+      "youtubeUrl": "URL do YouTube",
+      "clickUrl": "URL de clique (opcional)",
+      "loading": "A carregar mídia...",
+      "empty": "Nenhuma mídia carregada ainda",
+      "invalidYouTube": "URL do YouTube inválido. Por favor introduza um link de vídeo YouTube válido."
+    },
     "analytics": {
       "title": "Análises de Uso",
       "range7d": "Últimos 7 dias",

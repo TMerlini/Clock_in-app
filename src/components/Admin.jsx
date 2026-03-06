@@ -5,7 +5,7 @@ import { db, auth, storage } from '../lib/firebase';
 import { isAdmin } from '../lib/adminUtils';
 import { addCallPack } from '../lib/tokenManager';
 import { getPlanConfig, savePlanConfig } from '../lib/planConfig';
-import { Shield, Users, UserPlus, Crown, BarChart3, Package, Settings, Search, Trash2, Edit2, Eye, Loader, AlertCircle, Check, X, Plus, ChevronDown, ChevronUp, ImageIcon, Upload, ArrowUp, ArrowDown } from 'lucide-react';
+import { Shield, Users, UserPlus, Crown, BarChart3, Package, Settings, Search, Trash2, Edit2, Eye, Loader, AlertCircle, Check, X, Plus, ChevronDown, ChevronUp, ImageIcon, Upload, ArrowUp, ArrowDown, Play, AlignLeft, AlignRight, Film } from 'lucide-react';
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { format, startOfDay, startOfMonth, subDays, eachDayOfInterval } from 'date-fns';
 import { useTranslation } from 'react-i18next';
@@ -371,6 +371,11 @@ export function Admin({ user }) {
         storagePath,
         order: nextOrder,
         linkUrl: '',
+        title: '',
+        description: '',
+        alignment: 'right',
+        mediaType: 'image',
+        youtubeUrl: '',
         createdAt: new Date()
       });
       setImageFile(null);
@@ -415,12 +420,62 @@ export function Admin({ user }) {
     }
   };
 
-  const handleUpdateImageLink = async (imageId, linkUrl) => {
+  const handleUpdateImageField = async (imageId, field, value) => {
     try {
-      await updateDoc(doc(db, 'loginImages', imageId), { linkUrl });
-      setLoginImages(prev => prev.map(img => img.id === imageId ? { ...img, linkUrl } : img));
+      await updateDoc(doc(db, 'loginImages', imageId), { [field]: value });
+      setLoginImages(prev => prev.map(img => img.id === imageId ? { ...img, [field]: value } : img));
     } catch (err) {
-      console.error('Error updating image link:', err);
+      console.error(`Error updating image ${field}:`, err);
+    }
+  };
+
+  const extractYouTubeId = (url) => {
+    if (!url) return null;
+    const patterns = [
+      /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/,
+      /^([a-zA-Z0-9_-]{11})$/,
+    ];
+    for (const p of patterns) {
+      const m = url.match(p);
+      if (m) return m[1];
+    }
+    return null;
+  };
+
+  const [youtubeUrlInput, setYoutubeUrlInput] = useState('');
+
+  const handleAddYouTubeVideo = async () => {
+    const videoId = extractYouTubeId(youtubeUrlInput);
+    if (!videoId) {
+      alert('Invalid YouTube URL. Please enter a valid YouTube video link.');
+      return;
+    }
+    setImageUploading(true);
+    try {
+      const thumbnailUrl = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+      const nextOrder = loginImages.length > 0
+        ? Math.max(...loginImages.map(i => i.order ?? 0)) + 1
+        : 0;
+      await addDoc(collection(db, 'loginImages'), {
+        url: thumbnailUrl,
+        fileName: `YouTube: ${videoId}`,
+        storagePath: '',
+        order: nextOrder,
+        linkUrl: '',
+        title: '',
+        description: '',
+        alignment: 'right',
+        mediaType: 'youtube',
+        youtubeUrl: youtubeUrlInput.trim(),
+        createdAt: new Date()
+      });
+      setYoutubeUrlInput('');
+      await loadLoginImages();
+    } catch (err) {
+      console.error('Error adding YouTube video:', err);
+      alert('Error adding YouTube video: ' + err.message);
+    } finally {
+      setImageUploading(false);
     }
   };
 
@@ -1198,11 +1253,12 @@ export function Admin({ user }) {
       {activeSection === 'images' && (
         <div className="admin-section">
           <div className="section-header">
-            <h2>Login Page Images</h2>
+            <h2>Login Page Media</h2>
           </div>
-          <p className="plan-config-hint">Upload promotional images that appear on the sign-in page. Users scroll through them behind the login card. Drag to reorder.</p>
+          <p className="plan-config-hint">Upload images or add YouTube videos that appear on the sign-in page. Each slide can have a title, description, and configurable text alignment.</p>
 
           <div className="image-upload-area">
+            <h4 className="image-upload-heading"><ImageIcon size={16} /> Upload Image</h4>
             <div className="image-upload-controls">
               <label className="image-file-label">
                 <Upload size={18} />
@@ -1237,35 +1293,117 @@ export function Admin({ user }) {
                 </button>
               </div>
             )}
+
+            <h4 className="image-upload-heading" style={{ marginTop: '1.25rem' }}><Film size={16} /> Add YouTube Video</h4>
+            <div className="image-upload-controls">
+              <input
+                type="url"
+                className="login-image-url-input"
+                style={{ flex: 1 }}
+                placeholder="https://www.youtube.com/watch?v=..."
+                value={youtubeUrlInput}
+                onChange={(e) => setYoutubeUrlInput(e.target.value)}
+              />
+              <button
+                className="submit-button"
+                disabled={!youtubeUrlInput.trim() || imageUploading}
+                onClick={handleAddYouTubeVideo}
+              >
+                {imageUploading ? (
+                  <><Loader className="spinning" size={16} /><span>Adding...</span></>
+                ) : (
+                  <><Play size={16} /><span>Add Video</span></>
+                )}
+              </button>
+            </div>
           </div>
 
           {loginImagesLoading ? (
             <div className="plan-editor-loading">
               <Loader className="spinning" size={24} />
-              <span>Loading images...</span>
+              <span>Loading media...</span>
             </div>
           ) : loginImages.length === 0 ? (
-            <div className="empty-state">No images uploaded yet</div>
+            <div className="empty-state">No media uploaded yet</div>
           ) : (
             <div className="login-images-grid">
               {loginImages.map((img, idx) => (
                 <div key={img.id} className="login-image-card">
                   <div className="login-image-thumb">
                     <img src={img.url} alt={img.fileName} />
+                    {(img.mediaType === 'youtube') && (
+                      <div className="login-image-thumb-badge"><Film size={14} /> YouTube</div>
+                    )}
                   </div>
                   <div className="login-image-info">
                     <span className="login-image-name" title={img.fileName}>{img.fileName}</span>
                     <span className="login-image-order">#{idx + 1}</span>
                   </div>
-                  <div className="login-image-url">
+
+                  <div className="login-image-fields">
+                    <input
+                      type="text"
+                      className="login-image-field-input"
+                      placeholder="Slide title (optional)"
+                      defaultValue={img.title || ''}
+                      onBlur={(e) => handleUpdateImageField(img.id, 'title', e.target.value)}
+                    />
+                    <textarea
+                      className="login-image-field-input login-image-field-textarea"
+                      placeholder="Description (optional)"
+                      rows={2}
+                      defaultValue={img.description || ''}
+                      onBlur={(e) => handleUpdateImageField(img.id, 'description', e.target.value)}
+                    />
+
+                    <div className="login-image-field-row">
+                      <span className="login-image-field-label">Text alignment</span>
+                      <div className="login-image-toggle-group">
+                        <button
+                          type="button"
+                          className={`login-image-toggle-btn ${(img.alignment || 'right') === 'left' ? 'active' : ''}`}
+                          onClick={() => handleUpdateImageField(img.id, 'alignment', 'left')}
+                          title="Text on the left"
+                        >
+                          <AlignLeft size={14} /> Left
+                        </button>
+                        <button
+                          type="button"
+                          className={`login-image-toggle-btn ${(img.alignment || 'right') === 'right' ? 'active' : ''}`}
+                          onClick={() => handleUpdateImageField(img.id, 'alignment', 'right')}
+                          title="Text on the right"
+                        >
+                          <AlignRight size={14} /> Right
+                        </button>
+                      </div>
+                    </div>
+
+                    {img.mediaType === 'youtube' && (
+                      <input
+                        type="url"
+                        className="login-image-field-input"
+                        placeholder="YouTube URL"
+                        defaultValue={img.youtubeUrl || ''}
+                        onBlur={(e) => {
+                          const newUrl = e.target.value;
+                          handleUpdateImageField(img.id, 'youtubeUrl', newUrl);
+                          const vid = extractYouTubeId(newUrl);
+                          if (vid) {
+                            handleUpdateImageField(img.id, 'url', `https://img.youtube.com/vi/${vid}/hqdefault.jpg`);
+                          }
+                        }}
+                      />
+                    )}
+
                     <input
                       type="url"
-                      className="login-image-url-input"
-                      placeholder="Link URL (optional)"
+                      className="login-image-field-input"
+                      placeholder="Click-through URL (optional)"
                       defaultValue={img.linkUrl || ''}
-                      onBlur={(e) => handleUpdateImageLink(img.id, e.target.value)}
+                      onBlur={(e) => handleUpdateImageField(img.id, 'linkUrl', e.target.value)}
                     />
                   </div>
+
                   <div className="login-image-actions">
                     <button
                       className="action-button"
@@ -1286,7 +1424,7 @@ export function Admin({ user }) {
                     <button
                       className="action-button delete"
                       onClick={() => handleDeleteImage(img)}
-                      title="Delete image"
+                      title="Delete"
                     >
                       <Trash2 size={16} />
                     </button>

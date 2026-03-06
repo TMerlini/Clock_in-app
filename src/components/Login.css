@@ -261,27 +261,155 @@
   overflow: hidden;
 }
 
-.login-slide img {
-  max-width: 85%;
-  max-height: 80vh;
-  border-radius: 16px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6),
-              0 0 40px rgba(139, 92, 246, 0.15);
-  object-fit: contain;
+/* Two-column side-by-side layout */
+.login-slide-content {
+  display: flex;
+  align-items: center;
+  gap: 2.5rem;
+  width: 100%;
+  max-width: 1200px;
   opacity: 0;
   transform: translateX(120px);
   transition: opacity 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94),
               transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
-.login-slide--visible img {
-  opacity: 0.55;
+.login-slide-content--text-left {
+  flex-direction: row;
+}
+
+.login-slide-content--text-right {
+  flex-direction: row-reverse;
+}
+
+.login-slide--visible .login-slide-content {
+  opacity: 1;
   transform: translateX(0);
+}
+
+/* Text column */
+.login-slide-text {
+  flex: 0 0 38%;
+  max-width: 38%;
+  pointer-events: auto;
+}
+
+.login-slide-text h2 {
+  font-size: 2rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.92);
+  margin-bottom: 0.75rem;
+  line-height: 1.2;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.5);
+}
+
+.login-slide-text p {
+  font-size: 1rem;
+  color: rgba(255, 255, 255, 0.65);
+  line-height: 1.6;
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.4);
+}
+
+/* Media column */
+.login-slide-media {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.login-slide-media img {
+  max-width: 100%;
+  max-height: 75vh;
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6),
+              0 0 40px rgba(139, 92, 246, 0.15);
+  object-fit: contain;
+  opacity: 0.55;
+}
+
+/* Full-width media (no text) */
+.login-slide-media--full {
+  opacity: 0;
+  transform: translateX(120px);
+  transition: opacity 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+              transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.login-slide-media--full img {
+  max-width: 85%;
+  max-height: 80vh;
+}
+
+.login-slide--visible .login-slide-media--full {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.login-slide--visible .login-slide-media--full img {
+  opacity: 0.55;
 }
 
 .login-slide-link {
   pointer-events: auto;
   display: contents;
+}
+
+/* YouTube lite embed */
+.login-slide-youtube {
+  position: relative;
+  width: 100%;
+  cursor: pointer;
+  pointer-events: auto;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6),
+              0 0 40px rgba(139, 92, 246, 0.15);
+}
+
+.login-slide-youtube img {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  border-radius: 16px;
+  opacity: 0.55;
+  box-shadow: none;
+  max-width: 100%;
+  max-height: none;
+}
+
+.login-slide-youtube-play {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  transition: transform 0.2s;
+}
+
+.login-slide-youtube:hover .login-slide-youtube-play {
+  transform: translate(-50%, -50%) scale(1.1);
+}
+
+.login-slide-youtube:hover img {
+  opacity: 0.7;
+}
+
+.login-slide-youtube-player {
+  width: 100%;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6),
+              0 0 40px rgba(139, 92, 246, 0.15);
+  pointer-events: auto;
+}
+
+.login-slide-youtube-player iframe {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border: none;
+  border-radius: 16px;
 }
 
 /* Scroll indicator dot */
@@ -337,9 +465,47 @@
     padding: 1.5rem;
   }
 
-  .login-slide img {
+  .login-slide-content {
+    flex-direction: column !important;
+    gap: 1.25rem;
+  }
+
+  .login-slide-text {
+    flex: none;
+    max-width: 100%;
+    text-align: center;
+  }
+
+  .login-slide-text h2 {
+    font-size: 1.4rem;
+  }
+
+  .login-slide-text p {
+    font-size: 0.9rem;
+  }
+
+  .login-slide-media img {
+    max-width: 95%;
+    max-height: 50vh;
+    border-radius: 10px;
+  }
+
+  .login-slide-media--full img {
     max-width: 95%;
     max-height: 70vh;
+    border-radius: 10px;
+  }
+
+  .login-slide-youtube,
+  .login-slide-youtube-player {
+    border-radius: 10px;
+  }
+
+  .login-slide-youtube img {
+    border-radius: 10px;
+  }
+
+  .login-slide-youtube-player iframe {
     border-radius: 10px;
   }
 }

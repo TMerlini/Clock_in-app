@@ -1013,6 +1013,22 @@
     }
   },
   "admin": {
+    "images": {
+      "pageTitle": "Login Page Media",
+      "hint": "Upload images or add YouTube videos that appear on the sign-in page. Each slide can have a title, description, and configurable text alignment.",
+      "uploadImage": "Upload Image",
+      "addYouTube": "Add YouTube Video",
+      "slideTitle": "Slide title (optional)",
+      "description": "Description (optional)",
+      "textAlignment": "Text alignment",
+      "left": "Left",
+      "right": "Right",
+      "youtubeUrl": "YouTube URL",
+      "clickUrl": "Click-through URL (optional)",
+      "loading": "Loading media...",
+      "empty": "No media uploaded yet",
+      "invalidYouTube": "Invalid YouTube URL. Please enter a valid YouTube video link."
+    },
     "analytics": {
       "title": "Usage Analytics",
       "range7d": "Last 7 days",
