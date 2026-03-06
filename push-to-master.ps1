@@ -6,5 +6,5 @@ $git = "C:\Program Files\Git\cmd\git.exe"
 
 & $git add .
 & $git status
-& $git commit -m "Add full-screen display option for login page media slides"
+& $git commit -m "Add title color option for login page slide titles in admin"
 & $git push origin master

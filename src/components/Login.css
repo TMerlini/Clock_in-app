@@ -334,7 +334,7 @@
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6),
               0 0 40px rgba(139, 92, 246, 0.15);
   object-fit: contain;
-  opacity: 0.55;
+  opacity: 0.76;
 }
 
 /* Full-width media (no text) */
@@ -356,7 +356,7 @@
 }
 
 .login-slide--visible .login-slide-media--full img {
-  opacity: 0.55;
+  opacity: 0.76;
 }
 
 .login-slide-link {
@@ -381,7 +381,7 @@
   aspect-ratio: 16 / 9;
   object-fit: cover;
   border-radius: 16px;
-  opacity: 0.55;
+  opacity: 0.76;
   box-shadow: none;
   max-width: 100%;
   max-height: none;
@@ -461,7 +461,7 @@
   object-fit: cover;
   border-radius: 0;
   box-shadow: none;
-  opacity: 0.55;
+  opacity: 0.76;
 }
 
 .login-slide--fullscreen .login-slide-media--fullscreen .login-slide-youtube,
