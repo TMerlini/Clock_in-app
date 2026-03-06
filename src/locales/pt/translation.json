@@ -1051,6 +1051,9 @@
       "right": "Direita",
       "youtubeUrl": "URL do YouTube",
       "clickUrl": "URL de clique (opcional)",
+      "displayMode": "Visualização",
+      "bordered": "Com moldura",
+      "fullScreen": "Ecrã inteiro",
       "loading": "A carregar mídia...",
       "empty": "Nenhuma mídia carregada ainda",
       "invalidYouTube": "URL do YouTube inválido. Por favor introduza um link de vídeo YouTube válido."

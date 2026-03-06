@@ -6,5 +6,5 @@ $git = "C:\Program Files\Git\cmd\git.exe"
 
 & $git add .
 & $git status
-& $git commit -m "Reduce login slide spacing to make videos larger"
+& $git commit -m "Add full-screen display option for login page media slides"
 & $git push origin master

@@ -1025,6 +1025,9 @@
       "right": "Right",
       "youtubeUrl": "YouTube URL",
       "clickUrl": "Click-through URL (optional)",
+      "displayMode": "Display",
+      "bordered": "Bordered",
+      "fullScreen": "Full screen",
       "loading": "Loading media...",
       "empty": "No media uploaded yet",
       "invalidYouTube": "Invalid YouTube URL. Please enter a valid YouTube video link."

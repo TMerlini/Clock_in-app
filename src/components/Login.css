@@ -419,6 +419,90 @@
   border-radius: 16px;
 }
 
+/* Full-screen display mode */
+.login-slide--fullscreen {
+  padding: 0;
+}
+
+/* Full-screen without text: media fills slide directly */
+.login-slide--fullscreen > .login-slide-media.login-slide-media--full.login-slide-media--fullscreen {
+  position: absolute;
+  inset: 0;
+  flex: none;
+  width: 100%;
+  height: 100%;
+}
+
+.login-slide--fullscreen .login-slide-content {
+  position: relative;
+  max-width: none;
+  width: 100%;
+  height: 100%;
+}
+
+/* Full-screen with text: media fills content area */
+.login-slide--fullscreen .login-slide-media.login-slide-media--fullscreen {
+  position: absolute;
+  inset: 0;
+  flex: none;
+  min-width: 0;
+}
+
+.login-slide--fullscreen .login-slide-media--fullscreen img,
+.login-slide--fullscreen .login-slide-media--full.login-slide-media--fullscreen img {
+  max-width: none;
+  max-height: none;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 0;
+  box-shadow: none;
+  opacity: 0.55;
+}
+
+.login-slide--fullscreen .login-slide-media--fullscreen .login-slide-youtube,
+.login-slide--fullscreen .login-slide-media--fullscreen .login-slide-youtube-player,
+.login-slide--fullscreen .login-slide-media--full.login-slide-media--fullscreen .login-slide-youtube,
+.login-slide--fullscreen .login-slide-media--full.login-slide-media--fullscreen .login-slide-youtube-player {
+  border-radius: 0;
+  box-shadow: none;
+  width: 100%;
+  height: 100%;
+}
+
+.login-slide--fullscreen .login-slide-media--fullscreen .login-slide-youtube img,
+.login-slide--fullscreen .login-slide-media--full.login-slide-media--fullscreen .login-slide-youtube img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 0;
+}
+
+.login-slide--fullscreen .login-slide-media--fullscreen .login-slide-youtube-player iframe,
+.login-slide--fullscreen .login-slide-media--full.login-slide-media--fullscreen .login-slide-youtube-player iframe {
+  width: 100%;
+  height: 100%;
+  aspect-ratio: auto;
+  border-radius: 0;
+}
+
+/* Text overlay for full-screen slides with title/description */
+.login-slide--fullscreen .login-slide-text {
+  position: absolute;
+  z-index: 2;
+  flex: none;
+  max-width: 40%;
+  bottom: 2rem;
+}
+
+.login-slide--fullscreen .login-slide-content--text-left .login-slide-text {
+  left: 2rem;
+}
+
+.login-slide--fullscreen .login-slide-content--text-right .login-slide-text {
+  right: 2rem;
+}
+
 /* Scroll indicator dot */
 .login-wrapper::after {
   content: '';
@@ -514,5 +598,13 @@
 
   .login-slide-youtube-player iframe {
     border-radius: 10px;
+  }
+
+  /* Full-screen on mobile */
+  .login-slide--fullscreen .login-slide-text {
+    max-width: 85%;
+    bottom: 1.5rem;
+    left: 1rem;
+    right: 1rem;
   }
 }

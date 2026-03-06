@@ -139,10 +139,12 @@ export function Login({ onLogin }) {
             <img src={img.url} alt={img.fileName || `Slide ${idx + 1}`} />
           );
 
+          const isFullScreen = img.fullScreen === true;
+
           return (
             <div
               key={img.id}
-              className={`login-slide ${visibleSlides.has(String(idx)) ? 'login-slide--visible' : ''}`}
+              className={`login-slide ${visibleSlides.has(String(idx)) ? 'login-slide--visible' : ''} ${isFullScreen ? 'login-slide--fullscreen' : ''}`}
               data-slide-index={idx}
               ref={el => { slideRefs.current[idx] = el; }}
             >
@@ -152,12 +154,12 @@ export function Login({ onLogin }) {
                     {img.title && <h2>{img.title}</h2>}
                     {img.description && <p>{img.description}</p>}
                   </div>
-                  <div className="login-slide-media">
+                  <div className={`login-slide-media ${isFullScreen ? 'login-slide-media--fullscreen' : ''}`}>
                     {mediaElement}
                   </div>
                 </div>
               ) : (
-                <div className="login-slide-media login-slide-media--full">
+                <div className={`login-slide-media login-slide-media--full ${isFullScreen ? 'login-slide-media--fullscreen' : ''}`}>
                   {mediaElement}
                 </div>
               )}

@@ -5,7 +5,7 @@ import { db, auth, storage } from '../lib/firebase';
 import { isAdmin } from '../lib/adminUtils';
 import { addCallPack } from '../lib/tokenManager';
 import { getPlanConfig, savePlanConfig } from '../lib/planConfig';
-import { Shield, Users, UserPlus, Crown, BarChart3, Package, Settings, Search, Trash2, Edit2, Eye, Loader, AlertCircle, Check, X, Plus, ChevronDown, ChevronUp, ImageIcon, Upload, ArrowUp, ArrowDown, Play, AlignLeft, AlignRight, Film } from 'lucide-react';
+import { Shield, Users, UserPlus, Crown, BarChart3, Package, Settings, Search, Trash2, Edit2, Eye, Loader, AlertCircle, Check, X, Plus, ChevronDown, ChevronUp, ImageIcon, Upload, ArrowUp, ArrowDown, Play, AlignLeft, AlignRight, Film, Maximize2, Square } from 'lucide-react';
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { format, startOfDay, startOfMonth, subDays, eachDayOfInterval } from 'date-fns';
 import { useTranslation } from 'react-i18next';
@@ -374,6 +374,7 @@ export function Admin({ user }) {
         title: '',
         description: '',
         alignment: 'right',
+        fullScreen: false,
         mediaType: 'image',
         youtubeUrl: '',
         createdAt: new Date()
@@ -465,6 +466,7 @@ export function Admin({ user }) {
         title: '',
         description: '',
         alignment: 'right',
+        fullScreen: false,
         mediaType: 'youtube',
         youtubeUrl: youtubeUrlInput.trim(),
         createdAt: new Date()
@@ -1374,6 +1376,28 @@ export function Admin({ user }) {
                           title="Text on the right"
                         >
                           <AlignRight size={14} /> Right
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="login-image-field-row">
+                      <span className="login-image-field-label">{t('admin.images.displayMode', { defaultValue: 'Display' })}</span>
+                      <div className="login-image-toggle-group">
+                        <button
+                          type="button"
+                          className={`login-image-toggle-btn ${!img.fullScreen ? 'active' : ''}`}
+                          onClick={() => handleUpdateImageField(img.id, 'fullScreen', false)}
+                          title={t('admin.images.bordered', { defaultValue: 'Bordered card' })}
+                        >
+                          <Square size={14} /> {t('admin.images.bordered', { defaultValue: 'Bordered' })}
+                        </button>
+                        <button
+                          type="button"
+                          className={`login-image-toggle-btn ${img.fullScreen ? 'active' : ''}`}
+                          onClick={() => handleUpdateImageField(img.id, 'fullScreen', true)}
+                          title={t('admin.images.fullScreen', { defaultValue: 'Full screen' })}
+                        >
+                          <Maximize2 size={14} /> {t('admin.images.fullScreen', { defaultValue: 'Full screen' })}
                         </button>
                       </div>
                     </div>
