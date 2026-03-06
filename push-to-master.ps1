@@ -6,5 +6,5 @@ $git = "C:\Program Files\Git\cmd\git.exe"
 
 & $git add .
 & $git status
-& $git commit -m "Add unsynced staggered slide animations for login page text and media columns"
+& $git commit -m "Reduce login slide spacing to make videos larger"
 & $git push origin master
