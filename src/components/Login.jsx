@@ -151,7 +151,7 @@ export function Login({ onLogin }) {
               {hasText ? (
                 <div className={`login-slide-content ${alignment === 'left' ? 'login-slide-content--text-left' : 'login-slide-content--text-right'}`}>
                   <div className="login-slide-text">
-                    {img.title && <h2>{img.title}</h2>}
+                    {img.title && <h2 style={img.titleColor ? { color: img.titleColor } : undefined}>{img.title}</h2>}
                     {img.description && <p>{img.description}</p>}
                   </div>
                   <div className={`login-slide-media ${isFullScreen ? 'login-slide-media--fullscreen' : ''}`}>

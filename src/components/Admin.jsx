@@ -373,6 +373,7 @@ export function Admin({ user }) {
         linkUrl: '',
         title: '',
         description: '',
+        titleColor: '',
         alignment: 'right',
         fullScreen: false,
         mediaType: 'image',
@@ -465,6 +466,7 @@ export function Admin({ user }) {
         linkUrl: '',
         title: '',
         description: '',
+        titleColor: '',
         alignment: 'right',
         fullScreen: false,
         mediaType: 'youtube',
@@ -1357,6 +1359,28 @@ export function Admin({ user }) {
                       defaultValue={img.description || ''}
                       onBlur={(e) => handleUpdateImageField(img.id, 'description', e.target.value)}
                     />
+
+                    <div className="login-image-field-row">
+                      <span className="login-image-field-label">{t('admin.images.titleColor', { defaultValue: 'Title color' })}</span>
+                      <div className="login-image-color-row">
+                        <input
+                          type="color"
+                          className="login-image-color-input"
+                          value={img.titleColor || '#ffffff'}
+                          onChange={(e) => handleUpdateImageField(img.id, 'titleColor', e.target.value)}
+                          title={t('admin.images.titleColor', { defaultValue: 'Title color' })}
+                        />
+                        <span className="login-image-color-hex">{img.titleColor || '#fff'}</span>
+                        <button
+                          type="button"
+                          className="login-image-color-clear"
+                          onClick={() => handleUpdateImageField(img.id, 'titleColor', '')}
+                          title={t('admin.images.useDefault', { defaultValue: 'Use default' })}
+                        >
+                          {t('admin.images.useDefault', { defaultValue: 'Default' })}
+                        </button>
+                      </div>
+                    </div>
 
                     <div className="login-image-field-row">
                       <span className="login-image-field-label">Text alignment</span>

@@ -1020,6 +1020,8 @@
       "addYouTube": "Add YouTube Video",
       "slideTitle": "Slide title (optional)",
       "description": "Description (optional)",
+      "titleColor": "Title color",
+      "useDefault": "Default",
       "textAlignment": "Text alignment",
       "left": "Left",
       "right": "Right",

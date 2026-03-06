@@ -1046,6 +1046,8 @@
       "addYouTube": "Adicionar Vídeo YouTube",
       "slideTitle": "Título do slide (opcional)",
       "description": "Descrição (opcional)",
+      "titleColor": "Cor do título",
+      "useDefault": "Predefinido",
       "textAlignment": "Alinhamento do texto",
       "left": "Esquerda",
       "right": "Direita",

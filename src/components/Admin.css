@@ -1072,3 +1072,41 @@
 .login-image-toggle-btn:hover:not(.active) {
   background: rgba(255, 255, 255, 0.08);
 }
+
+.login-image-color-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.login-image-color-input {
+  width: 2rem;
+  height: 1.75rem;
+  padding: 2px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.04);
+  cursor: pointer;
+}
+
+.login-image-color-hex {
+  font-family: monospace;
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.6);
+  min-width: 4rem;
+}
+
+.login-image-color-clear {
+  padding: 0.2rem 0.5rem;
+  font-size: 0.7rem;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 4px;
+  color: rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.login-image-color-clear:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
