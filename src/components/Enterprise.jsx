@@ -1068,6 +1068,196 @@ export function Enterprise({ user, onNavigate }) {
 
       {!selectedMember && (
         <>
+        {/* Team Warnings - below On-Going Sessions */}
+        <div className="enterprise-card enterprise-warnings-card">
+          <h3><AlertTriangle size={20} /> {t('enterprise.teamWarnings')}</h3>
+          {teamWarningsLoading ? (
+            <div className="enterprise-warnings-loading">
+              <Loader size={20} className="spinning" />
+              <span>{t('enterprise.loading')}</span>
+            </div>
+          ) : teamWarnings.length === 0 ? (
+            <p className="enterprise-empty">{t('enterprise.noWarnings')}</p>
+          ) : (
+            <ul className="enterprise-warnings-list">
+              {teamWarnings.map((w, idx) => {
+                const member = members.find((m) => m.id === w.memberId);
+                const typeKey = {
+                  isencao_over: 'isencaoOver',
+                  isencao_approaching: 'isencaoApproaching',
+                  overtime_weekly: 'overtimeWeekly',
+                  overtime_weekly_approaching: 'overtimeWeeklyApproaching',
+                  overtime_annual: 'overtimeAnnual',
+                  overtime_annual_approaching: 'overtimeAnnualApproaching'
+                }[w.type] || w.type;
+                return (
+                  <li key={`${w.memberId}-${w.type}-${idx}`} className={`enterprise-warning-item enterprise-warning--${w.severity}`}>
+                    <div className="enterprise-warning-info">
+                      <span className="enterprise-warning-member">{w.memberName}</span>
+                      <span className="enterprise-warning-type">{t(`enterprise.${typeKey}`)}</span>
+                      <span className="enterprise-warning-detail">{w.detail}</span>
+                    </div>
+                    {member && (
+                      <button
+                        type="button"
+                        className="enterprise-view-btn enterprise-warning-view"
+                        onClick={() => setSelectedMember(member)}
+                        title={t('enterprise.viewMember')}
+                      >
+                        <Eye size={14} />
+                        <span>{t('enterprise.viewMember')}</span>
+                      </button>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </div>
+
+        {/* Calendar Events - after Team Warnings */}
+        <div className="enterprise-calendar-section enterprise-calendar-top">
+          <button
+            type="button"
+            className="enterprise-calendar-header"
+            onClick={() => setCalendarCollapsed(prev => !prev)}
+          >
+            <div className="enterprise-calendar-title-wrap">
+              <CalendarIcon size={22} className="enterprise-calendar-icon" />
+              <h2 className="enterprise-calendar-title">{t('enterprise.calendarSection.title')}</h2>
+              {calendarPeriodEvents.length > 0 && (
+                <span className="enterprise-calendar-badge">{calendarPeriodEvents.length}</span>
+              )}
+            </div>
+            {calendarCollapsed ? <ChevronDown size={20} /> : <ChevronUp size={20} />}
+          </button>
+          {!calendarCollapsed && (
+            <div className="enterprise-calendar-body">
+              {!googleCalendar.isAuthorized ? (
+                <div className="enterprise-calendar-empty">
+                  <CalendarIcon size={32} />
+                  <p>{t('enterprise.calendarSection.notAuthorized')}</p>
+                </div>
+              ) : (
+                <>
+                  <div className="enterprise-calendar-controls">
+                    <div className="enterprise-calendar-tabs">
+                      {['daily', 'weekly', 'monthly'].map(mode => (
+                        <button
+                          key={mode}
+                          type="button"
+                          className={`enterprise-calendar-tab ${calendarViewMode === mode ? 'active' : ''}`}
+                          onClick={() => setCalendarViewMode(mode)}
+                        >
+                          {t(`enterprise.calendarSection.${mode}`)}
+                        </button>
+                      ))}
+                    </div>
+                    <div className="enterprise-calendar-nav">
+                      <button type="button" className="enterprise-calendar-nav-btn" onClick={() => handleCalendarNav(-1)}>
+                        <ChevronLeft size={18} />
+                      </button>
+                      <span className="enterprise-calendar-date-label">{calendarDateLabel}</span>
+                      <button type="button" className="enterprise-calendar-nav-btn" onClick={() => handleCalendarNav(1)}>
+                        <ChevronRight size={18} />
+                      </button>
+                      <button
+                        type="button"
+                        className="enterprise-calendar-today-btn"
+                        onClick={() => setCalendarDate(new Date())}
+                      >
+                        {t('enterprise.calendarSection.today')}
+                      </button>
+                    </div>
+                  </div>
+                  {calendarEventsLoading ? (
+                    <div className="enterprise-calendar-loading">
+                      <Loader size={24} className="spinning" />
+                    </div>
+                  ) : calendarPeriodEvents.length === 0 ? (
+                    <div className="enterprise-calendar-empty">
+                      <CalendarIcon size={28} />
+                      <p>{t('enterprise.calendarSection.empty')}</p>
+                    </div>
+                  ) : (
+                    <div className="enterprise-calendar-events">
+                      {calendarPeriodEvents.map(event => {
+                        const evStart = event.start.dateTime ? new Date(event.start.dateTime) : null;
+                        const evEnd = event.end.dateTime ? new Date(event.end.dateTime) : null;
+                        const isAllDay = !event.start.dateTime;
+                        const sourceCal = calendarList.find(c => c.id === event.sourceCalendarId);
+                        return (
+                          <div key={event.id} className="enterprise-event-card">
+                            <div className="enterprise-event-header">
+                              <span className="enterprise-event-title">{event.summary || t('enterprise.calendarSection.noTitle')}</span>
+                              <span className="enterprise-event-time">
+                                {isAllDay
+                                  ? t('enterprise.calendarSection.allDay')
+                                  : evStart && evEnd
+                                    ? `${format(evStart, 'HH:mm')} – ${format(evEnd, 'HH:mm')}`
+                                    : evStart ? format(evStart, 'HH:mm') : ''}
+                              </span>
+                            </div>
+                            {evStart && calendarViewMode !== 'daily' && (
+                              <div className="enterprise-event-date">
+                                {format(evStart, 'EEE, MMM d', { locale: getDateFnsLocale() })}
+                              </div>
+                            )}
+                            {sourceCal && (
+                              <div className="enterprise-event-source">
+                                <CalendarIcon size={12} />
+                                <span>{sourceCal.summary}</span>
+                              </div>
+                            )}
+                            {event.location && (
+                              <div className="enterprise-event-location">
+                                <MapPin size={12} />
+                                <span>{event.location}</span>
+                              </div>
+                            )}
+                            {event.description && (
+                              <div
+                                className="enterprise-event-description"
+                                dangerouslySetInnerHTML={{
+                                  __html: (event.description || '').replace(/\r\n/g, '\n').replace(/\n/g, '<br>')
+                                }}
+                              />
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* AI Call card - after Calendar */}
+        <div className="enterprise-card enterprise-ai-call-card enterprise-ai-top">
+          <h3><Bot size={20} /> {t('enterprise.aiCall.title')}</h3>
+          <p className="enterprise-ai-call-desc">{t('enterprise.aiCall.description')}</p>
+          <button
+            type="button"
+            className="enterprise-ai-call-btn"
+            onClick={() => {
+              setAiTriggerPrompt(t('enterprise.aiCall.prompt'));
+              aiSectionRef.current?.scrollIntoView({ behavior: 'smooth' });
+            }}
+          >
+            {t('enterprise.aiCall.button')}
+          </button>
+        </div>
+
+        <EnterpriseAISection
+          ref={aiSectionRef}
+          enterpriseId={enterpriseId}
+          members={members}
+          triggerPrompt={aiTriggerPrompt}
+          onTriggerConsumed={() => setAiTriggerPrompt(null)}
+        />
+
         <div className="enterprise-global-stats-controls">
           <select
             value={globalStatsPeriod}
@@ -1232,125 +1422,6 @@ export function Enterprise({ user, onNavigate }) {
             </div>
           </div>
         ) : null}
-
-        {/* Calendar Events Section */}
-        <div className="enterprise-calendar-section">
-          <button
-            type="button"
-            className="enterprise-calendar-header"
-            onClick={() => setCalendarCollapsed(prev => !prev)}
-          >
-            <div className="enterprise-calendar-title-wrap">
-              <CalendarIcon size={22} className="enterprise-calendar-icon" />
-              <h2 className="enterprise-calendar-title">{t('enterprise.calendarSection.title')}</h2>
-              {calendarPeriodEvents.length > 0 && (
-                <span className="enterprise-calendar-badge">{calendarPeriodEvents.length}</span>
-              )}
-            </div>
-            {calendarCollapsed ? <ChevronDown size={20} /> : <ChevronUp size={20} />}
-          </button>
-          {!calendarCollapsed && (
-            <div className="enterprise-calendar-body">
-              {!googleCalendar.isAuthorized ? (
-                <div className="enterprise-calendar-empty">
-                  <CalendarIcon size={32} />
-                  <p>{t('enterprise.calendarSection.notAuthorized')}</p>
-                </div>
-              ) : (
-                <>
-                  <div className="enterprise-calendar-controls">
-                    <div className="enterprise-calendar-tabs">
-                      {['daily', 'weekly', 'monthly'].map(mode => (
-                        <button
-                          key={mode}
-                          type="button"
-                          className={`enterprise-calendar-tab ${calendarViewMode === mode ? 'active' : ''}`}
-                          onClick={() => setCalendarViewMode(mode)}
-                        >
-                          {t(`enterprise.calendarSection.${mode}`)}
-                        </button>
-                      ))}
-                    </div>
-                    <div className="enterprise-calendar-nav">
-                      <button type="button" className="enterprise-calendar-nav-btn" onClick={() => handleCalendarNav(-1)}>
-                        <ChevronLeft size={18} />
-                      </button>
-                      <span className="enterprise-calendar-date-label">{calendarDateLabel}</span>
-                      <button type="button" className="enterprise-calendar-nav-btn" onClick={() => handleCalendarNav(1)}>
-                        <ChevronRight size={18} />
-                      </button>
-                      <button
-                        type="button"
-                        className="enterprise-calendar-today-btn"
-                        onClick={() => setCalendarDate(new Date())}
-                      >
-                        {t('enterprise.calendarSection.today')}
-                      </button>
-                    </div>
-                  </div>
-                  {calendarEventsLoading ? (
-                    <div className="enterprise-calendar-loading">
-                      <Loader size={24} className="spinning" />
-                    </div>
-                  ) : calendarPeriodEvents.length === 0 ? (
-                    <div className="enterprise-calendar-empty">
-                      <CalendarIcon size={28} />
-                      <p>{t('enterprise.calendarSection.empty')}</p>
-                    </div>
-                  ) : (
-                    <div className="enterprise-calendar-events">
-                      {calendarPeriodEvents.map(event => {
-                        const evStart = event.start.dateTime ? new Date(event.start.dateTime) : null;
-                        const evEnd = event.end.dateTime ? new Date(event.end.dateTime) : null;
-                        const isAllDay = !event.start.dateTime;
-                        const sourceCal = calendarList.find(c => c.id === event.sourceCalendarId);
-                        return (
-                          <div key={event.id} className="enterprise-event-card">
-                            <div className="enterprise-event-header">
-                              <span className="enterprise-event-title">{event.summary || t('enterprise.calendarSection.noTitle')}</span>
-                              <span className="enterprise-event-time">
-                                {isAllDay
-                                  ? t('enterprise.calendarSection.allDay')
-                                  : evStart && evEnd
-                                    ? `${format(evStart, 'HH:mm')} – ${format(evEnd, 'HH:mm')}`
-                                    : evStart ? format(evStart, 'HH:mm') : ''}
-                              </span>
-                            </div>
-                            {evStart && calendarViewMode !== 'daily' && (
-                              <div className="enterprise-event-date">
-                                {format(evStart, 'EEE, MMM d', { locale: getDateFnsLocale() })}
-                              </div>
-                            )}
-                            {sourceCal && (
-                              <div className="enterprise-event-source">
-                                <CalendarIcon size={12} />
-                                <span>{sourceCal.summary}</span>
-                              </div>
-                            )}
-                            {event.location && (
-                              <div className="enterprise-event-location">
-                                <MapPin size={12} />
-                                <span>{event.location}</span>
-                              </div>
-                            )}
-                            {event.description && (
-                              <div
-                                className="enterprise-event-description"
-                                dangerouslySetInnerHTML={{
-                                  __html: (event.description || '').replace(/\r\n/g, '\n').replace(/\n/g, '<br>')
-                                }}
-                              />
-                            )}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
-                </>
-              )}
-            </div>
-          )}
-        </div>
 
         <div className="enterprise-overwork-section">
           <div className="enterprise-overwork-header">
@@ -1966,75 +2037,7 @@ export function Enterprise({ user, onNavigate }) {
             </ul>
           )}
         </div>
-
-        <div className="enterprise-card">
-          <h3><AlertTriangle size={20} /> {t('enterprise.teamWarnings')}</h3>
-          {teamWarningsLoading ? (
-            <div className="enterprise-warnings-loading">
-              <Loader size={20} className="spinning" />
-              <span>{t('enterprise.loading')}</span>
-            </div>
-          ) : teamWarnings.length === 0 ? (
-            <p className="enterprise-empty">{t('enterprise.noWarnings')}</p>
-          ) : (
-            <ul className="enterprise-warnings-list">
-              {teamWarnings.map((w, idx) => {
-                const member = members.find((m) => m.id === w.memberId);
-                const typeKey = {
-                  isencao_over: 'isencaoOver',
-                  isencao_approaching: 'isencaoApproaching',
-                  overtime_weekly: 'overtimeWeekly',
-                  overtime_weekly_approaching: 'overtimeWeeklyApproaching',
-                  overtime_annual: 'overtimeAnnual',
-                  overtime_annual_approaching: 'overtimeAnnualApproaching'
-                }[w.type] || w.type;
-                return (
-                  <li key={`${w.memberId}-${w.type}-${idx}`} className={`enterprise-warning-item enterprise-warning--${w.severity}`}>
-                    <div className="enterprise-warning-info">
-                      <span className="enterprise-warning-member">{w.memberName}</span>
-                      <span className="enterprise-warning-type">{t(`enterprise.${typeKey}`)}</span>
-                      <span className="enterprise-warning-detail">{w.detail}</span>
-                    </div>
-                    {member && (
-                      <button
-                        type="button"
-                        className="enterprise-view-btn enterprise-warning-view"
-                        onClick={() => setSelectedMember(member)}
-                        title={t('enterprise.viewMember')}
-                      >
-                        <Eye size={14} />
-                        <span>{t('enterprise.viewMember')}</span>
-                      </button>
-                    )}
-                  </li>
-                );
-              })}
-            </ul>
-          )}
-        </div>
-
-        <div className="enterprise-card enterprise-ai-call-card">
-          <h3><Bot size={20} /> {t('enterprise.aiCall.title')}</h3>
-          <p className="enterprise-ai-call-desc">{t('enterprise.aiCall.description')}</p>
-          <button
-            type="button"
-            className="enterprise-ai-call-btn"
-            onClick={() => {
-              setAiTriggerPrompt(t('enterprise.aiCall.prompt'));
-              aiSectionRef.current?.scrollIntoView({ behavior: 'smooth' });
-            }}
-          >
-            {t('enterprise.aiCall.button')}
-          </button>
-        </div>
       </div>
-      <EnterpriseAISection
-        ref={aiSectionRef}
-        enterpriseId={enterpriseId}
-        members={members}
-        triggerPrompt={aiTriggerPrompt}
-        onTriggerConsumed={() => setAiTriggerPrompt(null)}
-      />
       </>
       )}
     </div>

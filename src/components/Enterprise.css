@@ -1247,6 +1247,18 @@
   flex-shrink: 0;
 }
 
+.enterprise-warnings-card {
+  margin-top: 1rem;
+}
+
+.enterprise-calendar-top {
+  margin-top: 1rem;
+}
+
+.enterprise-ai-top {
+  margin-top: 1rem;
+}
+
 @media (max-width: 640px) {
   .enterprise-ongoing-card {
     flex-direction: column;
