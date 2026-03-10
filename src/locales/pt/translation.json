@@ -415,11 +415,11 @@
       },
       "enterprise": {
         "name": "Enterprise",
-        "price": "€199",
+        "price": "€49.99",
         "period": "mês",
         "feature1": "Tudo do Premium AI",
         "feature2": "225 chamadas AI/mês (150 + 75 base)",
-        "feature3": "Até {{count}} membros recebem Premium AI incluído",
+        "feature3": "Até 10 membros recebem Premium AI incluído",
         "feature4": "Criar organização e convidar equipa",
         "feature5": "Monitorizar sessões, análises e finanças por membro",
         "feature6": "Painel de equipa centralizado",

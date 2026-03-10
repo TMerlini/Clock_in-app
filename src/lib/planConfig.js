@@ -53,7 +53,6 @@ export const DEFAULT_FEATURES = {
     'premiumPlus.plans.enterprise.feature6',
     'premiumPlus.plans.enterprise.feature7',
     'premiumPlus.plans.enterprise.feature8',
-    'premiumPlus.plans.enterprise.feature9',
     'premiumPlus.plans.enterprise.feature10'
   ]
 };
