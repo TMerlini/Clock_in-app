@@ -21,6 +21,12 @@ function App() {
   }, []);
 
   useEffect(() => {
+    if (user?.uid && typeof window !== 'undefined' && window.progressier?.add) {
+      window.progressier.add({ id: user.uid });
+    }
+  }, [user?.uid]);
+
+  useEffect(() => {
     // Show loader for minimum 2.5 seconds
     const timer = setTimeout(() => {
       setShowLoader(false);

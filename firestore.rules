@@ -84,5 +84,9 @@ service cloud.firestore {
       allow read: if true;
       allow write: if isAuth() && isAppAdmin();
     }
+
+    match /system/{docId} {
+      allow read, write: if false;
+    }
   }
 }
