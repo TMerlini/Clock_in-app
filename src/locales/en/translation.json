@@ -15,6 +15,8 @@
   },
   "common": {
     "loading": "Loading...",
+    "yes": "Yes",
+    "no": "No",
     "save": "Save",
     "cancel": "Cancel",
     "reset": "Reset",
@@ -570,6 +572,12 @@
     "overtimeAnnualApproaching": "Approaching annual overtime cap",
     "forgottenClockout": "Possible forgotten clock-out",
     "unusualClockinTime": "Unusual clock-in time",
+    "memberFinanceSettingsTitle": "Member's finance settings",
+    "memberFinanceSettingsNotConfigured": "Finance settings not configured",
+    "memberFinanceSettingsWarning": "This member's finance settings may be incorrect. Ask them to review Settings → Finance.",
+    "memberFinanceWarningNoHourlyRate": "Member has not set hourly rate; finance cannot be calculated correctly.",
+    "memberFinanceWarningZeroSocialSecurity": "Segurança Social rate is 0%; member may need to update settings.",
+    "memberFinanceWarningZeroIrs": "IRS rates are all 0%; member may need to update tax settings.",
     "aiCall": {
       "title": "Team HR & Law AI",
       "description": "Get AI analysis and advice on HR, legal compliance, and finance.",

@@ -43,6 +43,34 @@ function getMemberDisplayName(member) {
   return member?.id || 'Unknown';
 }
 
+/**
+ * Returns warning keys for likely misconfigurations in member finance settings.
+ * @param {Object} fs - financeSettings object
+ * @returns {string[]} Array of translation keys for warning messages
+ */
+function getMemberFinanceSettingsWarnings(fs) {
+  if (!fs) return [];
+  const warnings = [];
+  const rate = fs.hourlyRate ?? 0;
+  if (!rate || rate <= 0) {
+    warnings.push('enterprise.memberFinanceWarningNoHourlyRate');
+  }
+  const taxType = fs.taxDeductionType || 'both';
+  const ssRate = fs.socialSecurityRate ?? 11;
+  if ((taxType === 'both' || taxType === 'social_security') && ssRate === 0) {
+    warnings.push('enterprise.memberFinanceWarningZeroSocialSecurity');
+  }
+  const irsBase = fs.irsBaseSalaryRate ?? 0;
+  const irsIht = fs.irsIhtRate ?? 0;
+  const irsOt = fs.irsOvertimeRate ?? 0;
+  const irsLegacy = fs.irsRate ?? 0;
+  const hasAnyIrs = irsBase > 0 || irsIht > 0 || irsOt > 0 || irsLegacy > 0;
+  if ((taxType === 'both' || taxType === 'irs') && !hasAnyIrs) {
+    warnings.push('enterprise.memberFinanceWarningZeroIrs');
+  }
+  return warnings;
+}
+
 export function Enterprise({ user, onNavigate }) {
   const { t } = useTranslation();
   const [loading, setLoading] = useState(true);
@@ -1779,69 +1807,158 @@ export function Enterprise({ user, onNavigate }) {
               )}
               {memberDetailTab === 'finance' && (
                 <div className="enterprise-card enterprise-tab-panel">
-                  {!memberFinanceData ? (
-                    <p className="enterprise-empty">{t('finance.noData')}</p>
-                  ) : (
-                    <>
-                      <p className="enterprise-period-label">
-                        {memberDateRange.start && memberDateRange.end &&
-                          `${format(memberDateRange.start, 'MMM d', { locale: getDateFnsLocale() })} – ${format(memberDateRange.end, 'MMM d, yyyy', { locale: getDateFnsLocale() })}`}
-                      </p>
-                      <div className="enterprise-analytics-cards">
-                      <div className="enterprise-stat-card">
-                        <span className="enterprise-stat-label">{t('finance.baseSalary')}</span>
-                        <span className="enterprise-stat-value">€{memberFinanceData.earnings.baseSalary.toFixed(2)}</span>
-                      </div>
-                      <div className="enterprise-stat-card">
-                        <span className="enterprise-stat-label">{t('finance.isencaoEarnings')}</span>
-                        <span className="enterprise-stat-value">€{memberFinanceData.earnings.isencaoSalary.toFixed(2)}</span>
-                      </div>
-                      <div className="enterprise-stat-card">
-                        <span className="enterprise-stat-label">{t('finance.overtimeEarnings')}</span>
-                        <span className="enterprise-stat-value">€{memberFinanceData.earnings.overtimeSalary.toFixed(2)}</span>
-                      </div>
-                      <div className="enterprise-stat-card">
-                        <span className="enterprise-stat-label">{t('finance.grossSalary')}</span>
-                        <span className="enterprise-stat-value">€{memberFinanceData.earnings.grossSalary.toFixed(2)}</span>
-                      </div>
-                      <div className="enterprise-stat-card">
-                        <span className="enterprise-stat-label">{t('finance.totalDeductions')}</span>
-                        <span className="enterprise-stat-value">€{memberFinanceData.deductions.total.toFixed(2)}</span>
-                      </div>
-                      <div className="enterprise-stat-card highlight">
-                        <span className="enterprise-stat-label">{t('finance.netSalary')}</span>
-                        <span className="enterprise-stat-value">€{memberFinanceData.netSalary.toFixed(2)}</span>
-                      </div>
-                    </div>
-                    {memberPreviousFinanceData?.earnings != null && (
-                      <div className="enterprise-finance-vs-previous">
-                        <h4 className="enterprise-vs-title">{t('enterprise.financeVsPrevious')}</h4>
-                        <div className="enterprise-vs-row enterprise-vs-header">
-                          <span>{t('enterprise.vsMetric')}</span>
-                          <span>{t('enterprise.vsThis')}</span>
-                          <span>{t('enterprise.vsPrevious')}</span>
-                          <span>{t('enterprise.vsDelta')}</span>
+                  {(() => {
+                    const fsWarnings = getMemberFinanceSettingsWarnings(financeSettings);
+                    const fs = memberSettings?.financeSettings;
+                    return (
+                      <>
+                        {fsWarnings.length > 0 && (
+                          <div className="enterprise-member-finance-settings-warning">
+                            <AlertTriangle size={18} />
+                            <div>
+                              <strong>{t('enterprise.memberFinanceSettingsWarning')}</strong>
+                              <ul className="enterprise-member-finance-settings-warning-list">
+                                {fsWarnings.map((key) => (
+                                  <li key={key}>{t(key)}</li>
+                                ))}
+                              </ul>
+                            </div>
+                          </div>
+                        )}
+                        <div className="enterprise-member-finance-settings">
+                          <h4 className="enterprise-member-finance-settings-title">{t('enterprise.memberFinanceSettingsTitle')}</h4>
+                          {!fs || Object.keys(fs).length === 0 ? (
+                            <p className="enterprise-member-finance-settings-empty">{t('enterprise.memberFinanceSettingsNotConfigured')}</p>
+                          ) : (
+                            <div className="enterprise-member-finance-settings-grid">
+                              <div className="enterprise-member-finance-settings-row">
+                                <span className="enterprise-member-finance-settings-label">{t('settings.finance.hourlyRate')}</span>
+                                <span className="enterprise-member-finance-settings-value">€{(fs.hourlyRate ?? 0).toFixed(2)}</span>
+                              </div>
+                              <div className="enterprise-member-finance-settings-row">
+                                <span className="enterprise-member-finance-settings-label">{t('settings.finance.taxDeductionType')}</span>
+                                <span className="enterprise-member-finance-settings-value">
+                                  {t(`settings.finance.taxType${({ irs: 'Irs', social_security: 'SocialSecurity', both: 'Both', custom: 'Custom' })[fs.taxDeductionType || 'both'] || 'Both'}`)}
+                                </span>
+                              </div>
+                              <div className="enterprise-member-finance-settings-row">
+                                <span className="enterprise-member-finance-settings-label">{t('settings.finance.socialSecurityRate')}</span>
+                                <span className="enterprise-member-finance-settings-value">{(fs.socialSecurityRate ?? 11)}%</span>
+                              </div>
+                              <div className="enterprise-member-finance-settings-row">
+                                <span className="enterprise-member-finance-settings-label">{t('settings.finance.irsBaseSalaryRate')}</span>
+                                <span className="enterprise-member-finance-settings-value">{(fs.irsBaseSalaryRate ?? 0)}%</span>
+                              </div>
+                              <div className="enterprise-member-finance-settings-row">
+                                <span className="enterprise-member-finance-settings-label">{t('settings.finance.irsIhtRate')}</span>
+                                <span className="enterprise-member-finance-settings-value">{(fs.irsIhtRate ?? 0)}%</span>
+                              </div>
+                              <div className="enterprise-member-finance-settings-row">
+                                <span className="enterprise-member-finance-settings-label">{t('settings.finance.irsOvertimeRate')}</span>
+                                <span className="enterprise-member-finance-settings-value">{(fs.irsOvertimeRate ?? 0)}%</span>
+                              </div>
+                              <div className="enterprise-member-finance-settings-row">
+                                <span className="enterprise-member-finance-settings-label">{t('settings.finance.isencaoCalculationMethod')}</span>
+                                <span className="enterprise-member-finance-settings-value">
+                                  {fs.isencaoCalculationMethod === 'fixed'
+                                    ? t('settings.finance.isencaoCalculationMethodFixed')
+                                    : t('settings.finance.isencaoCalculationMethodPercentage')}
+                                  {fs.isencaoCalculationMethod === 'fixed' && (fs.isencaoFixedAmount ?? 0) > 0
+                                    ? ` (€${(fs.isencaoFixedAmount ?? 0).toFixed(2)})`
+                                    : ''}
+                                </span>
+                              </div>
+                              <div className="enterprise-member-finance-settings-row">
+                                <span className="enterprise-member-finance-settings-label">{t('settings.finance.mealAllowanceIncluded')}</span>
+                                <span className="enterprise-member-finance-settings-value">{fs.mealAllowanceIncluded ? t('common.yes') : t('common.no')}</span>
+                              </div>
+                              {(fs.dailyMealSubsidy ?? 0) > 0 && (
+                                <div className="enterprise-member-finance-settings-row">
+                                  <span className="enterprise-member-finance-settings-label">{t('settings.finance.dailyMealSubsidy')}</span>
+                                  <span className="enterprise-member-finance-settings-value">€{(fs.dailyMealSubsidy ?? 0).toFixed(2)}</span>
+                                </div>
+                              )}
+                              {(fs.mealCardDeduction ?? 0) > 0 && (
+                                <div className="enterprise-member-finance-settings-row">
+                                  <span className="enterprise-member-finance-settings-label">{t('settings.finance.mealCardDeduction')}</span>
+                                  <span className="enterprise-member-finance-settings-value">€{(fs.mealCardDeduction ?? 0).toFixed(2)}</span>
+                                </div>
+                              )}
+                              {(fs.fixedBonus ?? 0) > 0 && (
+                                <div className="enterprise-member-finance-settings-row">
+                                  <span className="enterprise-member-finance-settings-label">{t('settings.finance.fixedBonus')}</span>
+                                  <span className="enterprise-member-finance-settings-value">€{(fs.fixedBonus ?? 0).toFixed(2)}</span>
+                                </div>
+                              )}
+                            </div>
+                          )}
                         </div>
-                        <div className="enterprise-vs-row">
-                          <span>{t('finance.grossSalary')}</span>
-                          <span>€{memberFinanceData.earnings.grossSalary.toFixed(2)}</span>
-                          <span className="enterprise-vs-prev">€{(memberPreviousFinanceData.earnings?.grossSalary ?? 0).toFixed(2)}</span>
-                          <span className={memberFinanceData.earnings.grossSalary >= (memberPreviousFinanceData.earnings?.grossSalary ?? 0) ? 'enterprise-vs-up' : 'enterprise-vs-down'}>
-                            {memberFinanceData.earnings.grossSalary >= (memberPreviousFinanceData.earnings?.grossSalary ?? 0) ? '↑' : '↓'} €{Math.abs(memberFinanceData.earnings.grossSalary - (memberPreviousFinanceData.earnings?.grossSalary ?? 0)).toFixed(2)}
-                          </span>
-                        </div>
-                        <div className="enterprise-vs-row">
-                          <span>{t('finance.netSalary')}</span>
-                          <span>€{memberFinanceData.netSalary.toFixed(2)}</span>
-                          <span className="enterprise-vs-prev">€{(memberPreviousFinanceData.netSalary ?? 0).toFixed(2)}</span>
-                          <span className={memberFinanceData.netSalary >= (memberPreviousFinanceData.netSalary ?? 0) ? 'enterprise-vs-up' : 'enterprise-vs-down'}>
-                            {memberFinanceData.netSalary >= (memberPreviousFinanceData.netSalary ?? 0) ? '↑' : '↓'} €{Math.abs(memberFinanceData.netSalary - (memberPreviousFinanceData.netSalary ?? 0)).toFixed(2)}
-                          </span>
-                        </div>
-                      </div>
-                    )}
-                    </>
-                  )}
+                        {!memberFinanceData ? (
+                          <p className="enterprise-empty">{t('finance.noData')}</p>
+                        ) : (
+                          <>
+                            <p className="enterprise-period-label">
+                              {memberDateRange.start && memberDateRange.end &&
+                                `${format(memberDateRange.start, 'MMM d', { locale: getDateFnsLocale() })} – ${format(memberDateRange.end, 'MMM d, yyyy', { locale: getDateFnsLocale() })}`}
+                            </p>
+                            <div className="enterprise-analytics-cards">
+                              <div className="enterprise-stat-card">
+                                <span className="enterprise-stat-label">{t('finance.baseSalary')}</span>
+                                <span className="enterprise-stat-value">€{memberFinanceData.earnings.baseSalary.toFixed(2)}</span>
+                              </div>
+                              <div className="enterprise-stat-card">
+                                <span className="enterprise-stat-label">{t('finance.isencaoEarnings')}</span>
+                                <span className="enterprise-stat-value">€{memberFinanceData.earnings.isencaoSalary.toFixed(2)}</span>
+                              </div>
+                              <div className="enterprise-stat-card">
+                                <span className="enterprise-stat-label">{t('finance.overtimeEarnings')}</span>
+                                <span className="enterprise-stat-value">€{memberFinanceData.earnings.overtimeSalary.toFixed(2)}</span>
+                              </div>
+                              <div className="enterprise-stat-card">
+                                <span className="enterprise-stat-label">{t('finance.grossSalary')}</span>
+                                <span className="enterprise-stat-value">€{memberFinanceData.earnings.grossSalary.toFixed(2)}</span>
+                              </div>
+                              <div className="enterprise-stat-card">
+                                <span className="enterprise-stat-label">{t('finance.totalDeductions')}</span>
+                                <span className="enterprise-stat-value">€{memberFinanceData.deductions.total.toFixed(2)}</span>
+                              </div>
+                              <div className="enterprise-stat-card highlight">
+                                <span className="enterprise-stat-label">{t('finance.netSalary')}</span>
+                                <span className="enterprise-stat-value">€{memberFinanceData.netSalary.toFixed(2)}</span>
+                              </div>
+                            </div>
+                            {memberPreviousFinanceData?.earnings != null && (
+                              <div className="enterprise-finance-vs-previous">
+                                <h4 className="enterprise-vs-title">{t('enterprise.financeVsPrevious')}</h4>
+                                <div className="enterprise-vs-row enterprise-vs-header">
+                                  <span>{t('enterprise.vsMetric')}</span>
+                                  <span>{t('enterprise.vsThis')}</span>
+                                  <span>{t('enterprise.vsPrevious')}</span>
+                                  <span>{t('enterprise.vsDelta')}</span>
+                                </div>
+                                <div className="enterprise-vs-row">
+                                  <span>{t('finance.grossSalary')}</span>
+                                  <span>€{memberFinanceData.earnings.grossSalary.toFixed(2)}</span>
+                                  <span className="enterprise-vs-prev">€{(memberPreviousFinanceData.earnings?.grossSalary ?? 0).toFixed(2)}</span>
+                                  <span className={memberFinanceData.earnings.grossSalary >= (memberPreviousFinanceData.earnings?.grossSalary ?? 0) ? 'enterprise-vs-up' : 'enterprise-vs-down'}>
+                                    {memberFinanceData.earnings.grossSalary >= (memberPreviousFinanceData.earnings?.grossSalary ?? 0) ? '↑' : '↓'} €{Math.abs(memberFinanceData.earnings.grossSalary - (memberPreviousFinanceData.earnings?.grossSalary ?? 0)).toFixed(2)}
+                                  </span>
+                                </div>
+                                <div className="enterprise-vs-row">
+                                  <span>{t('finance.netSalary')}</span>
+                                  <span>€{memberFinanceData.netSalary.toFixed(2)}</span>
+                                  <span className="enterprise-vs-prev">€{(memberPreviousFinanceData.netSalary ?? 0).toFixed(2)}</span>
+                                  <span className={memberFinanceData.netSalary >= (memberPreviousFinanceData.netSalary ?? 0) ? 'enterprise-vs-up' : 'enterprise-vs-down'}>
+                                    {memberFinanceData.netSalary >= (memberPreviousFinanceData.netSalary ?? 0) ? '↑' : '↓'} €{Math.abs(memberFinanceData.netSalary - (memberPreviousFinanceData.netSalary ?? 0)).toFixed(2)}
+                                  </span>
+                                </div>
+                              </div>
+                            )}
+                          </>
+                        )}
+                      </>
+                    );
+                  })()}
                 </div>
               )}
               {memberDetailTab === 'overwork' && (
