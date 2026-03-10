@@ -20,7 +20,7 @@ import { calculatePeriodFinance } from '../lib/financeCalculator';
 import { startOfDay, endOfDay, startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfYear, endOfYear, format, formatDistanceToNow, eachMonthOfInterval, subMonths, subWeeks, subDays, subYears, addDays, addWeeks } from 'date-fns';
 import { getDateFnsLocale } from '../lib/i18n';
 import { formatHoursMinutes } from '../lib/utils';
-import { Building2, UserPlus, Users, Loader, AlertCircle, Crown, ArrowRight, ArrowLeft, Eye, BarChart3, DollarSign, Clock, Download, Trash2, X, Shield, UserMinus, TrendingUp, AlertTriangle, Bot, MapPin, Calendar as CalendarIcon, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, Pencil } from 'lucide-react';
+import { Building2, UserPlus, Users, Loader, AlertCircle, Crown, ArrowRight, ArrowLeft, Eye, BarChart3, DollarSign, Clock, Download, Trash2, X, Shield, UserMinus, TrendingUp, AlertTriangle, Bot, MapPin, Calendar as CalendarIcon, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, Pencil, MinusCircle, CalendarDays } from 'lucide-react';
 import { LocationMiniMap } from './LocationMiniMap';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { useTranslation } from 'react-i18next';
@@ -749,6 +749,62 @@ export function Enterprise({ user, onNavigate }) {
       return null;
     }
   }, [memberSessions, memberSettings, memberPreviousDateRange, financeSettings]);
+
+  const memberOverworkStats = useMemo(() => {
+    const totalOverworkHours = Math.round(memberSessions.reduce((sum, s) => sum + (s.paidExtraHours || 0), 0) * 10000) / 10000;
+    const totalWeekendDaysOff = Math.round(memberSessions.reduce((sum, s) => sum + (s.weekendDaysOff || 0), 0) * 10000) / 10000;
+    const totalDaysOffHours = totalWeekendDaysOff * 8;
+    const totalAvailableHours = totalOverworkHours + totalDaysOffHours;
+
+    let totalDeductedDaysOff = 0;
+    let totalDeductedOverworkHours = 0;
+    memberDeductions.forEach((d) => {
+      if (d.daysOffUsed !== undefined && d.overworkHoursUsed !== undefined) {
+        totalDeductedDaysOff += d.daysOffUsed || 0;
+        totalDeductedOverworkHours += d.overworkHoursUsed || 0;
+      } else {
+        totalDeductedOverworkHours += d.hours || 0;
+      }
+    });
+    totalDeductedDaysOff = Math.round(totalDeductedDaysOff * 10000) / 10000;
+    totalDeductedOverworkHours = Math.round(totalDeductedOverworkHours * 10000) / 10000;
+    const totalDeductedHours = totalDeductedDaysOff * 8 + totalDeductedOverworkHours;
+
+    const remainingDaysOff = Math.round((totalWeekendDaysOff - totalDeductedDaysOff) * 10000) / 10000;
+    const remainingOverworkHours = Math.round((totalOverworkHours - totalDeductedOverworkHours) * 10000) / 10000;
+    const remainingAvailableHours = Math.round((remainingDaysOff * 8 + remainingOverworkHours) * 10000) / 10000;
+
+    const totalOverworkDays = totalOverworkHours / 8;
+    const totalDaysOffDays = totalWeekendDaysOff;
+    const totalAvailableDays = totalAvailableHours / 8;
+    const deductedDays = totalDeductedHours / 8;
+    const remainingDays = remainingAvailableHours / 8;
+
+    const weekendSessions = memberSessions.filter((s) => s.isWeekend).length;
+    const bankHolidaySessions = memberSessions.filter((s) => s.isBankHoliday && ((s.weekendDaysOff && s.weekendDaysOff > 0) || (s.weekendBonus && s.weekendBonus > 0))).length;
+    const totalBenefitSessions = weekendSessions + bankHolidaySessions;
+
+    return {
+      totalOverworkHours,
+      totalWeekendDaysOff,
+      totalDaysOffHours,
+      totalAvailableHours,
+      totalDeductedHours,
+      totalDeductedDaysOff,
+      totalDeductedOverworkHours,
+      remainingOverworkHours,
+      remainingDaysOff,
+      remainingAvailableHours,
+      totalOverworkDays,
+      totalDaysOffDays,
+      totalAvailableDays,
+      deductedDays,
+      remainingDays,
+      weekendSessions,
+      bankHolidaySessions,
+      totalBenefitSessions
+    };
+  }, [memberSessions, memberDeductions]);
 
   const memberAnalyticsChartData = useMemo(() => {
     if (!memberFilteredSessions.length) return [];
@@ -1963,6 +2019,64 @@ export function Enterprise({ user, onNavigate }) {
               )}
               {memberDetailTab === 'overwork' && (
                 <div className="enterprise-card enterprise-tab-panel">
+                  <div className="enterprise-member-overwork-stats-grid">
+                    <div className="enterprise-member-overwork-stat-card total-accumulated">
+                      <div className="enterprise-member-overwork-stat-header">
+                        <Clock className="enterprise-member-overwork-stat-icon" />
+                        <span className="enterprise-member-overwork-stat-label">{t('analytics.totalAccumulated')}</span>
+                      </div>
+                      <div className="enterprise-member-overwork-stat-value">
+                        {memberOverworkStats.totalAvailableDays.toFixed(1)} {t('analytics.days')}
+                      </div>
+                      <div className="enterprise-member-overwork-stat-sublabel">
+                        {formatHoursMinutes(memberOverworkStats.totalAvailableHours)}
+                        <br />
+                        <span style={{ fontSize: '0.75rem', opacity: 0.8 }}>
+                          ({memberOverworkStats.totalOverworkDays.toFixed(1)} {t('analytics.overwork')} + {memberOverworkStats.totalDaysOffDays.toFixed(1)} {t('analytics.daysOffEarned')})
+                        </span>
+                      </div>
+                    </div>
+                    <div className="enterprise-member-overwork-stat-card total-used">
+                      <div className="enterprise-member-overwork-stat-header">
+                        <MinusCircle className="enterprise-member-overwork-stat-icon" />
+                        <span className="enterprise-member-overwork-stat-label">{t('analytics.totalUsed')}</span>
+                      </div>
+                      <div className="enterprise-member-overwork-stat-value">{formatHoursMinutes(memberOverworkStats.totalDeductedHours)}</div>
+                      <div className="enterprise-member-overwork-stat-sublabel">
+                        {memberOverworkStats.deductedDays.toFixed(2)} {t('analytics.workDays')}
+                      </div>
+                    </div>
+                    <div className="enterprise-member-overwork-stat-card days-off">
+                      <div className="enterprise-member-overwork-stat-header">
+                        <CalendarDays className="enterprise-member-overwork-stat-icon" />
+                        <span className="enterprise-member-overwork-stat-label">{t('analytics.daysOffEarnedTitle')}</span>
+                      </div>
+                      <div className="enterprise-member-overwork-stat-value">{memberOverworkStats.remainingDaysOff.toFixed(1)}</div>
+                      <div className="enterprise-member-overwork-stat-sublabel">
+                        {memberOverworkStats.totalWeekendDaysOff.toFixed(1)} {t('analytics.total')} - {memberOverworkStats.totalDeductedDaysOff.toFixed(1)} {t('analytics.used')}
+                        <br />
+                        <span style={{ fontSize: '0.75rem', opacity: 0.8 }}>
+                          {memberOverworkStats.totalBenefitSessions > 0
+                            ? `${memberOverworkStats.weekendSessions} ${t('analytics.weekendOnly')}${memberOverworkStats.bankHolidaySessions > 0 ? ` + ${memberOverworkStats.bankHolidaySessions} ${t('analytics.bankHoliday', { defaultValue: 'bank holiday' })}` : ''} ${memberOverworkStats.totalBenefitSessions > 1 ? t('analytics.sessions') : t('analytics.sessions', { defaultValue: 'session' })}`
+                            : `0 ${t('analytics.sessions')}`}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="enterprise-member-overwork-stat-card remaining">
+                      <div className="enterprise-member-overwork-stat-header">
+                        <DollarSign className="enterprise-member-overwork-stat-icon" />
+                        <span className="enterprise-member-overwork-stat-label">{t('analytics.remainingAvailable')}</span>
+                      </div>
+                      <div className="enterprise-member-overwork-stat-value highlight">{formatHoursMinutes(memberOverworkStats.remainingAvailableHours)}</div>
+                      <div className="enterprise-member-overwork-stat-sublabel">
+                        {memberOverworkStats.remainingDays.toFixed(1)} {t('analytics.daysAvailable')}
+                        <br />
+                        <span style={{ fontSize: '0.75rem', opacity: 0.8 }}>
+                          ({memberOverworkStats.remainingDaysOff.toFixed(1)} {t('analytics.daysOffEarned')} + {formatHoursMinutes(memberOverworkStats.remainingOverworkHours)} {t('analytics.overwork')})
+                        </span>
+                      </div>
+                    </div>
+                  </div>
                   <h4 className="enterprise-overwork-title">{t('analytics.usageHistory')}</h4>
                   {memberDeductions.length === 0 ? (
                     <p className="enterprise-empty">{t('analytics.noOverworkUsed')}</p>
@@ -1977,8 +2091,8 @@ export function Enterprise({ user, onNavigate }) {
                             {d.reason && <span className="enterprise-deduction-reason">{d.reason}</span>}
                           </div>
                           <span className="enterprise-deduction-hours">
-                            -{formatHoursMinutes(d.hours)}
-                            <span className="enterprise-deduction-days"> ({(d.hours / 8).toFixed(2)} {t('analytics.days')})</span>
+                            -{formatHoursMinutes(d.hours ?? ((d.daysOffUsed ?? 0) * 8 + (d.overworkHoursUsed ?? 0)))}
+                            <span className="enterprise-deduction-days"> ({((d.hours ?? ((d.daysOffUsed ?? 0) * 8 + (d.overworkHoursUsed ?? 0))) / 8).toFixed(2)} {t('analytics.days')})</span>
                           </span>
                         </li>
                       ))}
