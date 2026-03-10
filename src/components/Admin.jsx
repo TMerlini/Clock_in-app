@@ -4,8 +4,8 @@ import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage
 import { db, auth, storage } from '../lib/firebase';
 import { isAdmin } from '../lib/adminUtils';
 import { addCallPack } from '../lib/tokenManager';
-import { getPlanConfig, savePlanConfig } from '../lib/planConfig';
-import { Shield, Users, UserPlus, Crown, BarChart3, Package, Settings, Search, Trash2, Edit2, Eye, Loader, AlertCircle, Check, X, Plus, ChevronDown, ChevronUp, ImageIcon, Upload, ArrowUp, ArrowDown, Play, AlignLeft, AlignRight, Film, Maximize2, Square, Bell } from 'lucide-react';
+import { getPlanConfig, savePlanConfig, DEFAULT_FEATURES } from '../lib/planConfig';
+import { Shield, Users, UserPlus, Crown, BarChart3, Package, Settings, Search, Trash2, Edit2, Eye, Loader, AlertCircle, Check, X, Plus, ChevronDown, ChevronUp, ImageIcon, Upload, ArrowUp, ArrowDown, Play, AlignLeft, AlignRight, Film, Maximize2, Square, Bell, RotateCcw } from 'lucide-react';
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { format, startOfDay, startOfMonth, subDays, eachDayOfInterval } from 'date-fns';
 import { useTranslation } from 'react-i18next';
@@ -997,7 +997,31 @@ export function Admin({ user }) {
             })}
           </div>
 
-          <p className="plan-config-hint">Edit prices and features shown on the Premium+ page. Display prices are cosmetic; update Stripe Payment Links separately for actual charges.</p>
+          <p className="plan-config-hint">Edit prices and features shown on the Premium+ page. Use translation keys (e.g. premiumPlus.plans.basic.feature8) for EN/PT. Display prices are cosmetic; update Stripe Payment Links separately for actual charges.</p>
+          <button
+            type="button"
+            className="action-button add"
+            style={{ marginBottom: '1rem' }}
+            onClick={async () => {
+              if (!confirm('Reset all plan features to translatable defaults? This replaces current features.')) return;
+              try {
+                const toSave = {};
+                for (const planId of ['basic', 'pro', 'premium_ai', 'enterprise']) {
+                  const features = DEFAULT_FEATURES[planId];
+                  if (features) toSave[planId] = { features };
+                }
+                await savePlanConfig(toSave);
+                const config = await getPlanConfig();
+                setPlanConfig(config);
+                alert('Features reset. Refresh Premium+ to see changes.');
+              } catch (e) {
+                alert('Error: ' + e.message);
+              }
+            }}
+          >
+            <RotateCcw size={16} />
+            <span>Reset features to translatable defaults</span>
+          </button>
 
           {planConfigLoading ? (
             <div className="plan-editor-loading">

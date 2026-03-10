@@ -9,60 +9,80 @@ import { db } from './firebase';
 const PLAN_CONFIG_COLLECTION = 'planConfig';
 const PLAN_CONFIG_DOC = 'plans';
 
+/** Default feature keys (translatable). Exported for Admin reset. */
+export const DEFAULT_FEATURES = {
+  basic: [
+    'premiumPlus.plans.basic.feature1',
+    'premiumPlus.plans.basic.feature2',
+    'premiumPlus.plans.basic.feature3',
+    'premiumPlus.plans.basic.feature4',
+    'premiumPlus.plans.basic.feature5',
+    'premiumPlus.plans.basic.feature8',
+    'premiumPlus.plans.basic.feature9',
+    'premiumPlus.plans.basic.feature10'
+  ],
+  pro: [
+    'premiumPlus.plans.pro.feature1',
+    'premiumPlus.plans.pro.feature2',
+    'premiumPlus.plans.pro.feature3',
+    'premiumPlus.plans.pro.feature4',
+    'premiumPlus.plans.pro.feature5',
+    'premiumPlus.plans.pro.feature6',
+    'premiumPlus.plans.pro.feature8',
+    'premiumPlus.plans.pro.feature9',
+    'premiumPlus.plans.pro.feature10'
+  ],
+  premium_ai: [
+    'premiumPlus.plans.premiumAi.feature1',
+    'premiumPlus.plans.premiumAi.feature2',
+    'premiumPlus.plans.premiumAi.feature3',
+    'premiumPlus.plans.premiumAi.feature4',
+    'premiumPlus.plans.premiumAi.feature5',
+    'premiumPlus.plans.premiumAi.feature6',
+    'premiumPlus.plans.premiumAi.feature7',
+    'premiumPlus.plans.premiumAi.feature8',
+    'premiumPlus.plans.premiumAi.feature9',
+    'premiumPlus.plans.premiumAi.feature10'
+  ],
+  enterprise: [
+    'premiumPlus.plans.enterprise.feature1',
+    'premiumPlus.plans.enterprise.feature2',
+    'premiumPlus.plans.enterprise.feature3',
+    'premiumPlus.plans.enterprise.feature4',
+    'premiumPlus.plans.enterprise.feature5',
+    'premiumPlus.plans.enterprise.feature6',
+    'premiumPlus.plans.enterprise.feature7',
+    'premiumPlus.plans.enterprise.feature8',
+    'premiumPlus.plans.enterprise.feature9',
+    'premiumPlus.plans.enterprise.feature10'
+  ]
+};
+
 const DEFAULTS = {
   basic: {
     price: '€0.99',
     period: 'month',
     paymentLink: '',
-    features: [
-      'Everything in Free',
-      'Calendar view and import',
-      'Analytics and Finance with CSV export',
-      'Settings and Google Calendar sync',
-      'Full session management'
-    ]
+    features: DEFAULT_FEATURES.basic
   },
   pro: {
     price: '€4.99',
     period: 'month',
     paymentLink: '',
-    features: [
-      'Everything in Basic',
-      'AI Advisor (buy call packs to use)',
-      'Advanced analytics and reports',
-      'Export functionality',
-      'Priority support',
-      'Custom date ranges'
-    ]
+    features: DEFAULT_FEATURES.pro
   },
   premium_ai: {
     price: '€9.99',
     period: 'month',
     paymentLink: '',
-    features: [
-      'Everything in Pro',
-      'AI Advisor access (75 calls/month base)',
-      'Portuguese labor law compliance analysis',
-      'Legal limit calculations (overtime, Isenção, vacation)',
-      'HR best practices & work-life balance guidance',
-      'Compliance monitoring & proactive alerts',
-      'Buy additional call packs as needed'
-    ]
+    features: DEFAULT_FEATURES.premium_ai
   },
   enterprise: {
     price: '€199',
     period: 'month',
     paymentLink: '',
     maxPremiumUsers: 10,
-    features: [
-      'Everything in Premium AI',
-      '225 AI calls/month (150 + 75 base)',
-      'Up to {{count}} members get Premium AI included',
-      'Create organization & invite team',
-      'Monitor sessions, analytics & finance per member',
-      'Centralized team dashboard',
-      'Export per member (CSV)'
-    ]
+    features: DEFAULT_FEATURES.enterprise
   },
   callPack: {
     paymentLink: '',
