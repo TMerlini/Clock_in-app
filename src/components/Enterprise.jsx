@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useRef, useCallback, Fragment } from 'react';
-import { collection, doc, getDoc, getDocs, query, where, setDoc } from 'firebase/firestore';
+import { collection, doc, getDoc, getDocs, query, where, setDoc, onSnapshot } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import {
   createEnterprise,
@@ -88,6 +88,8 @@ export function Enterprise({ user, onNavigate }) {
   const [memberSelectedDate, setMemberSelectedDate] = useState(new Date());
   const [bulkExportLoading, setBulkExportLoading] = useState(false);
   const [expandedMapSession, setExpandedMapSession] = useState(null);
+  const [ongoingSessions, setOngoingSessions] = useState([]);
+  const [elapsedTick, setElapsedTick] = useState(0);
 
   const googleCalendar = useGoogleCalendar();
   const [calendarEvents, setCalendarEvents] = useState([]);
@@ -143,6 +145,42 @@ export function Enterprise({ user, onNavigate }) {
   useEffect(() => {
     if (enterprise?.name != null) setOrgNameEdit(enterprise.name);
   }, [enterprise?.name]);
+
+  // On-going sessions: real-time listeners for activeClockIns per member
+  useEffect(() => {
+    if (!enterpriseId || !members.length) {
+      setOngoingSessions([]);
+      return;
+    }
+    const memberById = new Map(members.map(m => [m.id, m]));
+    const unsubs = [];
+    members.forEach((member) => {
+      const ref = doc(db, 'activeClockIns', member.id);
+      const unsub = onSnapshot(ref, (snap) => {
+        setOngoingSessions((prev) => {
+          const m = memberById.get(member.id);
+          if (!snap.exists()) {
+            return prev.filter((s) => s.member.id !== member.id);
+          }
+          const data = snap.data();
+          const clockInTime = data.clockInTime ?? (data.clockIn?.toDate ? data.clockIn.toDate().getTime() : Date.now());
+          const entry = { member: m || member, clockInTime };
+          const next = prev.filter((s) => s.member.id !== member.id);
+          next.push(entry);
+          return next.sort((a, b) => a.clockInTime - b.clockInTime);
+        });
+      });
+      unsubs.push(unsub);
+    });
+    return () => unsubs.forEach((u) => u());
+  }, [enterpriseId, members]);
+
+  // Elapsed time tick for ongoing sessions (updates every second)
+  useEffect(() => {
+    if (ongoingSessions.length === 0) return;
+    const id = setInterval(() => setElapsedTick((t) => t + 1), 1000);
+    return () => clearInterval(id);
+  }, [ongoingSessions.length]);
 
   const hasAccess = plan === 'enterprise' || !!enterpriseId;
 
@@ -974,6 +1012,57 @@ export function Enterprise({ user, onNavigate }) {
         <div className="enterprise-error">
           <AlertCircle size={18} />
           <span>{error}</span>
+        </div>
+      )}
+
+      {!selectedMember && (
+        <div className="enterprise-ongoing-section">
+          <h3 className="enterprise-ongoing-title">{t('enterprise.ongoingSessions')}</h3>
+          {ongoingSessions.length > 0 ? (
+          <div className="enterprise-ongoing-list">
+            {ongoingSessions.map(({ member, clockInTime }) => {
+              const elapsedMs = Date.now() - clockInTime;
+              const elapsedHours = elapsedMs / (1000 * 60 * 60);
+              const hasIsencao = (member.annualIsencaoLimit ?? 0) > 0;
+              const maxHours = hasIsencao ? 10 : 8;
+              const progressPercent = Math.min(100, (elapsedHours / maxHours) * 100);
+              let barColor = 'green';
+              if (hasIsencao) {
+                if (elapsedHours >= 10) barColor = 'red';
+                else if (elapsedHours >= 8) barColor = 'orange';
+              } else {
+                if (elapsedHours >= 8) barColor = 'red';
+              }
+              const hours = Math.floor(elapsedMs / (1000 * 60 * 60));
+              const minutes = Math.floor((elapsedMs % (1000 * 60 * 60)) / (1000 * 60));
+              const seconds = Math.floor((elapsedMs % (1000 * 60)) / 1000);
+              const elapsedLabel = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+              return (
+                <div key={member.id} className="enterprise-ongoing-card">
+                  <div className="enterprise-ongoing-member">
+                    {member.profilePicture ? (
+                      <img src={member.profilePicture} alt="" className="enterprise-ongoing-avatar" />
+                    ) : (
+                      <div className="enterprise-ongoing-avatar-fallback"><Users size={18} /></div>
+                    )}
+                    <span className="enterprise-ongoing-name">{getMemberDisplayName(member)}</span>
+                  </div>
+                  <div className="enterprise-ongoing-bar-wrap">
+                    <div className="enterprise-ongoing-bar-track">
+                      <div
+                        className={`enterprise-ongoing-bar-fill enterprise-ongoing-bar-${barColor}`}
+                        style={{ width: `${progressPercent}%` }}
+                      />
+                    </div>
+                    <span className="enterprise-ongoing-elapsed">{elapsedLabel}</span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          ) : (
+            <p className="enterprise-ongoing-empty">{t('enterprise.ongoingSessionsEmpty')}</p>
+          )}
         </div>
       )}
 

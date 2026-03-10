@@ -103,7 +103,8 @@ export async function listMembers(enterpriseId) {
       email: data.email || '',
       username: data.username || '',
       enterpriseRole: data.enterpriseRole || 'member',
-      profilePicture: data.profilePicture || null
+      profilePicture: data.profilePicture || null,
+      annualIsencaoLimit: data.annualIsencaoLimit ?? 0
     });
   });
   return members;

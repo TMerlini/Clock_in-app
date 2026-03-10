@@ -62,6 +62,7 @@ service cloud.firestore {
 
     match /activeClockIns/{userId} {
       allow read, write: if isAuth() && userId == request.auth.uid;
+      allow read: if isAuth() && (isAppAdmin() || sameOrgAsViewer(userId));
     }
 
     match /overworkDeductions/{deductionId} {

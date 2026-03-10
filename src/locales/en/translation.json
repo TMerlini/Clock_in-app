@@ -502,6 +502,8 @@
       "allDay": "All day"
     },
     "notes": "Notes",
+    "ongoingSessions": "On-Going Sessions",
+    "ongoingSessionsEmpty": "No ongoing sessions",
     "edited": "Edited",
     "editedTooltip": "Edited on {{date}}",
     "editedCountTooltip": "Edited {{count}} times, last on {{date}}",

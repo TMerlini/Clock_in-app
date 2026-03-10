@@ -1133,6 +1133,131 @@
   margin: 0;
 }
 
+/* On-Going Sessions */
+.enterprise-ongoing-section {
+  margin-bottom: 1.5rem;
+  padding: 1rem 1.25rem;
+  background: var(--secondary);
+  border-radius: 12px;
+  border: 1px solid var(--border);
+}
+
+.enterprise-ongoing-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--foreground);
+  margin: 0 0 0.75rem 0;
+}
+
+.enterprise-ongoing-empty {
+  font-size: 0.9rem;
+  color: var(--muted-foreground);
+  margin: 0;
+}
+
+.enterprise-ongoing-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.enterprise-ongoing-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.5rem 0;
+}
+
+.enterprise-ongoing-member {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+  flex-shrink: 0;
+}
+
+.enterprise-ongoing-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.enterprise-ongoing-avatar-fallback {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--primary);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.8;
+}
+
+.enterprise-ongoing-name {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--foreground);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.enterprise-ongoing-bar-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex: 1;
+  min-width: 0;
+  max-width: 280px;
+}
+
+.enterprise-ongoing-bar-track {
+  flex: 1;
+  height: 8px;
+  background: var(--muted);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.enterprise-ongoing-bar-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 1s linear;
+}
+
+.enterprise-ongoing-bar-green {
+  background: #22c55e;
+}
+
+.enterprise-ongoing-bar-orange {
+  background: #f59e0b;
+}
+
+.enterprise-ongoing-bar-red {
+  background: #ef4444;
+}
+
+.enterprise-ongoing-elapsed {
+  font-size: 0.8rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--muted-foreground);
+  flex-shrink: 0;
+}
+
+@media (max-width: 640px) {
+  .enterprise-ongoing-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .enterprise-ongoing-bar-wrap {
+    max-width: none;
+    width: 100%;
+  }
+}
+
 .enterprise-cell-ellipsis {
   max-width: 140px;
   overflow: hidden;
