@@ -1,6 +1,7 @@
 /**
  * One-off test endpoint: sends a single push notification.
  * GET /api/test-push?userId=YOUR_FIREBASE_UID
+ * Or: /api/test-push?email=your@email.com (for testing - must match progressier.add target)
  * Optional: ?secret=YOUR_CRON_SECRET (required if CRON_SECRET is set)
  *
  * Remove or protect this endpoint after testing.
@@ -12,7 +13,7 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { userId, secret } = req.query;
+  const { userId, email, secret } = req.query;
   const cronSecret = process.env.CRON_SECRET;
   if (cronSecret) {
     if (secret !== cronSecret) {
@@ -20,10 +21,11 @@ export default async function handler(req, res) {
     }
   }
 
-  if (!userId) {
+  const recipients = userId ? { id: userId } : email ? { email: email } : null;
+  if (!recipients) {
     return res.status(400).json({
-      error: 'Missing userId',
-      hint: 'Visit /api/test-push?userId=YOUR_FIREBASE_UID (get UID from Firebase Auth when logged in)'
+      error: 'Missing userId or email',
+      hint: 'Use ?userId=YOUR_UID or ?email=your@email.com (must match what progressier.add uses)'
     });
   }
 
@@ -34,18 +36,19 @@ export default async function handler(req, res) {
   }
 
   try {
+    const payload = {
+      recipients,
+      title: 'Clock In: Test Notification',
+      body: 'Push notifications are working correctly.',
+      url: BASE_URL
+    };
     const res2 = await fetch(endpoint, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${key}`
       },
-      body: JSON.stringify({
-        recipients: { id: userId },
-        title: 'Clock In: Test Notification',
-        body: 'Push notifications are working correctly.',
-        url: BASE_URL
-      })
+      body: JSON.stringify(payload)
     });
 
     if (!res2.ok) {

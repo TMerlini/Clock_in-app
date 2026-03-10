@@ -514,14 +514,17 @@ export function Settings({ googleCalendar, onUsernameChange, onProfilePicChange,
     await i18n.changeLanguage(newLanguage);
   };
 
-  const handleTestPush = async () => {
+  const handleTestPush = async (useEmail = false) => {
     const user = auth.currentUser;
     if (!user) return;
     setTestPushLoading(true);
     setTestPushResult(null);
     try {
       const base = typeof window !== 'undefined' ? window.location.origin : '';
-      const url = `${base}/api/test-push?userId=${encodeURIComponent(user.uid)}`;
+      const param = useEmail && user.email
+        ? `email=${encodeURIComponent(user.email)}`
+        : `userId=${encodeURIComponent(user.uid)}`;
+      const url = `${base}/api/test-push?${param}`;
       const r = await fetch(url);
       const data = await r.json().catch(() => ({}));
       if (r.ok && data.ok) {
@@ -643,14 +646,24 @@ export function Settings({ googleCalendar, onUsernameChange, onProfilePicChange,
             {t('settings.notifications.description', { defaultValue: 'Test that push notifications are working.' })}
           </p>
           <div className="setting-item">
-            <button
-              type="button"
-              className="profile-pic-change-btn"
-              onClick={handleTestPush}
-              disabled={testPushLoading}
-            >
-              {testPushLoading ? t('settings.notifications.sending', { defaultValue: 'Sending…' }) : t('settings.notifications.sendTest', { defaultValue: 'Send test notification' })}
-            </button>
+            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+              <button
+                type="button"
+                className="profile-pic-change-btn"
+                onClick={() => handleTestPush(false)}
+                disabled={testPushLoading}
+              >
+                {testPushLoading ? t('settings.notifications.sending', { defaultValue: 'Sending…' }) : t('settings.notifications.sendTest', { defaultValue: 'Send test (by UID)' })}
+              </button>
+              <button
+                type="button"
+                className="profile-pic-change-btn"
+                onClick={() => handleTestPush(true)}
+                disabled={testPushLoading}
+              >
+                {t('settings.notifications.sendTestEmail', { defaultValue: 'Send test (by email)' })}
+              </button>
+            </div>
             {testPushResult === 'success' && (
               <p className="setting-hint success">{t('settings.notifications.sent', { defaultValue: 'Sent. Check your device.' })}</p>
             )}
