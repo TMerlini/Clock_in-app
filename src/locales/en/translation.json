@@ -502,6 +502,9 @@
       "allDay": "All day"
     },
     "notes": "Notes",
+    "edited": "Edited",
+    "editedTooltip": "Edited on {{date}}",
+    "editedCountTooltip": "Edited {{count}} times, last on {{date}}",
     "viewMember": "View",
     "remove": "Remove",
     "removeMember": "Remove member",

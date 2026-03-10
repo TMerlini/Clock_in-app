@@ -1155,6 +1155,23 @@
   min-width: 0;
 }
 
+.enterprise-edited-cell {
+  text-align: center;
+  white-space: nowrap;
+}
+
+.enterprise-edited-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #d97706;
+  cursor: help;
+}
+
+.enterprise-edited-icon:hover {
+  color: #f59e0b;
+}
+
 .enterprise-location-btn {
   display: flex;
   align-items: center;

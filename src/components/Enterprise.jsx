@@ -20,7 +20,7 @@ import { calculatePeriodFinance } from '../lib/financeCalculator';
 import { startOfDay, endOfDay, startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfYear, endOfYear, format, formatDistanceToNow, eachMonthOfInterval, subMonths, subWeeks, subDays, subYears, addDays, addWeeks } from 'date-fns';
 import { getDateFnsLocale } from '../lib/i18n';
 import { formatHoursMinutes } from '../lib/utils';
-import { Building2, UserPlus, Users, Loader, AlertCircle, Crown, ArrowRight, ArrowLeft, Eye, BarChart3, DollarSign, Clock, Download, Trash2, X, Shield, UserMinus, TrendingUp, AlertTriangle, Bot, MapPin, Calendar as CalendarIcon, ChevronDown, ChevronUp, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Building2, UserPlus, Users, Loader, AlertCircle, Crown, ArrowRight, ArrowLeft, Eye, BarChart3, DollarSign, Clock, Download, Trash2, X, Shield, UserMinus, TrendingUp, AlertTriangle, Bot, MapPin, Calendar as CalendarIcon, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, Pencil } from 'lucide-react';
 import { LocationMiniMap } from './LocationMiniMap';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { useTranslation } from 'react-i18next';
@@ -1472,6 +1472,7 @@ export function Enterprise({ user, onNavigate }) {
                               <th>{t('finance.csv.overtimeHours')}</th>
                               <th>{t('finance.csv.totalEarnings')}</th>
                               <th>{t('enterprise.location')}</th>
+                              <th>{t('enterprise.edited')}</th>
                               <th>{t('enterprise.notes')}</th>
                             </tr>
                           </thead>
@@ -1510,11 +1511,32 @@ export function Enterprise({ user, onNavigate }) {
                                         )}
                                       </div>
                                     </td>
+                                    <td className="enterprise-edited-cell">
+                                      {raw?.editedAt ? (
+                                        <span
+                                          className="enterprise-edited-icon"
+                                          title={
+                                            (raw?.editCount || 1) > 1
+                                              ? t('enterprise.editedCountTooltip', {
+                                                  count: raw.editCount,
+                                                  date: format(new Date(raw.editedAt), 'PPp', { locale: getDateFnsLocale() })
+                                                })
+                                              : t('enterprise.editedTooltip', {
+                                                  date: format(new Date(raw.editedAt), 'PPp', { locale: getDateFnsLocale() })
+                                                })
+                                          }
+                                        >
+                                          <Pencil size={14} />
+                                        </span>
+                                      ) : (
+                                        '-'
+                                      )}
+                                    </td>
                                     <td className="enterprise-cell-ellipsis" title={raw?.notes || ''}>{raw?.notes || '-'}</td>
                                   </tr>
                                   {isMapOpen && hasCoords && (
                                     <tr className="enterprise-map-row">
-                                      <td colSpan={7}>
+                                      <td colSpan={8}>
                                         <LocationMiniMap
                                           clockInCoords={raw.clockInCoords}
                                           clockOutCoords={raw.clockOutCoords}

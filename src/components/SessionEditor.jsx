@@ -186,6 +186,9 @@ export const SessionEditor = memo(function SessionEditor({ session, onClose, onU
       regularHours: regularHours,
       unpaidExtraHours: unpaidExtraHours,
       paidExtraHours: paidExtraHours,
+      editedAt: Date.now(),
+      editedBy: auth.currentUser.uid,
+      editCount: (session.editCount || 0) + 1,
     };
 
     setSaving(true);

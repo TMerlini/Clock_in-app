@@ -502,6 +502,9 @@
       "allDay": "Dia inteiro"
     },
     "notes": "Notas",
+    "edited": "Editado",
+    "editedTooltip": "Editado em {{date}}",
+    "editedCountTooltip": "Editado {{count}} vezes, última em {{date}}",
     "viewMember": "Ver",
     "remove": "Remover",
     "removeMember": "Remover membro",
