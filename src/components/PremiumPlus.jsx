@@ -207,6 +207,25 @@ export function PremiumPlus({ user, onNavigate }) {
   };
 
   const cfg = (id) => planConfig?.[id.toLowerCase()];
+
+  const resolveFeatures = (planKey, fallbackKeys, maxCount) => {
+    const custom = cfg(planKey)?.features;
+    if (Array.isArray(custom) && custom.length > 0) {
+      return custom.map((f) => {
+        const s = String(f || '').trim();
+        if (!s) return null;
+        const withCount = s.replace(/\{\{count\}\}/g, String(maxCount ?? 10));
+        return withCount.includes('.') && !withCount.includes(' ') ? t(withCount) : withCount;
+      }).filter(Boolean);
+    }
+    return fallbackKeys.map((k) => {
+      if (typeof k === 'object' && k && k.key) {
+        return t(k.key, k);
+      }
+      return t(k);
+    });
+  };
+
   const plans = [
     {
       id: 'FREE',
@@ -214,12 +233,12 @@ export function PremiumPlus({ user, onNavigate }) {
       price: '€0',
       period: t('premiumPlus.plans.free.period', { defaultValue: 'month' }),
       icon: Zap,
-      features: [
-        t('premiumPlus.plans.free.feature1'),
-        t('premiumPlus.plans.free.feature2'),
-        t('premiumPlus.plans.free.feature3'),
-        t('premiumPlus.plans.free.feature4')
-      ],
+      features: resolveFeatures('free', [
+        'premiumPlus.plans.free.feature1',
+        'premiumPlus.plans.free.feature2',
+        'premiumPlus.plans.free.feature3',
+        'premiumPlus.plans.free.feature4'
+      ]),
       color: 'gray',
       isFree: true
     },
@@ -229,13 +248,13 @@ export function PremiumPlus({ user, onNavigate }) {
       price: cfg('basic')?.price ?? '€0.99',
       period: cfg('basic')?.period ?? t('premiumPlus.plans.basic.period', { defaultValue: 'month' }),
       icon: Zap,
-      features: [
-        t('premiumPlus.plans.basic.feature1'),
-        t('premiumPlus.plans.basic.feature2'),
-        t('premiumPlus.plans.basic.feature3'),
-        t('premiumPlus.plans.basic.feature4'),
-        t('premiumPlus.plans.basic.feature5')
-      ],
+      features: resolveFeatures('basic', [
+        'premiumPlus.plans.basic.feature1',
+        'premiumPlus.plans.basic.feature2',
+        'premiumPlus.plans.basic.feature3',
+        'premiumPlus.plans.basic.feature4',
+        'premiumPlus.plans.basic.feature5'
+      ]),
       color: 'blue'
     },
     {
@@ -244,14 +263,14 @@ export function PremiumPlus({ user, onNavigate }) {
       price: cfg('pro')?.price ?? '€4.99',
       period: cfg('pro')?.period ?? t('premiumPlus.plans.pro.period', { defaultValue: 'month' }),
       icon: Sparkles,
-      features: [
-        t('premiumPlus.plans.pro.feature1'),
-        t('premiumPlus.plans.pro.feature2'),
-        t('premiumPlus.plans.pro.feature3'),
-        t('premiumPlus.plans.pro.feature4'),
-        t('premiumPlus.plans.pro.feature5'),
-        t('premiumPlus.plans.pro.feature6')
-      ],
+      features: resolveFeatures('pro', [
+        'premiumPlus.plans.pro.feature1',
+        'premiumPlus.plans.pro.feature2',
+        'premiumPlus.plans.pro.feature3',
+        'premiumPlus.plans.pro.feature4',
+        'premiumPlus.plans.pro.feature5',
+        'premiumPlus.plans.pro.feature6'
+      ]),
       color: 'purple',
       popular: true
     },
@@ -261,15 +280,15 @@ export function PremiumPlus({ user, onNavigate }) {
       price: cfg('premium_ai')?.price ?? '€9.99',
       period: cfg('premium_ai')?.period ?? t('premiumPlus.plans.premiumAi.period', { defaultValue: 'month' }),
       icon: Crown,
-      features: [
-        t('premiumPlus.plans.premiumAi.feature1'),
-        t('premiumPlus.plans.premiumAi.feature2'),
-        t('premiumPlus.plans.premiumAi.feature3'),
-        t('premiumPlus.plans.premiumAi.feature4'),
-        t('premiumPlus.plans.premiumAi.feature5'),
-        t('premiumPlus.plans.premiumAi.feature6'),
-        t('premiumPlus.plans.premiumAi.feature7')
-      ],
+      features: resolveFeatures('premium_ai', [
+        'premiumPlus.plans.premiumAi.feature1',
+        'premiumPlus.plans.premiumAi.feature2',
+        'premiumPlus.plans.premiumAi.feature3',
+        'premiumPlus.plans.premiumAi.feature4',
+        'premiumPlus.plans.premiumAi.feature5',
+        'premiumPlus.plans.premiumAi.feature6',
+        'premiumPlus.plans.premiumAi.feature7'
+      ]),
       color: 'gold'
     },
     {
@@ -280,15 +299,15 @@ export function PremiumPlus({ user, onNavigate }) {
       icon: Building2,
       features: (() => {
         const maxCount = cfg('enterprise')?.maxPremiumUsers ?? 10;
-        return [
-          t('premiumPlus.plans.enterprise.feature1'),
-          t('premiumPlus.plans.enterprise.feature2'),
-          t('premiumPlus.plans.enterprise.feature3', { count: maxCount }),
-          t('premiumPlus.plans.enterprise.feature4'),
-          t('premiumPlus.plans.enterprise.feature5'),
-          t('premiumPlus.plans.enterprise.feature6'),
-          t('premiumPlus.plans.enterprise.feature7')
-        ];
+        return resolveFeatures('enterprise', [
+          'premiumPlus.plans.enterprise.feature1',
+          'premiumPlus.plans.enterprise.feature2',
+          { key: 'premiumPlus.plans.enterprise.feature3', count: maxCount },
+          'premiumPlus.plans.enterprise.feature4',
+          'premiumPlus.plans.enterprise.feature5',
+          'premiumPlus.plans.enterprise.feature6',
+          'premiumPlus.plans.enterprise.feature7'
+        ], maxCount);
       })(),
       color: 'indigo'
     }
