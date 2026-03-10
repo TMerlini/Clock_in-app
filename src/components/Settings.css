@@ -360,17 +360,6 @@
   height: 18px;
 }
 
-.setting-hint {
-  margin-top: 0.5rem;
-  font-size: 0.9rem;
-}
-.setting-hint.success {
-  color: #22c55e;
-}
-.setting-hint.error {
-  color: #ef4444;
-}
-
 .success-message {
   padding: 1rem 1.5rem;
   background: rgba(34, 197, 94, 0.1);

@@ -5,7 +5,7 @@ import { db, auth, storage } from '../lib/firebase';
 import { isAdmin } from '../lib/adminUtils';
 import { addCallPack } from '../lib/tokenManager';
 import { getPlanConfig, savePlanConfig } from '../lib/planConfig';
-import { Shield, Users, UserPlus, Crown, BarChart3, Package, Settings, Search, Trash2, Edit2, Eye, Loader, AlertCircle, Check, X, Plus, ChevronDown, ChevronUp, ImageIcon, Upload, ArrowUp, ArrowDown, Play, AlignLeft, AlignRight, Film, Maximize2, Square } from 'lucide-react';
+import { Shield, Users, UserPlus, Crown, BarChart3, Package, Settings, Search, Trash2, Edit2, Eye, Loader, AlertCircle, Check, X, Plus, ChevronDown, ChevronUp, ImageIcon, Upload, ArrowUp, ArrowDown, Play, AlignLeft, AlignRight, Film, Maximize2, Square, Bell } from 'lucide-react';
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { format, startOfDay, startOfMonth, subDays, eachDayOfInterval } from 'date-fns';
 import { useTranslation } from 'react-i18next';
@@ -45,6 +45,15 @@ export function Admin({ user }) {
   const [imageUploading, setImageUploading] = useState(false);
   const [imagePreview, setImagePreview] = useState(null);
   const [imageFile, setImageFile] = useState(null);
+  const [pushTestLoading, setPushTestLoading] = useState(false);
+  const [pushTestResult, setPushTestResult] = useState(null);
+  const [manualTitle, setManualTitle] = useState('');
+  const [manualBody, setManualBody] = useState('');
+  const [manualUrl, setManualUrl] = useState('');
+  const [manualRecipients, setManualRecipients] = useState('all');
+  const [manualUserId, setManualUserId] = useState('');
+  const [manualLoading, setManualLoading] = useState(false);
+  const [manualResult, setManualResult] = useState(null);
 
   useEffect(() => {
     if (user && isAdmin(user)) {
@@ -502,6 +511,68 @@ export function Admin({ user }) {
     handleUpdatePlanEditor(planId, 'features', features);
   };
 
+  const handlePushTest = async () => {
+    if (!user) return;
+    setPushTestLoading(true);
+    setPushTestResult(null);
+    try {
+      const base = typeof window !== 'undefined' ? window.location.origin : '';
+      const r = await fetch(`${base}/api/test-push?userId=${encodeURIComponent(user.uid)}`);
+      const data = await r.json().catch(() => ({}));
+      if (r.ok && data.ok) {
+        setPushTestResult('success');
+      } else {
+        setPushTestResult(data.error || `Error ${r.status}`);
+      }
+    } catch (err) {
+      setPushTestResult(err.message || 'Failed');
+    } finally {
+      setPushTestLoading(false);
+    }
+  };
+
+  const handleManualPush = async (e) => {
+    e.preventDefault();
+    if (!user) return;
+    if (manualRecipients === 'user' && !manualUserId?.trim()) {
+      setManualResult('Enter a user UID when targeting specific user.');
+      return;
+    }
+    setManualLoading(true);
+    setManualResult(null);
+    try {
+      const token = await user.getIdToken();
+      const base = typeof window !== 'undefined' ? window.location.origin : '';
+      const recipients = manualRecipients === 'all' ? 'all' : manualUserId.trim();
+      const r = await fetch(`${base}/api/send-push`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          title: manualTitle.trim(),
+          body: manualBody.trim(),
+          url: manualUrl.trim() || undefined,
+          recipients
+        })
+      });
+      const data = await r.json().catch(() => ({}));
+      if (r.ok && data.ok) {
+        setManualResult('success');
+        setManualTitle('');
+        setManualBody('');
+        setManualUrl('');
+      } else {
+        setManualResult(data.error || `Error ${r.status}`);
+      }
+    } catch (err) {
+      setManualResult(err.message || 'Failed');
+    } finally {
+      setManualLoading(false);
+    }
+  };
+
   const handleDeleteGuest = async (guestId, guestEmail) => {
     if (!confirm(`Are you sure you want to delete guest account: ${guestEmail}?`)) {
       return;
@@ -700,6 +771,13 @@ export function Admin({ user }) {
         >
           <Package size={18} />
           <span>Call Packs</span>
+        </button>
+        <button
+          className={`admin-tab ${activeSection === 'push' ? 'active' : ''}`}
+          onClick={() => setActiveSection('push')}
+        >
+          <Bell size={18} />
+          <span>Push Notifications</span>
         </button>
       </div>
 
@@ -1549,6 +1627,108 @@ export function Admin({ user }) {
                   </tbody>
                 </table>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Push Notifications Section */}
+      {activeSection === 'push' && (
+        <div className="admin-section">
+          <div className="section-header">
+            <h2>Push Notifications</h2>
+          </div>
+          <div className="push-notifications-admin">
+            <div className="push-test-block">
+              <h3>Test notification</h3>
+              <p className="push-hint">Send a test push to your device (by UID).</p>
+              <button
+                type="button"
+                className="action-button add"
+                onClick={handlePushTest}
+                disabled={pushTestLoading}
+              >
+                {pushTestLoading ? <Loader size={16} className="spinning" /> : <Bell size={16} />}
+                <span>{pushTestLoading ? 'Sending…' : 'Send test to me'}</span>
+              </button>
+              {pushTestResult === 'success' && <p className="push-result success">Sent. Check your device.</p>}
+              {pushTestResult && pushTestResult !== 'success' && <p className="push-result error">{pushTestResult}</p>}
+            </div>
+
+            <div className="push-manual-block">
+              <h3>Manual notification</h3>
+              <p className="push-hint">Send a custom push to all subscribers or a specific user.</p>
+              <form onSubmit={handleManualPush} className="push-manual-form">
+                <div className="form-group">
+                  <label>Title (max 50 chars)</label>
+                  <input
+                    type="text"
+                    value={manualTitle}
+                    onChange={(e) => setManualTitle(e.target.value)}
+                    placeholder="e.g. Reminder"
+                    maxLength={50}
+                    required
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Body (max 100 chars)</label>
+                  <textarea
+                    value={manualBody}
+                    onChange={(e) => setManualBody(e.target.value)}
+                    placeholder="e.g. Don't forget to clock out!"
+                    maxLength={100}
+                    rows={2}
+                    required
+                  />
+                </div>
+                <div className="form-group">
+                  <label>URL (optional)</label>
+                  <input
+                    type="url"
+                    value={manualUrl}
+                    onChange={(e) => setManualUrl(e.target.value)}
+                    placeholder="https://www.clock-in.pt"
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Recipients</label>
+                  <div className="push-recipients-row">
+                    <label className="radio-label">
+                      <input
+                        type="radio"
+                        name="recipients"
+                        checked={manualRecipients === 'all'}
+                        onChange={() => setManualRecipients('all')}
+                      />
+                      All subscribers
+                    </label>
+                    <label className="radio-label">
+                      <input
+                        type="radio"
+                        name="recipients"
+                        checked={manualRecipients === 'user'}
+                        onChange={() => setManualRecipients('user')}
+                      />
+                      Specific user (UID):
+                    </label>
+                    {manualRecipients === 'user' && (
+                      <input
+                        type="text"
+                        value={manualUserId}
+                        onChange={(e) => setManualUserId(e.target.value)}
+                        placeholder="Firebase UID"
+                        className="uid-input"
+                      />
+                    )}
+                  </div>
+                </div>
+                <button type="submit" className="submit-button" disabled={manualLoading}>
+                  {manualLoading ? <Loader size={16} className="spinning" /> : <Bell size={16} />}
+                  <span>Send notification</span>
+                </button>
+              </form>
+              {manualResult === 'success' && <p className="push-result success">Notification sent.</p>}
+              {manualResult && manualResult !== 'success' && <p className="push-result error">{manualResult}</p>}
             </div>
           </div>
         </div>

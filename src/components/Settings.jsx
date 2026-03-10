@@ -3,7 +3,7 @@ import { doc, getDoc, setDoc, collection, query, where, getDocs, updateDoc } fro
 import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import { db, auth, storage } from '../lib/firebase';
 import { CalendarAuthButton } from './CalendarAuthButton';
-import { Settings as SettingsIcon, Save, RotateCcw, Clock, Coffee, AlertTriangle, DollarSign, Calendar, CheckCircle, XCircle, AlertCircle, RefreshCw, User, AtSign, Download, Crown, Globe, Database, Camera, Trash2, MapPin, Bell } from 'lucide-react';
+import { Settings as SettingsIcon, Save, RotateCcw, Clock, Coffee, AlertTriangle, DollarSign, Calendar, CheckCircle, XCircle, AlertCircle, RefreshCw, User, AtSign, Download, Crown, Globe, Database, Camera, Trash2, MapPin } from 'lucide-react';
 import { format } from 'date-fns';
 import { useTranslation } from 'react-i18next';
 import i18n from '../lib/i18n';
@@ -64,8 +64,6 @@ export function Settings({ googleCalendar, onUsernameChange, onProfilePicChange,
     failedSessions: 0,
     lastSyncAt: null
   });
-  const [testPushLoading, setTestPushLoading] = useState(false);
-  const [testPushResult, setTestPushResult] = useState(null);
 
   useEffect(() => {
     const loadData = async () => {
@@ -514,31 +512,6 @@ export function Settings({ googleCalendar, onUsernameChange, onProfilePicChange,
     await i18n.changeLanguage(newLanguage);
   };
 
-  const handleTestPush = async (useEmail = false) => {
-    const user = auth.currentUser;
-    if (!user) return;
-    setTestPushLoading(true);
-    setTestPushResult(null);
-    try {
-      const base = typeof window !== 'undefined' ? window.location.origin : '';
-      const param = useEmail && user.email
-        ? `email=${encodeURIComponent(user.email)}`
-        : `userId=${encodeURIComponent(user.uid)}`;
-      const url = `${base}/api/test-push?${param}`;
-      const r = await fetch(url);
-      const data = await r.json().catch(() => ({}));
-      if (r.ok && data.ok) {
-        setTestPushResult('success');
-      } else {
-        setTestPushResult(data.error || `Error ${r.status}`);
-      }
-    } catch (err) {
-      setTestPushResult(err.message || 'Failed');
-    } finally {
-      setTestPushLoading(false);
-    }
-  };
-
   if (loading) {
     return (
       <div className="settings-container">
@@ -634,42 +607,6 @@ export function Settings({ googleCalendar, onUsernameChange, onProfilePicChange,
                 maxLength={20}
               />
             </div>
-          </div>
-        </section>
-
-        <section className="settings-section">
-          <div className="section-title">
-            <Bell />
-            <h2>{t('settings.notifications.title', { defaultValue: 'Push notifications' })}</h2>
-          </div>
-          <p className="section-description">
-            {t('settings.notifications.description', { defaultValue: 'Test that push notifications are working.' })}
-          </p>
-          <div className="setting-item">
-            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-              <button
-                type="button"
-                className="profile-pic-change-btn"
-                onClick={() => handleTestPush(false)}
-                disabled={testPushLoading}
-              >
-                {testPushLoading ? t('settings.notifications.sending', { defaultValue: 'Sending…' }) : t('settings.notifications.sendTest', { defaultValue: 'Send test (by UID)' })}
-              </button>
-              <button
-                type="button"
-                className="profile-pic-change-btn"
-                onClick={() => handleTestPush(true)}
-                disabled={testPushLoading}
-              >
-                {t('settings.notifications.sendTestEmail', { defaultValue: 'Send test (by email)' })}
-              </button>
-            </div>
-            {testPushResult === 'success' && (
-              <p className="setting-hint success">{t('settings.notifications.sent', { defaultValue: 'Sent. Check your device.' })}</p>
-            )}
-            {testPushResult && testPushResult !== 'success' && (
-              <p className="setting-hint error">{testPushResult}</p>
-            )}
           </div>
         </section>
 

@@ -1110,3 +1110,74 @@
 .login-image-color-clear:hover {
   background: rgba(255, 255, 255, 0.1);
 }
+
+.push-notifications-admin {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.push-test-block,
+.push-manual-block {
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1.5rem;
+}
+
+.push-test-block h3,
+.push-manual-block h3 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.1rem;
+}
+
+.push-hint {
+  margin: 0 0 1rem 0;
+  font-size: 0.9rem;
+  color: var(--muted-foreground);
+}
+
+.push-result {
+  margin-top: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.push-result.success {
+  color: #22c55e;
+}
+
+.push-result.error {
+  color: #ef4444;
+}
+
+.push-manual-form {
+  max-width: 500px;
+}
+
+.push-manual-form .form-group textarea {
+  width: 100%;
+  padding: 0.75rem;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-family: inherit;
+  resize: vertical;
+}
+
+.push-recipients-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.push-recipients-row .radio-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+}
+
+.push-recipients-row .uid-input {
+  max-width: 320px;
+  margin-left: 1.5rem;
+}
