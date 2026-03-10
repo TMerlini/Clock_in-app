@@ -379,7 +379,10 @@
         "feature2": "Calendar view and import",
         "feature3": "Analytics and Finance with CSV export",
         "feature4": "Settings and Google Calendar sync",
-        "feature5": "Full session management"
+        "feature5": "Full session management",
+        "feature8": "Push notifications",
+        "feature9": "Multi-language support",
+        "feature10": "Dark mode"
       },
       "pro": {
         "name": "Pro",
@@ -390,7 +393,10 @@
         "feature3": "Advanced analytics and reports",
         "feature4": "Export functionality",
         "feature5": "Priority support",
-        "feature6": "Custom date ranges"
+        "feature6": "Custom date ranges",
+        "feature8": "Push notifications",
+        "feature9": "Priority feature updates",
+        "feature10": "Extended support"
       },
       "premiumAi": {
         "name": "Premium AI",
@@ -402,7 +408,10 @@
         "feature4": "Legal limit calculations (overtime, Isenção, vacation)",
         "feature5": "HR best practices & work-life balance guidance",
         "feature6": "Compliance monitoring & proactive alerts",
-        "feature7": "Buy additional call packs as needed"
+        "feature7": "Buy additional call packs as needed",
+        "feature8": "Push notifications for warnings",
+        "feature9": "Personal compliance alerts",
+        "feature10": "AI-powered insights"
       },
       "enterprise": {
         "name": "Enterprise",
@@ -414,7 +423,10 @@
         "feature4": "Create organization & invite team",
         "feature5": "Monitor sessions, analytics & finance per member",
         "feature6": "Centralized team dashboard",
-        "feature7": "Export per member (CSV)"
+        "feature7": "Export per member (CSV)",
+        "feature8": "Team warnings push notifications",
+        "feature9": "Manual push notifications (Admin)",
+        "feature10": "Enterprise AI assistant"
       }
     }
   },

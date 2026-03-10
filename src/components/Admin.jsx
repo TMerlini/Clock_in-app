@@ -1067,6 +1067,7 @@ export function Admin({ user }) {
                         </div>
                         <div className="form-group">
                           <label>Features</label>
+                          <span className="plan-config-field-hint" style={{ display: 'block', marginBottom: '0.5rem' }}>Use plain text or translation keys (e.g. premiumPlus.plans.basic.feature8) for EN/PT support.</span>
                           <div className="plan-features-list">
                             {features.map((f, i) => (
                               <div key={i} className="plan-feature-row">
@@ -1074,7 +1075,7 @@ export function Admin({ user }) {
                                   type="text"
                                   value={f}
                                   onChange={(e) => handleUpdateFeature(planId, i, e.target.value)}
-                                  placeholder="Feature description"
+                                  placeholder="Plain text or key: premiumPlus.plans.basic.feature8"
                                 />
                                 <button
                                   type="button"

@@ -379,7 +379,10 @@
         "feature2": "Vista de calendário e importação",
         "feature3": "Análises e Finanças com exportação CSV",
         "feature4": "Definições e sincronização Google Calendar",
-        "feature5": "Gestão completa de sessões"
+        "feature5": "Gestão completa de sessões",
+        "feature8": "Notificações push",
+        "feature9": "Suporte multilíngue",
+        "feature10": "Modo escuro"
       },
       "pro": {
         "name": "Pro",
@@ -390,7 +393,10 @@
         "feature3": "Análises avançadas e relatórios",
         "feature4": "Funcionalidade de exportação",
         "feature5": "Suporte prioritário",
-        "feature6": "Intervalos de datas personalizados"
+        "feature6": "Intervalos de datas personalizados",
+        "feature8": "Notificações push",
+        "feature9": "Atualizações prioritárias",
+        "feature10": "Suporte alargado"
       },
       "premiumAi": {
         "name": "Premium AI",
@@ -402,7 +408,10 @@
         "feature4": "Cálculos de limites legais (trabalho extra, Isenção, férias)",
         "feature5": "Melhores práticas de RH e orientação de equilíbrio trabalho-vida",
         "feature6": "Monitorização de conformidade e alertas proativos",
-        "feature7": "Compre pacotes de chamadas adicionais conforme necessário"
+        "feature7": "Compre pacotes de chamadas adicionais conforme necessário",
+        "feature8": "Notificações push de avisos",
+        "feature9": "Alertas de conformidade pessoais",
+        "feature10": "Insights com IA"
       },
       "enterprise": {
         "name": "Enterprise",
@@ -414,7 +423,10 @@
         "feature4": "Criar organização e convidar equipa",
         "feature5": "Monitorizar sessões, análises e finanças por membro",
         "feature6": "Painel de equipa centralizado",
-        "feature7": "Exportar por membro (CSV)"
+        "feature7": "Exportar por membro (CSV)",
+        "feature8": "Notificações push de avisos da equipa",
+        "feature9": "Notificações push manuais (Admin)",
+        "feature10": "Assistente IA Enterprise"
       }
     }
   },
