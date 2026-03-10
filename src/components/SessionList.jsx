@@ -188,12 +188,23 @@ export const SessionList = memo(function SessionList({
                   )}
                 </div>
                 {(session.clockInCoords?.address || session.clockOutCoords?.address) && (
-                  <div className="session-location-row" title={[
+                  <div className={`session-location-row${(session.clockInCoords?.address && session.clockOutCoords?.address) ? ' session-location-both' : ''}`} title={[
                     session.clockInCoords?.address && `${t('session.clockInLocation')}: ${session.clockInCoords.address}`,
                     session.clockOutCoords?.address && `${t('session.clockOutLocation')}: ${session.clockOutCoords.address}`
                   ].filter(Boolean).join('\n')}>
                     <MapPin size={12} />
-                    <span>{session.clockInCoords?.address || session.clockOutCoords?.address}</span>
+                    <span>
+                      {session.clockInCoords?.address && session.clockOutCoords?.address
+                        ? (
+                            <>
+                              <strong>{t('session.clockInLocation')}:</strong> {session.clockInCoords.address}
+                              <br />
+                              <strong>{t('session.clockOutLocation')}:</strong> {session.clockOutCoords.address}
+                            </>
+                          )
+                        : (session.clockInCoords?.address || session.clockOutCoords?.address)
+                      }
+                    </span>
                   </div>
                 )}
                 {(session.clockInCoords || session.clockOutCoords) && (

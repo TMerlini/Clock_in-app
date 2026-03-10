@@ -1488,9 +1488,17 @@ export function Enterprise({ user, onNavigate }) {
                                     <td>{(s.isencaoHours || 0).toFixed(2)}</td>
                                     <td>{(s.paidExtraHours || 0).toFixed(2)}</td>
                                     <td>€{(s.totalEarnings || 0).toFixed(2)}</td>
-                                    <td className="enterprise-cell-ellipsis" title={raw?.location || raw?.clockInCoords?.address || ''}>
+                                    <td className="enterprise-cell-ellipsis" title={[
+                                      raw?.clockInCoords?.address && `${t('session.clockInLocation')}: ${raw.clockInCoords.address}`,
+                                      raw?.clockOutCoords?.address && `${t('session.clockOutLocation')}: ${raw.clockOutCoords.address}`,
+                                      raw?.location
+                                    ].filter(Boolean).join('\n') || '-'}>
                                       <div className="enterprise-location-cell">
-                                        <span>{raw?.location || raw?.clockInCoords?.address || '-'}</span>
+                                        <span>
+                                          {raw?.clockInCoords?.address && raw?.clockOutCoords?.address
+                                            ? `${t('session.clockInLocation')}: ${raw.clockInCoords.address} | ${t('session.clockOutLocation')}: ${raw.clockOutCoords.address}`
+                                            : (raw?.location || raw?.clockInCoords?.address || raw?.clockOutCoords?.address || '-')}
+                                        </span>
                                         {hasCoords && (
                                           <button
                                             className={`enterprise-location-btn${isMapOpen ? ' active' : ''}`}
