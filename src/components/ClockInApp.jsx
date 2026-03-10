@@ -2,7 +2,7 @@ import { useState, useEffect, Suspense, lazy, useCallback } from 'react';
 import { signOut } from 'firebase/auth';
 import { collection, addDoc, query, where, getDocs, orderBy, doc, setDoc, deleteDoc, onSnapshot, getDoc, updateDoc } from 'firebase/firestore';
 import { auth, db } from '../lib/firebase';
-import { captureLocation } from '../lib/geolocation';
+import { captureLocation, captureLocationQuick } from '../lib/geolocation';
 import i18n from '../lib/i18n';
 import { useTranslation } from 'react-i18next';
 import { useGoogleCalendar } from '../hooks/useGoogleCalendar';
@@ -635,13 +635,20 @@ export function ClockInApp({ user }) {
         });
         console.log('Active clock-in saved to Firestore');
 
-        // Non-blocking GPS capture on clock-in
+        // Two-phase GPS capture on clock-in: quick coords first, then full address
         if (gpsAutoCapture) {
-          captureLocation().then(coords => {
-            updateDoc(activeClockInRef, { clockInCoords: coords }).catch(err =>
-              console.error('Failed to save clock-in GPS:', err)
-            );
-          }).catch(err => console.warn('GPS capture skipped:', err.message));
+          captureLocationQuick()
+            .then(coords => {
+              updateDoc(activeClockInRef, { clockInCoords: coords }).catch(err =>
+                console.error('Failed to save clock-in GPS:', err)
+              );
+              captureLocation().then(fullCoords => {
+                updateDoc(activeClockInRef, { clockInCoords: fullCoords }).catch(err =>
+                  console.error('Failed to update clock-in address:', err)
+                );
+              }).catch(() => {});
+            })
+            .catch(err => console.warn('GPS capture skipped:', err.message));
         }
 
         // State will be updated by the Firestore listener
@@ -785,8 +792,22 @@ export function ClockInApp({ user }) {
         const activeClockInSnap = await getDoc(activeClockInRef);
         const activeClockInData = activeClockInSnap.exists() ? activeClockInSnap.data() : {};
         const storedCalendarEventId = activeClockInData.calendarEventId || null;
-        const storedClockInCoords = activeClockInData.clockInCoords || null;
-        
+        let storedClockInCoords = activeClockInData.clockInCoords || null;
+
+        // Retry reading clock-in coords if missing (GPS may still be in flight)
+        if (!storedClockInCoords) {
+          for (let retry = 0; retry < 2; retry++) {
+            await new Promise(r => setTimeout(r, 2000));
+            const retrySnap = await getDoc(activeClockInRef);
+            const retryData = retrySnap.exists() ? retrySnap.data() : {};
+            if (retryData.clockInCoords) {
+              storedClockInCoords = retryData.clockInCoords;
+              console.log('Clock-in coords recovered on retry');
+              break;
+            }
+          }
+        }
+
         console.log('Clock-out Google Calendar status:', { 
           isReady: googleCalendar.isReady, 
           isAuthorized: googleCalendar.isAuthorized,

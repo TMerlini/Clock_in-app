@@ -70,10 +70,14 @@ export const ActiveSessionCard = memo(function ActiveSessionCard({ clockInTime, 
 
   const handleUseMyLocation = async () => {
     if (!isGeolocationAvailable()) return;
+    const user = auth.currentUser;
+    if (!user) return;
     setCapturingGps(true);
     try {
       const coords = await captureLocation();
       setLocation(coords.address);
+      const activeClockInRef = doc(db, 'activeClockIns', user.uid);
+      await updateDoc(activeClockInRef, { clockInCoords: coords });
     } catch (err) {
       console.warn('GPS capture failed:', err.message);
     } finally {

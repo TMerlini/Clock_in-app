@@ -37,6 +37,21 @@ async function reverseGeocode(lat, lng) {
 }
 
 /**
+ * Captures GPS position quickly without reverse geocoding.
+ * Returns { lat, lng, address } with raw coords as address.
+ * Use for fast persistence; follow up with captureLocation() for full address.
+ */
+export async function captureLocationQuick() {
+  if (!isGeolocationAvailable()) {
+    throw new Error('Geolocation not available');
+  }
+  const position = await getPosition();
+  const lat = position.coords.latitude;
+  const lng = position.coords.longitude;
+  return { lat, lng, address: `${lat.toFixed(5)}, ${lng.toFixed(5)}` };
+}
+
+/**
  * Captures the current GPS position and reverse-geocodes it.
  * Returns { lat, lng, address } or throws on failure.
  */
