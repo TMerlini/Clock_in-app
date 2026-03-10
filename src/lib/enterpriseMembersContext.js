@@ -511,9 +511,10 @@ export async function getEnterpriseTeamWarnings(enterpriseId, members) {
     const warnings = [];
     const name = memberDisplayName(member);
     try {
-      const [sessionsSnap, settingsSnap] = await Promise.all([
+      const [sessionsSnap, settingsSnap, activeClockInSnap] = await Promise.all([
         getDocs(query(collection(db, 'sessions'), where('userId', '==', member.id))),
-        getDoc(doc(db, 'userSettings', member.id))
+        getDoc(doc(db, 'userSettings', member.id)),
+        getDoc(doc(db, 'activeClockIns', member.id))
       ]);
       const sessions = [];
       sessionsSnap.forEach((d) => {
@@ -596,6 +597,36 @@ export async function getEnterpriseTeamWarnings(enterpriseId, members) {
           severity: 'medium',
           detail: `${pct}% (${ytdPaidExtra.toFixed(0)}h / ${ANNUAL_OVERTIME_CAP}h)`
         });
+      }
+
+      // Active session warnings: forgotten clock-out, unusual clock-in time
+      if (activeClockInSnap.exists()) {
+        const activeData = activeClockInSnap.data();
+        const clockInTime = activeData.clockInTime ?? (activeData.clockIn?.toDate ? activeData.clockIn.toDate().getTime() : Date.now());
+        const elapsedHours = (Date.now() - clockInTime) / (1000 * 60 * 60);
+
+        if (elapsedHours >= 12) {
+          warnings.push({
+            memberId: member.id,
+            memberName: name,
+            type: 'forgotten_clockout',
+            severity: 'high',
+            detail: `${elapsedHours.toFixed(1)}h (possible forgotten clock-out)`
+          });
+        }
+
+        const clockInDate = new Date(clockInTime);
+        const hour = clockInDate.getHours();
+        if (hour < 6 || hour >= 22) {
+          const timeStr = clockInDate.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+          warnings.push({
+            memberId: member.id,
+            memberName: name,
+            type: 'unusual_clockin_time',
+            severity: 'medium',
+            detail: `Clock-in at ${timeStr}`
+          });
+        }
       }
 
       return warnings;

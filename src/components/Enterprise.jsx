@@ -1088,7 +1088,9 @@ export function Enterprise({ user, onNavigate }) {
                   overtime_weekly: 'overtimeWeekly',
                   overtime_weekly_approaching: 'overtimeWeeklyApproaching',
                   overtime_annual: 'overtimeAnnual',
-                  overtime_annual_approaching: 'overtimeAnnualApproaching'
+                  overtime_annual_approaching: 'overtimeAnnualApproaching',
+                  forgotten_clockout: 'forgottenClockout',
+                  unusual_clockin_time: 'unusualClockinTime'
                 }[w.type] || w.type;
                 return (
                   <li key={`${w.memberId}-${w.type}-${idx}`} className={`enterprise-warning-item enterprise-warning--${w.severity}`}>

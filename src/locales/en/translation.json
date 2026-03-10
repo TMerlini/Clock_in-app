@@ -556,6 +556,8 @@
     "overtimeWeeklyApproaching": "High weekly hours (approaching 40h)",
     "overtimeAnnual": "Over annual overtime cap",
     "overtimeAnnualApproaching": "Approaching annual overtime cap",
+    "forgottenClockout": "Possible forgotten clock-out",
+    "unusualClockinTime": "Unusual clock-in time",
     "aiCall": {
       "title": "Team HR & Law AI",
       "description": "Get AI analysis and advice on HR, legal compliance, and finance.",

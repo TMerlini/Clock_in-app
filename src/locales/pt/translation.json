@@ -556,6 +556,8 @@
     "overtimeWeeklyApproaching": "Horas semanais elevadas (a aproximar de 40h)",
     "overtimeAnnual": "Acima do limite anual de horas extras",
     "overtimeAnnualApproaching": "A aproximar do limite anual de horas extras",
+    "forgottenClockout": "Possível esquecimento de saída",
+    "unusualClockinTime": "Hora de entrada incomum",
     "aiCall": {
       "title": "IA Equipa RH e Direito",
       "description": "Obtenha análise e conselhos da IA sobre RH, conformidade legal e finanças.",
