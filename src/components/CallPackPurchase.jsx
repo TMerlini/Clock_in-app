@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { doc, getDoc } from 'firebase/firestore';
 import { db, auth } from '../lib/firebase';
-import { getCallStatus, getCallPacksStatus, addCallPack } from '../lib/tokenManager';
+import { getCallStatus, getCallPacksStatus } from '../lib/tokenManager';
 import { getPlanConfig } from '../lib/planConfig';
 import { STRIPE_PAYMENT_LINKS, hasPaymentLinks } from '../lib/stripeConfig';
 import { Zap, Check, AlertCircle, Loader, ShoppingCart } from 'lucide-react';
@@ -23,7 +23,7 @@ export function CallPackPurchase({ onNavigate }) {
     getPlanConfig().then(setPlanConfig).catch(() => setPlanConfig(null));
   }, []);
 
-  // Check if returning from Stripe purchase
+  // Check if returning from Stripe purchase (webhook fulfills the pack server-side)
   const checkPurchaseReturn = async () => {
     const urlParams = new URLSearchParams(window.location.search);
     const success = urlParams.get('success');
@@ -31,29 +31,14 @@ export function CallPackPurchase({ onNavigate }) {
 
     if (success && packPurchase === 'true') {
       setSuccessMessage(t('callPackPurchase.paymentSuccess'));
-      
-      // Get current user
-      const currentUser = auth.currentUser;
-      if (currentUser) {
-        try {
-          const config = await getPlanConfig();
-          const packSize = config?.callPack?.packSize ?? 50;
-          await addCallPack(currentUser.uid, packSize);
-          setSuccessMessage(t('callPackPurchase.packPurchased'));
-          
-          // Reload status
-          await loadCallStatus();
-          
-          // Clear URL parameters
-          setTimeout(() => {
-            window.history.replaceState({}, document.title, window.location.pathname);
-            setSuccessMessage(null);
-          }, 3000);
-        } catch (error) {
-          console.error('Error adding call pack:', error);
-          setSuccessMessage(t('callPackPurchase.paymentReceivedError'));
-        }
+      if (auth.currentUser) {
+        await loadCallStatus();
+        setSuccessMessage(t('callPackPurchase.packPurchased'));
       }
+      setTimeout(() => {
+        window.history.replaceState({}, document.title, window.location.pathname);
+        setSuccessMessage(null);
+      }, 3000);
     }
   };
 
