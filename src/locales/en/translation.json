@@ -995,6 +995,10 @@
         "q11": {
           "question": "How do profile pictures work?",
           "answer": "You can upload a profile picture in Settings > Profile:\n• Supported formats: JPEG, PNG, GIF, WebP (max 2MB)\n• Your picture appears in the app header next to your name with a rotating purple border\n• Enterprise admins can see team members' profile pictures in the members list and detail view\n• You can change or remove your picture at any time\n• Pictures are stored securely in Firebase Storage"
+        },
+        "q12": {
+          "question": "What happens if I work past midnight?",
+          "answer": "Sessions normally auto clock-out at 23:59 when midnight is crossed. However, if you see a 'Resume' prompt (e.g. from an ongoing Google Calendar event) and tap it to continue working past midnight, the app will NOT auto clock you out. Your session will keep running. For normal clock-ins that cross midnight without resuming, the session will auto clock-out at 23:59 to avoid forgotten clock-outs."
         }
       },
       "legalCompliance": {
@@ -1035,6 +1039,10 @@
         "q6": {
           "question": "What are team warnings?",
           "answer": "The team warnings system automatically monitors your team members for compliance issues:\n• Isenção limit warnings: Alerts when members approach (90%) or exceed their annual Isenção limit (200h default)\n• Weekly hours warnings: Alerts when members work 35h+ in a week (approaching 40h limit)\n• Annual overtime warnings: Alerts when members approach (90%) or exceed their annual overtime cap (150h)\n\nWarnings help you proactively manage compliance and prevent legal issues before they occur."
+        },
+        "q7": {
+          "question": "Can I see members' finance settings in Enterprise?",
+          "answer": "Yes. In the member detail Finance tab, enterprise managers see a read-only summary of each member's financial settings (hourly rate, Segurança Social, IRS/IHT rates, etc.). If settings look incorrect (e.g. missing hourly rate, zero tax rates), the app shows a warning so you can ask the member to review their Settings → Finance. The member Overwork tab also shows usage cards (accumulated, used, days off, remaining) matching the Analytics overwork view."
         }
       }
     }
@@ -1343,7 +1351,7 @@
     "footer": {
       "version": "Version 2.3.0 - February 2026",
       "copyright": "© 2026 Clock In - Intelligent Time Manager. Built for professionals who value their time.",
-      "latestUpdate": "Latest update: GPS location tracking with mini-maps, profile pictures, cumulative finance charts, Enterprise calendar events, and overwork usage editing",
+      "latestUpdate": "Latest update: Enterprise member finance settings (read-only), overwork usage cards, resume session past midnight, plan features translations",
       "contact": "Contact us:"
     }
   }

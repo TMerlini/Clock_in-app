@@ -995,6 +995,10 @@
         "q11": {
           "question": "Como funcionam as fotos de perfil?",
           "answer": "Pode carregar uma foto de perfil em Definições > Perfil:\n• Formatos suportados: JPEG, PNG, GIF, WebP (máx 2MB)\n• A sua foto aparece no cabeçalho da aplicação junto ao seu nome com uma borda roxa rotativa\n• Administradores Enterprise podem ver as fotos de perfil dos membros da equipa na lista e vista de detalhes\n• Pode alterar ou remover a sua foto a qualquer momento\n• As fotos são armazenadas de forma segura no Firebase Storage"
+        },
+        "q12": {
+          "question": "O que acontece se trabalhar para além da meia-noite?",
+          "answer": "As sessões normalmente fazem saída automática às 23:59 quando ultrapassa a meia-noite. No entanto, se vir um pedido 'Continuar' (por ex. de um evento em curso no Google Calendar) e tocar para continuar a trabalhar para além da meia-noite, a aplicação NÃO fará saída automática. A sua sessão continuará a correr. Para entradas normais que ultrapassam a meia-noite sem continuar, a sessão fará saída automática às 23:59 para evitar saídas esquecidas."
         }
       },
       "legalCompliance": {
@@ -1035,6 +1039,10 @@
         "q6": {
           "question": "O que são avisos da equipa?",
           "answer": "O sistema de avisos da equipa monitoriza automaticamente os seus membros da equipa para problemas de conformidade:\n• Avisos de limite de Isenção: Alerta quando os membros se aproximam (90%) ou excedem o seu limite anual de Isenção (200h padrão)\n• Avisos de horas semanais: Alerta quando os membros trabalham 35h+ numa semana (a aproximar-se do limite de 40h)\n• Avisos de horas extras anuais: Alerta quando os membros se aproximam (90%) ou excedem o seu limite anual de horas extras (150h)\n\nOs avisos ajudam-no a gerir proativamente a conformidade e a prevenir problemas legais antes que ocorram."
+        },
+        "q7": {
+          "question": "Posso ver as definições financeiras dos membros no Enterprise?",
+          "answer": "Sim. No separador Finanças do detalhe do membro, os gestores Enterprise veem um resumo só de leitura das definições financeiras de cada membro (taxa horária, Segurança Social, taxas IRS/IHT, etc.). Se as definições parecerem incorrectas (ex. taxa horária em falta, taxas fiscais a zero), a aplicação mostra um aviso para pedir ao membro que reveja Definições → Finanças. O separador Horas Extras do membro também mostra cartões de uso (acumulado, usado, dias de folga, restante) como na vista de Análises."
         }
       },
       "enterprise": {
@@ -1061,6 +1069,10 @@
         "q6": {
           "question": "O que são avisos da equipa?",
           "answer": "O sistema de avisos da equipa monitoriza automaticamente os seus membros da equipa para problemas de conformidade:\n• Avisos de limite de Isenção: Alerta quando os membros se aproximam (90%) ou excedem o seu limite anual de Isenção (200h padrão)\n• Avisos de horas semanais: Alerta quando os membros trabalham 35h+ numa semana (a aproximar-se do limite de 40h)\n• Avisos de horas extras anuais: Alerta quando os membros se aproximam (90%) ou excedem o seu limite anual de horas extras (150h)\n\nOs avisos ajudam-no a gerir proativamente a conformidade e a prevenir problemas legais antes que ocorram."
+        },
+        "q7": {
+          "question": "Posso ver as definições financeiras dos membros no Enterprise?",
+          "answer": "Sim. No separador Finanças do detalhe do membro, os gestores Enterprise veem um resumo só de leitura das definições financeiras de cada membro (taxa horária, Segurança Social, taxas IRS/IHT, etc.). Se as definições parecerem incorrectas (ex. taxa horária em falta, taxas fiscais a zero), a aplicação mostra um aviso para pedir ao membro que reveja Definições → Finanças. O separador Horas Extras do membro também mostra cartões de uso (acumulado, usado, dias de folga, restante) como na vista de Análises."
         }
       }
     }
@@ -1369,7 +1381,7 @@
     "footer": {
       "version": "Versão 2.3.0 - Fevereiro 2026",
       "copyright": "© 2026 Clock In - Gestor de Tempo Inteligente. Construído para profissionais que valorizam o seu tempo.",
-      "latestUpdate": "Última atualização: Rastreamento de localização GPS com mini-mapas, fotos de perfil, gráficos financeiros cumulativos, eventos do calendário Enterprise e edição de uso de trabalho extra",
+      "latestUpdate": "Última atualização: Definições financeiras dos membros Enterprise (somente leitura), cartões de uso de horas extras, continuar sessão para além da meia-noite, traduções das funcionalidades dos planos",
       "contact": "Contacte-nos:"
     }
   }

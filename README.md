@@ -11,6 +11,7 @@ A comprehensive time tracking application for managing work hours, overtime, mea
 - **Interactive Mini-Maps** - Leaflet/OpenStreetMap maps showing clock-in (green marker) and clock-out (red marker) locations in session details, session list, and active session card
 - **Manual GPS Capture** - "Use my location" button in session creator and active session card for on-demand position capture
 - **Cross-Device Sync** - Active sessions and data sync in real-time across all devices
+- **Resume Past Midnight** - Tap "Resume" on an ongoing session to continue past midnight without auto clock-out
 - **Manual Session Creation** - Add historical sessions with custom times and GPS locations
 - **Session Editing** - Modify existing sessions with full details and location maps
 - **Automatic Calculations** - Real-time computation of regular hours, unpaid overtime, and paid overtime
@@ -116,6 +117,8 @@ A comprehensive time tracking application for managing work hours, overtime, mea
 - **Team Warnings System** - Automatic alerts for Isenção limits (90%), weekly hours (35h+), and annual overtime caps
 - **Overwork Details** - Visual bar charts comparing each member's overtime and Isenção hours
 - **Per-Member Analytics & Finance** - Detailed reports and CSV exports per team member
+- **Member Finance Settings (Read-Only)** - View each member's Segurança Social, IRS/IHT rates, and other finance options; warns when settings look incorrect
+- **Member Overwork Usage Cards** - Total accumulated, used, days off earned, and remaining balance per member (matches Analytics view)
 - **GPS Location Tracking** - View member clock-in/out locations on interactive maps per session
 - **Google Calendar Events** - Collapsible calendar section with daily/weekly/monthly event views
 - **Member Profile Pictures** - Team member avatars displayed in member list and detail views
@@ -614,6 +617,12 @@ The app is configured for automatic deployment to Vercel:
 This app is actively maintained with regular updates and new features. For a comprehensive list of planned enhancements, see **[FUTURE_ENHANCEMENTS.md](FUTURE_ENHANCEMENTS.md)**.
 
 ### 🚀 Recent Updates (2026)
+
+**Enterprise & Clock-In Improvements (February 2026)**
+- ✅ **Member Finance Settings (Read-Only)** - Enterprise managers see each member's financial options (Segurança Social, IHT, IRS rates) with misconfiguration warnings
+- ✅ **Member Overwork Usage Cards** - Enterprise member Overwork tab now shows accumulated, used, days off, and remaining (Analytics-style cards)
+- ✅ **Resume Session Past Midnight** - When you tap "Resume" on an ongoing session to continue past midnight, the app no longer auto-clocks you out
+- ✅ **Plan Features Translation** - Admin-editable plan features use translation keys for EN/PT support; "Reset to defaults" in Admin Subscriptions
 
 **GPS Location Tracking & Mini-Maps (February 2026)**
 - ✅ **Auto-Capture GPS on Clock-In/Out** - Automatic position recording with configurable toggle in Settings

@@ -41,11 +41,11 @@ export function FAQ() {
     },
     {
       category: "Using This App",
-      questionKeys: ['q1', 'q2', 'q3', 'q4', 'q5', 'q6', 'q7', 'q8', 'q9', 'q10', 'q11']
+      questionKeys: ['q1', 'q2', 'q3', 'q4', 'q5', 'q6', 'q7', 'q8', 'q9', 'q10', 'q11', 'q12']
     },
     {
       category: "Enterprise",
-      questionKeys: ['q1', 'q2', 'q3', 'q4', 'q5', 'q6']
+      questionKeys: ['q1', 'q2', 'q3', 'q4', 'q5', 'q6', 'q7']
     },
     {
       category: "Legal Compliance",
