@@ -1069,6 +1069,10 @@
       "empty": "No media uploaded yet",
       "invalidYouTube": "Invalid YouTube URL. Please enter a valid YouTube video link."
     },
+    "push": {
+      "planChangedTitle": "Plan updated",
+      "planChangedBody": "Your plan has been changed to {{plan}}. Thank you for choosing Clock-in.pt!"
+    },
     "analytics": {
       "title": "Usage Analytics",
       "range7d": "Last 7 days",

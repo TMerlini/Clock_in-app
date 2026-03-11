@@ -43,6 +43,20 @@ function App() {
             plan: 'free',
             createdAt: serverTimestamp()
           });
+          // Send pending welcome push (if user was invited as guest)
+          try {
+            const token = await user.getIdToken();
+            const base = typeof window !== 'undefined' ? window.location.origin : '';
+            await fetch(`${base}/api/send-pending-welcome-push`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`
+              }
+            });
+          } catch (pushErr) {
+            console.warn('Pending welcome push check failed:', pushErr);
+          }
         }
       } catch (err) {
         console.error('Failed to ensure userSettings:', err);

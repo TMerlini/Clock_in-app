@@ -1099,6 +1099,10 @@
       "empty": "Nenhuma mídia carregada ainda",
       "invalidYouTube": "URL do YouTube inválido. Por favor introduza um link de vídeo YouTube válido."
     },
+    "push": {
+      "planChangedTitle": "Plano atualizado",
+      "planChangedBody": "O seu plano foi alterado para {{plan}}. Obrigado por escolher o Clock-in.pt!"
+    },
     "analytics": {
       "title": "Análises de Uso",
       "range7d": "Últimos 7 dias",

@@ -242,6 +242,25 @@ export function Admin({ user }) {
         // For now, just set the subscription plan
       }
 
+      // Send guest invite push (immediately if user exists, or on first sign-in)
+      try {
+        const token = await currentUser.getIdToken();
+        const base = typeof window !== 'undefined' ? window.location.origin : '';
+        await fetch(`${base}/api/send-guest-invite-push`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            email: newGuestEmail.trim().toLowerCase(),
+            plan: newGuestPlan
+          })
+        });
+      } catch (pushErr) {
+        console.warn('Guest invite push failed:', pushErr);
+      }
+
       alert('Guest account created! User can now sign in with Google using this email.');
       setNewGuestEmail('');
       setNewGuestPlan('free');
@@ -253,6 +272,12 @@ export function Admin({ user }) {
     }
   };
 
+  const formatPlanDisplayName = (plan) => {
+    const p = (plan || 'free').toLowerCase().replace(/[- ]/g, '_');
+    const map = { free: 'Free', basic: 'Basic', pro: 'Pro', premium_ai: 'Premium AI', enterprise: 'Enterprise' };
+    return map[p] || plan;
+  };
+
   const handleUpdateUserPlan = async (userId, newPlan) => {
     try {
       const userSettingsRef = doc(db, 'userSettings', userId);
@@ -260,6 +285,33 @@ export function Admin({ user }) {
         subscriptionPlan: newPlan,
         plan: newPlan
       }, { merge: true });
+
+      // Send push notification: "Your plan has been changed to [X]. Thank you for choosing Clock-in.pt!"
+      try {
+        const planName = formatPlanDisplayName(newPlan);
+        const title = t('admin.push.planChangedTitle', { defaultValue: 'Plan updated' });
+        const body = t('admin.push.planChangedBody', {
+          defaultValue: 'Your plan has been changed to {{plan}}. Thank you for choosing Clock-in.pt!',
+          plan: planName
+        });
+        const token = await user.getIdToken();
+        const base = typeof window !== 'undefined' ? window.location.origin : '';
+        await fetch(`${base}/api/send-push`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            title,
+            body,
+            url: 'https://www.clock-in.pt',
+            recipients: userId
+          })
+        });
+      } catch (pushErr) {
+        console.warn('Plan change push failed:', pushErr);
+      }
 
       alert(`Subscription plan updated to ${newPlan}`);
       await loadAdminData();

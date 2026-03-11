@@ -88,5 +88,10 @@ service cloud.firestore {
     match /system/{docId} {
       allow read, write: if false;
     }
+
+    // Server-only: pending push invites for guests (API uses Admin SDK)
+    match /pendingPushInvites/{emailKey} {
+      allow read, write: if false;
+    }
   }
 }
