@@ -1,6 +1,6 @@
 import { useState, useEffect, Suspense, lazy, useCallback, useRef } from 'react';
 import { signOut } from 'firebase/auth';
-import { collection, addDoc, query, where, getDocs, orderBy, doc, setDoc, deleteDoc, onSnapshot, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, addDoc, query, where, getDocs, orderBy, doc, setDoc, deleteDoc, onSnapshot, getDoc, updateDoc } from 'firebase/firestore';
 import { auth, db } from '../lib/firebase';
 import { captureLocation, captureLocationQuick } from '../lib/geolocation';
 import i18n from '../lib/i18n';
@@ -89,30 +89,6 @@ export function ClockInApp({ user }) {
   const { plan } = useSubscriptionPlan();
 
   const isFreePlan = !plan || plan === 'free';
-
-  // Ensure userSettings exists for new users (so they appear in Admin User Management)
-  useEffect(() => {
-    if (!user?.uid) return;
-
-    const ensureUserSettings = async () => {
-      try {
-        const ref = doc(db, 'userSettings', user.uid);
-        const snap = await getDoc(ref);
-        if (!snap.exists()) {
-          await setDoc(ref, {
-            email: user.email,
-            subscriptionPlan: 'free',
-            plan: 'free',
-            createdAt: serverTimestamp()
-          });
-        }
-      } catch (err) {
-        console.error('Failed to ensure userSettings:', err);
-      }
-    };
-
-    ensureUserSettings();
-  }, [user?.uid, user?.email]);
 
   // Memoize handlers passed to child components
   const handlePageChange = useCallback((page) => {

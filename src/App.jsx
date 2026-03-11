@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { onAuthStateChanged } from 'firebase/auth';
-import { auth } from './lib/firebase';
+import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { auth, db } from './lib/firebase';
 import { Login } from './components/Login';
 import { ClockInApp } from './components/ClockInApp';
 import { Loader } from './components/Loader';
@@ -25,6 +26,31 @@ function App() {
       window.progressier.add({ id: user.uid });
     }
   }, [user?.uid]);
+
+  // Ensure userSettings exists for all authenticated users (including free/basic who can't access Settings)
+  // so they appear in Admin User Management
+  useEffect(() => {
+    if (!user?.uid) return;
+
+    const ensureUserSettings = async () => {
+      try {
+        const ref = doc(db, 'userSettings', user.uid);
+        const snap = await getDoc(ref);
+        if (!snap.exists()) {
+          await setDoc(ref, {
+            email: user.email,
+            subscriptionPlan: 'free',
+            plan: 'free',
+            createdAt: serverTimestamp()
+          });
+        }
+      } catch (err) {
+        console.error('Failed to ensure userSettings:', err);
+      }
+    };
+
+    ensureUserSettings();
+  }, [user?.uid, user?.email]);
 
   useEffect(() => {
     // Show loader for minimum 2.5 seconds
