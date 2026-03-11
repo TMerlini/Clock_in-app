@@ -5,7 +5,7 @@
  */
 import admin from 'firebase-admin';
 
-const BASE_URL = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'https://www.clock-in.pt';
+const PUSH_DESTINATION_URL = 'https://www.clock-in.pt';
 
 const ADMIN_EMAILS = ['merloproductions@gmail.com'];
 const ADMIN_ALIAS_REGEX = /^merloproductions\+[^@]+@gmail\.com$/i;
@@ -44,7 +44,7 @@ export default async function handler(req, res) {
       return res.status(403).json({ error: 'Admin only' });
     }
 
-    const { title, body, url, recipients } = req.body || {};
+    const { title, body, url, recipients, icon, image } = req.body || {};
     if (!title || !body) {
       return res.status(400).json({ error: 'Missing title or body' });
     }
@@ -64,18 +64,22 @@ export default async function handler(req, res) {
       return res.status(500).json({ error: 'Progressier not configured' });
     }
 
+    const payload = {
+      recipients: progressierRecipients,
+      title: String(title).substring(0, 50),
+      body: String(body).substring(0, 100),
+      url: url || PUSH_DESTINATION_URL
+    };
+    if (icon && typeof icon === 'string') payload.icon = icon;
+    if (image && typeof image === 'string') payload.image = image;
+
     const res2 = await fetch(endpoint, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${key}`
       },
-      body: JSON.stringify({
-        recipients: progressierRecipients,
-        title: String(title).substring(0, 50),
-        body: String(body).substring(0, 100),
-        url: url || BASE_URL
-      })
+      body: JSON.stringify(payload)
     });
 
     if (!res2.ok) {

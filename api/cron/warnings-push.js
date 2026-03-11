@@ -6,7 +6,7 @@ import admin from 'firebase-admin';
 import { startOfYear, endOfYear, startOfWeek, endOfWeek } from 'date-fns';
 
 const ANNUAL_OVERTIME_CAP = 150;
-const BASE_URL = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'https://www.clock-in.pt';
+const PUSH_DESTINATION_URL = 'https://www.clock-in.pt';
 
 function getAdmin() {
   if (!admin.apps.length) {
@@ -110,6 +110,31 @@ function digest(warnings) {
   return warnings.map((w) => `${w.type}:${w.detail}`).sort().join('|');
 }
 
+const WARNING_LABELS = {
+  isencao_over: 'Over Isenção limit',
+  isencao_approaching: 'Approaching Isenção limit',
+  overtime_weekly: 'Over 40h this week',
+  overtime_weekly_approaching: 'High weekly hours',
+  overtime_annual: 'Over annual overtime cap',
+  overtime_annual_approaching: 'Approaching annual overtime',
+  forgotten_clockout: 'Possible forgotten clock-out',
+  unusual_clockin_time: 'Unusual clock-in time'
+};
+
+function formatWarningForPush(w) {
+  const label = WARNING_LABELS[w.type] || w.type;
+  return `${label}: ${w.detail}`;
+}
+
+function buildUserWarningsBody(warnings) {
+  if (warnings.length === 0) return 'No warnings';
+  if (warnings.length === 1) return formatWarningForPush(warnings[0]);
+  const parts = warnings.slice(0, 2).map(formatWarningForPush);
+  const more = warnings.length - 2;
+  const body = more > 0 ? `${parts.join(' • ')} • +${more} more` : parts.join(' • ');
+  return body.substring(0, 100);
+}
+
 async function sendProgressierPush(recipientId, title, body, url) {
   const endpoint = process.env.PROGRESSIER_API_ENDPOINT;
   const key = process.env.PROGRESSIER_API_KEY;
@@ -127,7 +152,7 @@ async function sendProgressierPush(recipientId, title, body, url) {
       recipients: { id: recipientId },
       title: title.substring(0, 50),
       body: body.substring(0, 100),
-      url: url || BASE_URL
+      url: url || PUSH_DESTINATION_URL
     })
   });
   if (!res.ok) {
@@ -175,11 +200,12 @@ export default async function handler(req, res) {
       if (allWarnings.length > 0 && admins.length > 0) {
         const teamDigest = digest(allWarnings);
         const title = 'Clock In: Team Warnings';
-        const body = `${allWarnings.length} warning(s): ${allWarnings.slice(0, 2).map((w) => w.type).join(', ')}${allWarnings.length > 2 ? '…' : ''}`;
+        const labels = allWarnings.slice(0, 3).map((w) => WARNING_LABELS[w.type] || w.type);
+        const body = `${allWarnings.length} warning(s): ${labels.join(', ')}${allWarnings.length > 3 ? '...' : ''}`.substring(0, 100);
         for (const admin of admins) {
           const key = `team:${admin.id}:${enterpriseId}`;
           if (lastSent[key] !== teamDigest) {
-            toSend.push({ recipientId: admin.id, title, body, url: `${BASE_URL}/enterprise`, key, digestVal: teamDigest });
+            toSend.push({ recipientId: admin.id, title, body, url: `${PUSH_DESTINATION_URL}/enterprise`, key, digestVal: teamDigest });
           }
         }
       }
@@ -191,7 +217,8 @@ export default async function handler(req, res) {
         const d = digest(warnings);
         const key = `user:${member.id}`;
         if (lastSent[key] !== d) {
-          toSend.push({ recipientId: member.id, title: 'Clock In: Your Warnings', body: `${warnings.length} warning(s)`, url: BASE_URL, key, digestVal: d });
+          const body = buildUserWarningsBody(warnings);
+          toSend.push({ recipientId: member.id, title: 'Clock In: Your Warnings', body, url: PUSH_DESTINATION_URL, key, digestVal: d });
         }
       }
     }

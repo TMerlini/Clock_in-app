@@ -6,7 +6,7 @@
  *
  * Remove or protect this endpoint after testing.
  */
-const BASE_URL = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'https://www.clock-in.pt';
+const PUSH_DESTINATION_URL = 'https://www.clock-in.pt';
 
 export default async function handler(req, res) {
   if (req.method !== 'GET') {
@@ -40,7 +40,7 @@ export default async function handler(req, res) {
       recipients,
       title: 'Clock In: Test Notification',
       body: 'Push notifications are working correctly.',
-      url: BASE_URL
+      url: PUSH_DESTINATION_URL
     };
     const res2 = await fetch(endpoint, {
       method: 'POST',

@@ -1177,6 +1177,33 @@
   cursor: pointer;
 }
 
+.push-image-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.push-image-row input[type="url"] {
+  flex: 1;
+}
+
+.push-image-row .upload-btn {
+  flex-shrink: 0;
+  padding: 0.5rem 1rem;
+  background: var(--secondary);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 0.875rem;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.push-image-row .upload-btn:hover {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+}
+
 .push-recipients-row .uid-input {
   max-width: 320px;
   margin-left: 1.5rem;

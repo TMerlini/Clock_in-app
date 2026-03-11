@@ -49,7 +49,11 @@ export function Admin({ user }) {
   const [pushTestResult, setPushTestResult] = useState(null);
   const [manualTitle, setManualTitle] = useState('');
   const [manualBody, setManualBody] = useState('');
-  const [manualUrl, setManualUrl] = useState('');
+  const [manualUrl, setManualUrl] = useState('https://www.clock-in.pt');
+  const [manualIconUrl, setManualIconUrl] = useState('');
+  const [manualImageUrl, setManualImageUrl] = useState('');
+  const [manualIconUploading, setManualIconUploading] = useState(false);
+  const [manualImageUploading, setManualImageUploading] = useState(false);
   const [manualRecipients, setManualRecipients] = useState('all');
   const [manualUserId, setManualUserId] = useState('');
   const [manualLoading, setManualLoading] = useState(false);
@@ -553,7 +557,9 @@ export function Admin({ user }) {
         body: JSON.stringify({
           title: manualTitle.trim(),
           body: manualBody.trim(),
-          url: manualUrl.trim() || undefined,
+          url: manualUrl.trim() || 'https://www.clock-in.pt',
+          icon: manualIconUrl.trim() || undefined,
+          image: manualImageUrl.trim() || undefined,
           recipients
         })
       });
@@ -562,7 +568,9 @@ export function Admin({ user }) {
         setManualResult('success');
         setManualTitle('');
         setManualBody('');
-        setManualUrl('');
+        setManualUrl('https://www.clock-in.pt');
+        setManualIconUrl('');
+        setManualImageUrl('');
       } else {
         setManualResult(data.error || `Error ${r.status}`);
       }
@@ -570,6 +578,56 @@ export function Admin({ user }) {
       setManualResult(err.message || 'Failed');
     } finally {
       setManualLoading(false);
+    }
+  };
+
+  const handleManualIconUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!/^image\/(jpe?g|png|gif|webp)$/i.test(file.type)) {
+      alert('Please select an image (jpg, png, gif, webp).');
+      return;
+    }
+    setManualIconUploading(true);
+    try {
+      const timestamp = Date.now();
+      const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+      const storagePath = `pushNotifications/icons/${timestamp}_${safeName}`;
+      const storageRef = ref(storage, storagePath);
+      await uploadBytes(storageRef, file);
+      const url = await getDownloadURL(storageRef);
+      setManualIconUrl(url);
+    } catch (err) {
+      console.error('Icon upload failed:', err);
+      alert('Upload failed: ' + err.message);
+    } finally {
+      setManualIconUploading(false);
+      e.target.value = '';
+    }
+  };
+
+  const handleManualImageUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!/^image\/(jpe?g|png|gif|webp)$/i.test(file.type)) {
+      alert('Please select an image (jpg, png, gif, webp).');
+      return;
+    }
+    setManualImageUploading(true);
+    try {
+      const timestamp = Date.now();
+      const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+      const storagePath = `pushNotifications/images/${timestamp}_${safeName}`;
+      const storageRef = ref(storage, storagePath);
+      await uploadBytes(storageRef, file);
+      const url = await getDownloadURL(storageRef);
+      setManualImageUrl(url);
+    } catch (err) {
+      console.error('Image upload failed:', err);
+      alert('Upload failed: ' + err.message);
+    } finally {
+      setManualImageUploading(false);
+      e.target.value = '';
     }
   };
 
@@ -1714,6 +1772,36 @@ export function Admin({ user }) {
                     onChange={(e) => setManualUrl(e.target.value)}
                     placeholder="https://www.clock-in.pt"
                   />
+                </div>
+                <div className="form-group">
+                  <label>Icon URL (optional)</label>
+                  <div className="push-image-row">
+                    <input
+                      type="url"
+                      value={manualIconUrl}
+                      onChange={(e) => setManualIconUrl(e.target.value)}
+                      placeholder="https://... or upload below"
+                    />
+                    <label className="upload-btn">
+                      <input type="file" accept="image/jpeg,image/png,image/gif,image/webp" onChange={handleManualIconUpload} disabled={manualIconUploading} hidden />
+                      {manualIconUploading ? 'Uploading…' : 'Upload'}
+                    </label>
+                  </div>
+                </div>
+                <div className="form-group">
+                  <label>Image URL (optional)</label>
+                  <div className="push-image-row">
+                    <input
+                      type="url"
+                      value={manualImageUrl}
+                      onChange={(e) => setManualImageUrl(e.target.value)}
+                      placeholder="https://... or upload below"
+                    />
+                    <label className="upload-btn">
+                      <input type="file" accept="image/jpeg,image/png,image/gif,image/webp" onChange={handleManualImageUpload} disabled={manualImageUploading} hidden />
+                      {manualImageUploading ? 'Uploading…' : 'Upload'}
+                    </label>
+                  </div>
                 </div>
                 <div className="form-group">
                   <label>Recipients</label>
