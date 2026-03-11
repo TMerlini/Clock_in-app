@@ -681,11 +681,11 @@ export function Enterprise({ user, onNavigate }) {
   const memberFinanceData = useMemo(() => {
     if (!memberSessions.length || !memberSettings) return null;
     try {
-      return calculatePeriodFinance(memberSessions, memberDateRange, financeSettings);
+      return calculatePeriodFinance(memberSessions, memberDateRange, financeSettings, memberDeductions);
     } catch (e) {
       return null;
     }
-  }, [memberSessions, memberSettings, memberDateRange, financeSettings]);
+  }, [memberSessions, memberSettings, memberDateRange, financeSettings, memberDeductions]);
 
   const memberFilteredSessions = useMemo(() => {
     if (memberFinanceData) {
@@ -744,11 +744,11 @@ export function Enterprise({ user, onNavigate }) {
   const memberPreviousFinanceData = useMemo(() => {
     if (!memberSessions.length || !memberSettings || !memberPreviousDateRange) return null;
     try {
-      return calculatePeriodFinance(memberSessions, memberPreviousDateRange, financeSettings);
+      return calculatePeriodFinance(memberSessions, memberPreviousDateRange, financeSettings, memberDeductions);
     } catch (e) {
       return null;
     }
-  }, [memberSessions, memberSettings, memberPreviousDateRange, financeSettings]);
+  }, [memberSessions, memberSettings, memberPreviousDateRange, financeSettings, memberDeductions]);
 
   const memberOverworkStats = useMemo(() => {
     const totalOverworkHours = Math.round(memberSessions.reduce((sum, s) => sum + (s.paidExtraHours || 0), 0) * 10000) / 10000;
@@ -1974,6 +1974,12 @@ export function Enterprise({ user, onNavigate }) {
                                 <span className="enterprise-stat-label">{t('finance.grossSalary')}</span>
                                 <span className="enterprise-stat-value">€{memberFinanceData.earnings.grossSalary.toFixed(2)}</span>
                               </div>
+                              {(memberFinanceData.unpaidOverworkDeduction ?? 0) > 0 && (
+                                <div className="enterprise-stat-card">
+                                  <span className="enterprise-stat-label">{t('finance.unpaidOverworkDeduction')}</span>
+                                  <span className="enterprise-stat-value">-{formatHoursMinutes(memberFinanceData.unpaidOverworkHours ?? 0)} (€{(memberFinanceData.unpaidOverworkDeduction ?? 0).toFixed(2)})</span>
+                                </div>
+                              )}
                               <div className="enterprise-stat-card">
                                 <span className="enterprise-stat-label">{t('finance.totalDeductions')}</span>
                                 <span className="enterprise-stat-value">€{memberFinanceData.deductions.total.toFixed(2)}</span>

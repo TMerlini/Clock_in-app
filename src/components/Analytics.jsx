@@ -20,6 +20,7 @@ export const Analytics = memo(function Analytics({ user }) {
   const [deductionHours, setDeductionHours] = useState('');
   const [deductionDate, setDeductionDate] = useState(() => format(new Date(), 'yyyy-MM-dd'));
   const [deductionReason, setDeductionReason] = useState('');
+  const [deductionUsageType, setDeductionUsageType] = useState('paid'); // 'paid' | 'unpaid'
   const [showDeductionForm, setShowDeductionForm] = useState(false);
   const [editingDeduction, setEditingDeduction] = useState(null);
   const [lunchDuration, setLunchDuration] = useState(1);
@@ -385,6 +386,7 @@ export const Analytics = memo(function Analytics({ user }) {
         overworkHoursUsed: overworkHoursToUse,
         reason: deductionReason || t('analytics.noReasonProvided'),
         usageDate: deductionDate,
+        usageType: deductionUsageType,
         timestamp: Date.now(),
         createdAt: new Date().toISOString()
       });
@@ -394,6 +396,7 @@ export const Analytics = memo(function Analytics({ user }) {
       setDeductionHours('');
       setDeductionDate(format(new Date(), 'yyyy-MM-dd'));
       setDeductionReason('');
+      setDeductionUsageType('paid');
       setShowDeductionForm(false);
 
       // Reload deductions by invalidating cache and reloading
@@ -451,6 +454,7 @@ export const Analytics = memo(function Analytics({ user }) {
       id: deduction.id,
       reason: deduction.reason || '',
       usageDate: deduction.usageDate || format(new Date(deduction.timestamp), 'yyyy-MM-dd'),
+      usageType: deduction.usageType || 'paid',
     });
   };
 
@@ -461,6 +465,7 @@ export const Analytics = memo(function Analytics({ user }) {
       await updateDoc(deductionRef, {
         reason: editingDeduction.reason || t('analytics.noReasonProvided'),
         usageDate: editingDeduction.usageDate,
+        usageType: editingDeduction.usageType || 'paid',
       });
 
       invalidateCache('overworkDeductions', { userId: user.uid });
@@ -907,6 +912,32 @@ export const Analytics = memo(function Analytics({ user }) {
                   />
                 </div>
 
+                <div className="form-group usage-type-group">
+                  <label>{t('analytics.usageType')}</label>
+                  <div className="usage-type-options">
+                    <label className="usage-type-radio">
+                      <input
+                        type="radio"
+                        name="deductionUsageType"
+                        value="paid"
+                        checked={deductionUsageType === 'paid'}
+                        onChange={() => setDeductionUsageType('paid')}
+                      />
+                      {t('analytics.usageTypePaid')}
+                    </label>
+                    <label className="usage-type-radio">
+                      <input
+                        type="radio"
+                        name="deductionUsageType"
+                        value="unpaid"
+                        checked={deductionUsageType === 'unpaid'}
+                        onChange={() => setDeductionUsageType('unpaid')}
+                      />
+                      {t('analytics.usageTypeUnpaid')}
+                    </label>
+                  </div>
+                </div>
+
                 <button className="submit-deduction-button" onClick={handleAddDeduction}>
                   {t('analytics.submit')}
                 </button>
@@ -939,6 +970,28 @@ export const Analytics = memo(function Analytics({ user }) {
                             onChange={(e) => setEditingDeduction(prev => ({ ...prev, usageDate: e.target.value }))}
                             className="form-input edit-date-input"
                           />
+                          <div className="edit-usage-type">
+                            <label className="usage-type-radio">
+                              <input
+                                type="radio"
+                                name={`editUsageType-${editingDeduction.id}`}
+                                value="paid"
+                                checked={editingDeduction.usageType === 'paid'}
+                                onChange={() => setEditingDeduction(prev => ({ ...prev, usageType: 'paid' }))}
+                              />
+                              {t('analytics.usageTypePaidShort')}
+                            </label>
+                            <label className="usage-type-radio">
+                              <input
+                                type="radio"
+                                name={`editUsageType-${editingDeduction.id}`}
+                                value="unpaid"
+                                checked={editingDeduction.usageType === 'unpaid'}
+                                onChange={() => setEditingDeduction(prev => ({ ...prev, usageType: 'unpaid' }))}
+                              />
+                              {t('analytics.usageTypeUnpaidShort')}
+                            </label>
+                          </div>
                         </div>
                         <div className="deduction-hours">
                           -{formatHoursMinutes(deduction.hours)}
@@ -970,6 +1023,9 @@ export const Analytics = memo(function Analytics({ user }) {
                               : format(new Date(deduction.timestamp), 'MMM dd, yyyy', { locale: getDateFnsLocale() })}
                           </div>
                           <div className="deduction-reason">{deduction.reason}</div>
+                          <span className={`usage-type-badge usage-type-${deduction.usageType || 'paid'}`}>
+                            {deduction.usageType === 'unpaid' ? t('analytics.usageTypeUnpaidShort') : t('analytics.usageTypePaidShort')}
+                          </span>
                         </div>
                         <div className="deduction-hours">
                           -{formatHoursMinutes(deduction.hours)}

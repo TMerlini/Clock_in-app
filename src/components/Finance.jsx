@@ -7,12 +7,14 @@ import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfYear, 
 import { useTranslation } from 'react-i18next';
 import { getDateFnsLocale } from '../lib/i18n';
 import { calculatePeriodFinance, aggregateFinanceByPeriod } from '../lib/financeCalculator';
+import { formatHoursMinutes } from '../lib/utils';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import './Finance.css';
 
 export const Finance = memo(function Finance({ user, onNavigate }) {
   const { t } = useTranslation();
   const [sessions, setSessions] = useState([]);
+  const [overworkDeductions, setOverworkDeductions] = useState([]);
   const [settings, setSettings] = useState(null);
   const [loading, setLoading] = useState(true);
   const [reportType, setReportType] = useState('monthly');
@@ -26,7 +28,7 @@ export const Finance = memo(function Finance({ user, onNavigate }) {
     const loadAllData = async () => {
       setLoading(true);
       try {
-        const [sessionsResult, settingsResult] = await Promise.all([
+        const [sessionsResult, deductionsResult, settingsResult] = await Promise.all([
           getCachedQuery('sessions', { userId: user.uid }, async () => {
             const sessionsRef = collection(db, 'sessions');
             const q = query(sessionsRef, where('userId', '==', user.uid));
@@ -42,6 +44,16 @@ export const Finance = memo(function Finance({ user, onNavigate }) {
             });
             return allSessions;
           }),
+          getCachedQuery('overworkDeductions', { userId: user.uid }, async () => {
+            const deductionsRef = collection(db, 'overworkDeductions');
+            const q = query(deductionsRef, where('userId', '==', user.uid));
+            const querySnapshot = await getDocs(q);
+            const deductions = [];
+            querySnapshot.forEach((doc) => {
+              deductions.push({ id: doc.id, ...doc.data() });
+            });
+            return deductions;
+          }),
           getCachedQuery('userSettings', { userId: user.uid }, async () => {
             const settingsRef = doc(db, 'userSettings', user.uid);
             const settingsDoc = await getDoc(settingsRef);
@@ -53,6 +65,7 @@ export const Finance = memo(function Finance({ user, onNavigate }) {
         ]);
 
         setSessions(sessionsResult);
+        setOverworkDeductions(deductionsResult);
         setSettings(settingsResult);
       } catch (error) {
         console.error('Error loading finance data:', error);
@@ -126,7 +139,7 @@ export const Finance = memo(function Finance({ user, onNavigate }) {
     if (!sessions.length || !settings) return null;
 
     try {
-      return calculatePeriodFinance(sessions, dateRange, financeSettings);
+      return calculatePeriodFinance(sessions, dateRange, financeSettings, overworkDeductions);
     } catch (error) {
       console.error('Error calculating finance:', error);
       return null;
@@ -557,6 +570,18 @@ export const Finance = memo(function Finance({ user, onNavigate }) {
             <div className="finance-card-sublabel">{t('finance.totalEarnings')}</div>
           </div>
         </div>
+
+        {(financeData.unpaidOverworkDeduction ?? 0) > 0 && (
+          <div className="finance-card deduction unpaid-overwork">
+            <div className="finance-card-icon">
+              <ArrowDown />
+            </div>
+            <div className="finance-card-content">
+              <div className="finance-card-label">{t('finance.unpaidOverworkDeduction')}</div>
+              <div className="finance-card-value">-{formatHoursMinutes(financeData.unpaidOverworkHours ?? 0)} ({formatCurrency(financeData.unpaidOverworkDeduction)})</div>
+            </div>
+          </div>
+        )}
 
         {(financeData.deductions.total > 0 || financeData.deductions.mealCardDeduction > 0) && (
           <>
