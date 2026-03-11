@@ -1,4 +1,4 @@
-import { useState, useEffect, Suspense, lazy, useCallback } from 'react';
+import { useState, useEffect, Suspense, lazy, useCallback, useRef } from 'react';
 import { signOut } from 'firebase/auth';
 import { collection, addDoc, query, where, getDocs, orderBy, doc, setDoc, deleteDoc, onSnapshot, getDoc, updateDoc } from 'firebase/firestore';
 import { auth, db } from '../lib/firebase';
@@ -82,6 +82,7 @@ export function ClockInApp({ user }) {
   const [orphanRecoveryLoading, setOrphanRecoveryLoading] = useState(false);
   const [gpsAutoCapture, setGpsAutoCapture] = useState(true);
   const [activeClockInCoords, setActiveClockInCoords] = useState(null);
+  const skipMidnightAutoClockOutRef = useRef(false);
 
   // Google Calendar integration
   const googleCalendar = useGoogleCalendar();
@@ -145,6 +146,7 @@ export function ClockInApp({ user }) {
       await setDoc(activeClockInRef, {
         clockInTime,
         calendarEventId: orphanPlaceholder.id,
+        continuedPastMidnight: true, // User explicitly resumed - don't auto clock-out at midnight
       });
       setOrphanPlaceholder(null);
       // Firestore listener will restore isClockedIn state
@@ -222,21 +224,31 @@ export function ClockInApp({ user }) {
         console.log('Active clock-in detected from Firestore:', new Date(clockInTimestamp));
 
         // Check if clock-in was on a different day (past midnight)
-        if (clockInDate.getDate() !== now.getDate() ||
+        const isPastMidnight = clockInDate.getDate() !== now.getDate() ||
             clockInDate.getMonth() !== now.getMonth() ||
-            clockInDate.getFullYear() !== now.getFullYear()) {
+            clockInDate.getFullYear() !== now.getFullYear();
 
-          // Auto clock-out at midnight
+        if (isPastMidnight && !data.continuedPastMidnight) {
+          // Auto clock-out at midnight (user has not explicitly chosen to continue)
           const midnight = new Date(clockInDate);
           midnight.setHours(23, 59, 59, 999);
           const midnightTimestamp = midnight.getTime();
 
           console.log('Auto-clocking out at midnight for previous day session');
           await autoClockOut(clockInTimestamp, midnightTimestamp);
-
+        } else if (isPastMidnight && data.continuedPastMidnight) {
+          // User resumed session to continue past midnight - restore state, don't auto clock-out
+          console.log('Resumed session past midnight - keeping clocked in');
+          setClockInTime(clockInTimestamp);
+          setIsClockedIn(true);
+          setOrphanPlaceholder(null);
+          if (data.sessionDetails) setActiveSessionDetails(data.sessionDetails);
+          setActiveClockInCoords(data.clockInCoords || null);
+          skipMidnightAutoClockOutRef.current = true;
         } else {
           // Same day, restore/sync clock-in state
           console.log('Syncing clock-in state from Firestore');
+          skipMidnightAutoClockOutRef.current = false;
           setClockInTime(clockInTimestamp);
           setIsClockedIn(true);
           setOrphanPlaceholder(null);
@@ -255,6 +267,7 @@ export function ClockInApp({ user }) {
           return;
         }
         console.log('No active clock-in found in Firestore (server confirmed)');
+        skipMidnightAutoClockOutRef.current = false;
         setIsClockedIn(false);
         setClockInTime(null);
         setActiveSessionDetails(null);
@@ -323,6 +336,9 @@ export function ClockInApp({ user }) {
         if (clockInDate.getDate() !== currentDate.getDate() ||
             clockInDate.getMonth() !== currentDate.getMonth() ||
             clockInDate.getFullYear() !== currentDate.getFullYear()) {
+
+          // Skip if user resumed session to continue past midnight
+          if (skipMidnightAutoClockOutRef.current) return;
 
           // Auto clock-out at midnight
           const midnight = new Date(clockInDate);
