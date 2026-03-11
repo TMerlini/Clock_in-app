@@ -137,9 +137,12 @@ A comprehensive time tracking application for managing work hours, overtime, mea
   - Buy additional call packs as needed (+50 calls for €4.99, never expire)
 
 ### 🔄 Plan Switching & Billing
-- Switching plans automatically cancels the previous Stripe subscription (handled by server-side Stripe webhooks) to prevent double billing.
-- Upgrades can be set to take effect immediately or at period end depending on your Stripe configuration.
-- If you use customer-managed plan changes (Stripe Customer Portal), the same cancellation workflow keeps Stripe and Firestore in sync.
+- **Stripe Webhook Fulfillment** - When a user completes payment via Stripe Payment Links, a webhook (`checkout.session.completed`) automatically updates Firestore:
+  - **Plans (Basic, Pro, Premium AI, Enterprise)** - `userSettings.subscriptionPlan` is set immediately after purchase
+  - **Call Packs** - Purchased packs are added to `aiUsage.callPacks` server-side
+- Each Payment Link must have metadata configured in Stripe Dashboard (`plan: basic|pro|premium_ai|enterprise` or `type: call_pack`)
+- Switching plans automatically cancels the previous Stripe subscription (handled by server-side Stripe webhooks) to prevent double billing
+- If you use customer-managed plan changes (Stripe Customer Portal), the same cancellation workflow keeps Stripe and Firestore in sync
 
 ### 🌍 Internationalization (i18n)
 - **Multi-Language Support** - Full interface translation in Portuguese and English

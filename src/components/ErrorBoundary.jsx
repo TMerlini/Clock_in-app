@@ -26,12 +26,17 @@ export class ErrorBoundary extends Component {
 
   render() {
     if (this.state.hasError) {
+      const isChunkLoadError = this.state.error?.message?.includes('Failed to fetch dynamically imported module');
       return (
         <div className="error-boundary">
           <div className="error-boundary-content">
             <AlertCircle className="error-icon" size={48} />
-            <h2>Something went wrong</h2>
-            <p>An unexpected error occurred. Please try refreshing the page.</p>
+            <h2>{isChunkLoadError ? 'Update available' : 'Something went wrong'}</h2>
+            <p>
+              {isChunkLoadError
+                ? 'A new version is available. Please refresh the page to continue.'
+                : 'An unexpected error occurred. Please try refreshing the page.'}
+            </p>
             {process.env.NODE_ENV === 'development' && this.state.error && (
               <details className="error-details">
                 <summary>Error Details (Development Only)</summary>
@@ -41,8 +46,11 @@ export class ErrorBoundary extends Component {
                 )}
               </details>
             )}
-            <button onClick={this.handleReset} className="error-reset-button">
-              Try Again
+            <button
+              onClick={isChunkLoadError ? () => window.location.reload() : this.handleReset}
+              className="error-reset-button"
+            >
+              {isChunkLoadError ? 'Refresh page' : 'Try Again'}
             </button>
           </div>
         </div>
