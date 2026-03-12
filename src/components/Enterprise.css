@@ -1216,15 +1216,16 @@
 
 .enterprise-ongoing-bar-track {
   flex: 1;
-  height: 8px;
+  height: 10px;
   background: var(--muted);
-  border-radius: 4px;
+  border-radius: 6px;
   overflow: hidden;
+  border: 1px solid var(--border);
 }
 
 .enterprise-ongoing-bar-fill {
   height: 100%;
-  border-radius: 4px;
+  border-radius: 5px;
   transition: width 1s linear;
 }
 
@@ -1243,8 +1244,34 @@
 .enterprise-ongoing-elapsed {
   font-size: 0.8rem;
   font-variant-numeric: tabular-nums;
-  color: var(--muted-foreground);
   flex-shrink: 0;
+}
+
+.enterprise-ongoing-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.6rem;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 0.8rem;
+}
+
+.enterprise-ongoing-tag-green {
+  background: rgba(34, 197, 94, 0.2);
+  color: #22c55e;
+  border: 1px solid rgba(34, 197, 94, 0.4);
+}
+
+.enterprise-ongoing-tag-orange {
+  background: rgba(245, 158, 11, 0.2);
+  color: #f59e0b;
+  border: 1px solid rgba(245, 158, 11, 0.4);
+}
+
+.enterprise-ongoing-tag-red {
+  background: rgba(239, 68, 68, 0.2);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.4);
 }
 
 .enterprise-warnings-card {

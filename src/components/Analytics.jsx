@@ -914,27 +914,21 @@ export const Analytics = memo(function Analytics({ user }) {
 
                 <div className="form-group usage-type-group">
                   <label>{t('analytics.usageType')}</label>
-                  <div className="usage-type-options">
-                    <label className="usage-type-radio">
-                      <input
-                        type="radio"
-                        name="deductionUsageType"
-                        value="paid"
-                        checked={deductionUsageType === 'paid'}
-                        onChange={() => setDeductionUsageType('paid')}
-                      />
+                  <div className="usage-type-selector">
+                    <button
+                      type="button"
+                      className={`usage-type-btn paid ${deductionUsageType === 'paid' ? 'active' : ''}`}
+                      onClick={() => setDeductionUsageType('paid')}
+                    >
                       {t('analytics.usageTypePaid')}
-                    </label>
-                    <label className="usage-type-radio">
-                      <input
-                        type="radio"
-                        name="deductionUsageType"
-                        value="unpaid"
-                        checked={deductionUsageType === 'unpaid'}
-                        onChange={() => setDeductionUsageType('unpaid')}
-                      />
+                    </button>
+                    <button
+                      type="button"
+                      className={`usage-type-btn unpaid ${deductionUsageType === 'unpaid' ? 'active' : ''}`}
+                      onClick={() => setDeductionUsageType('unpaid')}
+                    >
                       {t('analytics.usageTypeUnpaid')}
-                    </label>
+                    </button>
                   </div>
                 </div>
 
@@ -971,26 +965,22 @@ export const Analytics = memo(function Analytics({ user }) {
                             className="form-input edit-date-input"
                           />
                           <div className="edit-usage-type">
-                            <label className="usage-type-radio">
-                              <input
-                                type="radio"
-                                name={`editUsageType-${editingDeduction.id}`}
-                                value="paid"
-                                checked={editingDeduction.usageType === 'paid'}
-                                onChange={() => setEditingDeduction(prev => ({ ...prev, usageType: 'paid' }))}
-                              />
-                              {t('analytics.usageTypePaidShort')}
-                            </label>
-                            <label className="usage-type-radio">
-                              <input
-                                type="radio"
-                                name={`editUsageType-${editingDeduction.id}`}
-                                value="unpaid"
-                                checked={editingDeduction.usageType === 'unpaid'}
-                                onChange={() => setEditingDeduction(prev => ({ ...prev, usageType: 'unpaid' }))}
-                              />
-                              {t('analytics.usageTypeUnpaidShort')}
-                            </label>
+                            <div className="usage-type-selector compact">
+                              <button
+                                type="button"
+                                className={`usage-type-btn paid ${editingDeduction.usageType === 'paid' ? 'active' : ''}`}
+                                onClick={() => setEditingDeduction(prev => ({ ...prev, usageType: 'paid' }))}
+                              >
+                                {t('analytics.usageTypePaidShort')}
+                              </button>
+                              <button
+                                type="button"
+                                className={`usage-type-btn unpaid ${editingDeduction.usageType === 'unpaid' ? 'active' : ''}`}
+                                onClick={() => setEditingDeduction(prev => ({ ...prev, usageType: 'unpaid' }))}
+                              >
+                                {t('analytics.usageTypeUnpaidShort')}
+                              </button>
+                            </div>
                           </div>
                         </div>
                         <div className="deduction-hours">

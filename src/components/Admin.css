@@ -1167,14 +1167,39 @@
 .push-recipients-row {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 1rem;
 }
 
-.push-recipients-row .radio-label {
+.recipients-selector {
   display: flex;
-  align-items: center;
   gap: 0.5rem;
+  background: var(--secondary);
+  padding: 0.25rem;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  width: fit-content;
+}
+
+.recipients-selector button {
+  padding: 0.5rem 1rem;
+  background: transparent;
+  border: none;
+  color: var(--muted-foreground);
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 0.9rem;
   cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.recipients-selector button:hover {
+  background: var(--muted);
+  color: var(--foreground);
+}
+
+.recipients-selector button.active {
+  background: linear-gradient(135deg, var(--primary), var(--accent));
+  color: white;
 }
 
 .push-image-row {
@@ -1204,7 +1229,21 @@
   border-color: var(--primary);
 }
 
+.push-recipients-uid-row {
+  margin-top: 0.75rem;
+}
+
 .push-recipients-row .uid-input {
   max-width: 320px;
-  margin-left: 1.5rem;
+  padding: 0.5rem 1rem;
+  background: var(--secondary);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--foreground);
+  font-size: 0.9rem;
+}
+
+.push-recipients-row .uid-input:focus {
+  outline: none;
+  border-color: var(--primary);
 }

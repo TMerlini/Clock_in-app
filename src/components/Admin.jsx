@@ -1858,24 +1858,22 @@ export function Admin({ user }) {
                 <div className="form-group">
                   <label>Recipients</label>
                   <div className="push-recipients-row">
-                    <label className="radio-label">
-                      <input
-                        type="radio"
-                        name="recipients"
-                        checked={manualRecipients === 'all'}
-                        onChange={() => setManualRecipients('all')}
-                      />
-                      All subscribers
-                    </label>
-                    <label className="radio-label">
-                      <input
-                        type="radio"
-                        name="recipients"
-                        checked={manualRecipients === 'user'}
-                        onChange={() => setManualRecipients('user')}
-                      />
-                      Specific user (UID):
-                    </label>
+                    <div className="recipients-selector">
+                      <button
+                        type="button"
+                        className={`recipients-btn ${manualRecipients === 'all' ? 'active' : ''}`}
+                        onClick={() => setManualRecipients('all')}
+                      >
+                        All subscribers
+                      </button>
+                      <button
+                        type="button"
+                        className={`recipients-btn ${manualRecipients === 'user' ? 'active' : ''}`}
+                        onClick={() => setManualRecipients('user')}
+                      >
+                        Specific user (UID)
+                      </button>
+                    </div>
                     {manualRecipients === 'user' && (
                       <input
                         type="text"

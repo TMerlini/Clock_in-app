@@ -1138,7 +1138,7 @@ export function Enterprise({ user, onNavigate }) {
                         style={{ width: `${progressPercent}%` }}
                       />
                     </div>
-                    <span className="enterprise-ongoing-elapsed">{elapsedLabel}</span>
+                    <span className={`enterprise-ongoing-elapsed enterprise-ongoing-tag enterprise-ongoing-tag-${barColor}`}>{elapsedLabel}</span>
                   </div>
                 </div>
               );
