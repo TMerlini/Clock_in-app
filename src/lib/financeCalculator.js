@@ -332,12 +332,10 @@ export function calculatePeriodFinance(sessions, dateRange, settings, overworkDe
     mealAllowances
   );
 
-  // Filter unpaid overwork deductions within date range (existing records without usageType treated as 'paid')
+  // Filter overwork deductions within date range (existing records without usageType treated as 'paid')
   const rangeStart = dateRange.start.getTime();
   const rangeEnd = dateRange.end.getTime();
-  const unpaidDeductions = (overworkDeductions || []).filter(d => {
-    const type = d.usageType || 'paid';
-    if (type !== 'unpaid') return false;
+  const inRange = (d) => {
     let usageTime;
     if (d.usageDate) {
       usageTime = new Date(d.usageDate + 'T00:00:00').getTime();
@@ -347,14 +345,28 @@ export function calculatePeriodFinance(sessions, dateRange, settings, overworkDe
       return false;
     }
     return usageTime >= rangeStart && usageTime <= rangeEnd;
+  };
+
+  const unpaidDeductions = (overworkDeductions || []).filter(d => {
+    const type = d.usageType || 'paid';
+    return type === 'unpaid' && inRange(d);
   });
 
-  // Unpaid deduction amount: hours * hourlyRate
+  const paidDeductions = (overworkDeductions || []).filter(d => {
+    const type = d.usageType || 'paid';
+    return type === 'paid' && inRange(d);
+  });
+
+  // Unpaid deduction amount: hours * hourlyRate (reduces gross)
   const unpaidOverworkHours = unpaidDeductions.reduce((sum, d) => sum + (d.hours || 0), 0);
   const unpaidOverworkDeduction = unpaidOverworkHours * hourlyRate;
 
-  // Gross = base gross + bonus + meal subsidy - unpaid overwork deduction
-  let grossSalary = baseGrossSalary + fixedBonus + totalMealSubsidy - unpaidOverworkDeduction;
+  // Paid overwork earnings: hours * hourlyRate (adds to gross)
+  const paidOverworkHours = paidDeductions.reduce((sum, d) => sum + (d.hours || 0), 0);
+  const paidOverworkEarnings = paidOverworkHours * hourlyRate;
+
+  // Gross = base gross + bonus + meal subsidy - unpaid overwork deduction + paid overwork earnings
+  let grossSalary = baseGrossSalary + fixedBonus + totalMealSubsidy - unpaidOverworkDeduction + paidOverworkEarnings;
   grossSalary = Math.max(0, grossSalary);
 
   // Calculate deductions (SS base is Base Salary + IHT only, IRS has separate rates)
@@ -393,7 +405,9 @@ export function calculatePeriodFinance(sessions, dateRange, settings, overworkDe
     },
     unpaidOverworkHours,
     unpaidOverworkDeduction,
-    adjustments: { unpaidOverwork: unpaidOverworkDeduction },
+    paidOverworkHours,
+    paidOverworkEarnings,
+    adjustments: { unpaidOverwork: unpaidOverworkDeduction, paidOverwork: paidOverworkEarnings },
     netSalary,
     sessions: (() => {
       // Track which dates have already been counted for Isenção earnings

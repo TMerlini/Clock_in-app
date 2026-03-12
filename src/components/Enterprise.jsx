@@ -1974,6 +1974,12 @@ export function Enterprise({ user, onNavigate }) {
                                 <span className="enterprise-stat-label">{t('finance.grossSalary')}</span>
                                 <span className="enterprise-stat-value">€{memberFinanceData.earnings.grossSalary.toFixed(2)}</span>
                               </div>
+                              {(memberFinanceData.paidOverworkEarnings ?? 0) > 0 && (
+                                <div className="enterprise-stat-card">
+                                  <span className="enterprise-stat-label">{t('finance.paidOverworkUsage')}</span>
+                                  <span className="enterprise-stat-value">+{formatHoursMinutes(memberFinanceData.paidOverworkHours ?? 0)} (€{(memberFinanceData.paidOverworkEarnings ?? 0).toFixed(2)})</span>
+                                </div>
+                              )}
                               {(memberFinanceData.unpaidOverworkDeduction ?? 0) > 0 && (
                                 <div className="enterprise-stat-card">
                                   <span className="enterprise-stat-label">{t('finance.unpaidOverworkDeduction')}</span>

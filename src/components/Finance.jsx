@@ -571,6 +571,18 @@ export const Finance = memo(function Finance({ user, onNavigate }) {
           </div>
         </div>
 
+        {(financeData.paidOverworkEarnings ?? 0) > 0 && (
+          <div className="finance-card paid-overwork">
+            <div className="finance-card-icon">
+              <ArrowUp />
+            </div>
+            <div className="finance-card-content">
+              <div className="finance-card-label">{t('finance.paidOverworkUsage')}</div>
+              <div className="finance-card-value">+{formatHoursMinutes(financeData.paidOverworkHours ?? 0)} ({formatCurrency(financeData.paidOverworkEarnings)})</div>
+            </div>
+          </div>
+        )}
+
         {(financeData.unpaidOverworkDeduction ?? 0) > 0 && (
           <div className="finance-card deduction unpaid-overwork">
             <div className="finance-card-icon">

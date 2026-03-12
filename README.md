@@ -33,8 +33,9 @@ A comprehensive time tracking application for managing work hours, overtime, mea
 - **Overwork Management**:
   - Track accumulated overwork hours (8h = 1 work day)
   - Record overwork usage with reasons and custom usage dates
-  - Edit existing usage entries (reason and date) inline
-  - View remaining balance
+  - **Paid vs Unpaid selector** – Choose "Paid (compensated)" for time off with pay, or "Unpaid (reduces salary)" for unpaid leave that reduces expected salary in Finance
+  - Edit existing usage entries (reason, date, and usage type) inline
+  - View remaining balance and usage type badges per entry
   - Historical usage tracking sorted by usage date
 - **CSV Export** - Download detailed reports with all session data
 - **Search & Filter** - Find specific sessions by date, notes, or criteria (weekend, meals, overtime)
@@ -47,6 +48,7 @@ A comprehensive time tracking application for managing work hours, overtime, mea
 
 ### 💵 Finance & Tax Calculator *(Basic plan or higher)*
 - **Income Calculations** - Gross income, net income, and tax calculations based on work sessions
+- **Unpaid Overwork Deductions** - Unpaid overwork usage (recorded in Analytics) automatically reduces gross salary for the affected period
 - **Customizable Rates** - Configure hourly rate, IHT, overtime multipliers, meal subsidies, and bonuses
 - **Tax Support** - IRS, Social Security, and custom tax rates with separate rates for base salary, IHT, and overtime
 - **Cumulative Year-to-Date Charts** - Interactive line charts showing gross income, net income, and taxes with monthly granularity
@@ -313,9 +315,10 @@ A comprehensive time tracking application for managing work hours, overtime, mea
 
 **Record Usage**
 1. Click "+ Add Usage" button
-2. Enter hours to deduct
-3. Enter reason for usage
-4. Click "Add Deduction"
+2. Enter days and/or hours to deduct
+3. Select usage type: **Paid (compensated)** – time off with pay, no Finance impact; **Unpaid (reduces salary)** – unpaid leave that reduces expected salary in Finance
+4. Enter reason (optional) and usage date
+5. Click "Submit"
 
 **View History**
 - See all previous deductions
@@ -577,8 +580,11 @@ The app is configured for automatic deployment to Vercel:
 **overworkDeductions** - Overwork usage tracking
 - `userId`: string
 - `hours`: number
+- `daysOffUsed`: number
+- `overworkHoursUsed`: number
 - `reason`: string
 - `usageDate`: string (yyyy-MM-dd, user-specified date of usage)
+- `usageType`: string ('paid' | 'unpaid') - Paid = compensated time off (no Finance impact); Unpaid = reduces expected salary in Finance. Default `'paid'` for backward compatibility.
 - `timestamp`: number
 - `createdAt`: string (ISO date)
 
@@ -620,6 +626,12 @@ The app is configured for automatic deployment to Vercel:
 This app is actively maintained with regular updates and new features. For a comprehensive list of planned enhancements, see **[FUTURE_ENHANCEMENTS.md](FUTURE_ENHANCEMENTS.md)**.
 
 ### 🚀 Recent Updates (2026)
+
+**Overwork Paid vs Unpaid Selector (February 2026)**
+- ✅ **Usage Type in Analytics** - When recording overwork usage, choose "Paid (compensated)" or "Unpaid (reduces salary)" per entry
+- ✅ **Finance Integration** - Unpaid overwork deductions automatically reduce gross salary for the affected period (hours × hourly rate)
+- ✅ **Enterprise Member Finance** - Member unpaid deductions applied when viewing team member finance
+- ✅ **Edit & Display** - Edit usage type on existing entries; Paid/Unpaid badges shown in overwork history
 
 **Enterprise & Clock-In Improvements (February 2026)**
 - ✅ **Member Finance Settings (Read-Only)** - Enterprise managers see each member's financial options (Segurança Social, IHT, IRS rates) with misconfiguration warnings
