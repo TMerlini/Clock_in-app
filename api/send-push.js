@@ -1,7 +1,7 @@
 /**
- * Admin-only: send manual push notification via Progressier.
+ * Admin-only: send manual push notification via Scaffold Push Service.
  * POST with Firebase ID token in Authorization header.
- * Body: { title, body, url?, recipients: "all" | userId }
+ * Body: { title, body, url?, recipients: "all" | userId, icon?, image? }
  */
 import admin from 'firebase-admin';
 
@@ -48,43 +48,34 @@ export default async function handler(req, res) {
     if (!title || !body) {
       return res.status(400).json({ error: 'Missing title or body' });
     }
-
-    const progressierRecipients = recipients === 'all'
-      ? { users: 'all' }
-      : typeof recipients === 'string' && recipients
-        ? { id: recipients }
-        : null;
-    if (!progressierRecipients) {
+    if (!recipients || (recipients !== 'all' && typeof recipients !== 'string')) {
       return res.status(400).json({ error: 'recipients must be "all" or a userId' });
     }
 
-    const endpoint = process.env.PROGRESSIER_API_ENDPOINT;
-    const key = process.env.PROGRESSIER_API_KEY;
-    if (!endpoint || !key) {
-      return res.status(500).json({ error: 'Progressier not configured' });
+    const pushUrl = process.env.PUSH_SERVICE_URL;
+    const pushKey = process.env.PUSH_SERVICE_API_KEY;
+    if (!pushUrl || !pushKey) {
+      return res.status(500).json({ error: 'Push service not configured' });
     }
 
     const payload = {
-      recipients: progressierRecipients,
       title: String(title).substring(0, 50),
       body: String(body).substring(0, 100),
-      url: url || PUSH_DESTINATION_URL
+      url: url || PUSH_DESTINATION_URL,
     };
+    if (recipients !== 'all') payload.targetUserId = recipients;
     if (icon && typeof icon === 'string') payload.icon = icon;
     if (image && typeof image === 'string') payload.image = image;
 
-    const res2 = await fetch(endpoint, {
+    const res2 = await fetch(`${pushUrl}/notify`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${key}`
-      },
-      body: JSON.stringify(payload)
+      headers: { 'Content-Type': 'application/json', 'x-api-key': pushKey },
+      body: JSON.stringify(payload),
     });
 
     if (!res2.ok) {
       const text = await res2.text();
-      return res.status(502).json({ error: `Progressier: ${res2.status} ${text}` });
+      return res.status(502).json({ error: `Push service: ${res2.status} ${text}` });
     }
 
     return res.status(200).json({ ok: true });

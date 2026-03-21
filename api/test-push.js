@@ -1,7 +1,6 @@
 /**
- * One-off test endpoint: sends a single push notification.
+ * One-off test endpoint: sends a single push notification to a specific user.
  * GET /api/test-push?userId=YOUR_FIREBASE_UID
- * Or: /api/test-push?email=your@email.com (for testing - must match progressier.add target)
  * Optional: ?secret=YOUR_CRON_SECRET (required if CRON_SECRET is set)
  *
  * Remove or protect this endpoint after testing.
@@ -13,7 +12,7 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { userId, email, secret } = req.query;
+  const { userId, secret } = req.query;
   const cronSecret = process.env.CRON_SECRET;
   if (cronSecret) {
     if (secret !== cronSecret) {
@@ -21,39 +20,31 @@ export default async function handler(req, res) {
     }
   }
 
-  const recipients = userId ? { id: userId } : email ? { email: email } : null;
-  if (!recipients) {
-    return res.status(400).json({
-      error: 'Missing userId or email',
-      hint: 'Use ?userId=YOUR_UID or ?email=your@email.com (must match what progressier.add uses)'
-    });
+  if (!userId) {
+    return res.status(400).json({ error: 'Missing userId', hint: 'Use ?userId=YOUR_FIREBASE_UID' });
   }
 
-  const endpoint = process.env.PROGRESSIER_API_ENDPOINT;
-  const key = process.env.PROGRESSIER_API_KEY;
-  if (!endpoint || !key) {
-    return res.status(500).json({ error: 'PROGRESSIER_API_ENDPOINT or PROGRESSIER_API_KEY not set' });
+  const pushUrl = process.env.PUSH_SERVICE_URL;
+  const pushKey = process.env.PUSH_SERVICE_API_KEY;
+  if (!pushUrl || !pushKey) {
+    return res.status(500).json({ error: 'PUSH_SERVICE_URL or PUSH_SERVICE_API_KEY not set' });
   }
 
   try {
-    const payload = {
-      recipients,
-      title: 'Clock In: Test Notification',
-      body: 'Push notifications are working correctly.',
-      url: PUSH_DESTINATION_URL
-    };
-    const res2 = await fetch(endpoint, {
+    const res2 = await fetch(`${pushUrl}/notify`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${key}`
-      },
-      body: JSON.stringify(payload)
+      headers: { 'Content-Type': 'application/json', 'x-api-key': pushKey },
+      body: JSON.stringify({
+        targetUserId: userId,
+        title: 'Clock In: Test Notification',
+        body: 'Push notifications are working correctly.',
+        url: PUSH_DESTINATION_URL,
+      }),
     });
 
     if (!res2.ok) {
       const text = await res2.text();
-      return res.status(502).json({ error: `Progressier API error ${res2.status}: ${text}` });
+      return res.status(502).json({ error: `Push service error ${res2.status}: ${text}` });
     }
 
     return res.status(200).json({ ok: true, message: 'Test push sent. Check your device.' });

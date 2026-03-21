@@ -32,30 +32,25 @@ function formatPlanDisplayName(plan) {
   return map[p] || plan;
 }
 
-async function sendPushViaProgressier(recipientId, title, body) {
-  const endpoint = process.env.PROGRESSIER_API_ENDPOINT;
-  const key = process.env.PROGRESSIER_API_KEY;
-  if (!endpoint || !key) throw new Error('Progressier not configured');
+async function sendPush(recipientId, title, body) {
+  const pushUrl = process.env.PUSH_SERVICE_URL;
+  const pushKey = process.env.PUSH_SERVICE_API_KEY;
+  if (!pushUrl || !pushKey) throw new Error('Push service not configured');
 
-  const payload = {
-    recipients: { id: recipientId },
-    title: String(title).substring(0, 50),
-    body: String(body).substring(0, 100),
-    url: PUSH_DESTINATION_URL
-  };
-
-  const res = await fetch(endpoint, {
+  const res = await fetch(`${pushUrl}/notify`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${key}`
-    },
-    body: JSON.stringify(payload)
+    headers: { 'Content-Type': 'application/json', 'x-api-key': pushKey },
+    body: JSON.stringify({
+      targetUserId: recipientId,
+      title: String(title).substring(0, 50),
+      body: String(body).substring(0, 100),
+      url: PUSH_DESTINATION_URL,
+    }),
   });
 
   if (!res.ok) {
     const text = await res.text();
-    throw new Error(`Progressier: ${res.status} ${text}`);
+    throw new Error(`Push service: ${res.status} ${text}`);
   }
 }
 
@@ -99,7 +94,7 @@ export default async function handler(req, res) {
     try {
       const userRecord = await firebaseAdmin.auth().getUserByEmail(email.trim().toLowerCase());
       if (userRecord?.uid) {
-        await sendPushViaProgressier(userRecord.uid, title, body);
+        await sendPush(userRecord.uid, title, body);
         sentNow = true;
         await firebaseAdmin.firestore().doc(`pendingPushInvites/${emailKey}`).delete();
       }

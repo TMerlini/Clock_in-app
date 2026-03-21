@@ -1,6 +1,6 @@
 /**
- * Vercel Cron: computes team and user warnings, sends push via Progressier.
- * Runs every 5–15 min. Requires: PROGRESSIER_API_KEY, PROGRESSIER_API_ENDPOINT, FIREBASE_SERVICE_ACCOUNT_KEY.
+ * Vercel Cron: computes team and user warnings, sends push via Scaffold Push Service.
+ * Runs every 5–15 min. Requires: PUSH_SERVICE_URL, PUSH_SERVICE_API_KEY, FIREBASE_SERVICE_ACCOUNT_KEY.
  */
 import admin from 'firebase-admin';
 import { startOfYear, endOfYear, startOfWeek, endOfWeek } from 'date-fns';
@@ -135,29 +135,26 @@ function buildUserWarningsBody(warnings) {
   return body.substring(0, 100);
 }
 
-async function sendProgressierPush(recipientId, title, body, url) {
-  const endpoint = process.env.PROGRESSIER_API_ENDPOINT;
-  const key = process.env.PROGRESSIER_API_KEY;
-  if (!endpoint || !key) {
-    console.warn('PROGRESSIER_API_ENDPOINT or PROGRESSIER_API_KEY not set');
+async function sendPush(recipientId, title, body, url) {
+  const pushUrl = process.env.PUSH_SERVICE_URL;
+  const pushKey = process.env.PUSH_SERVICE_API_KEY;
+  if (!pushUrl || !pushKey) {
+    console.warn('PUSH_SERVICE_URL or PUSH_SERVICE_API_KEY not set');
     return;
   }
-  const res = await fetch(endpoint, {
+  const res = await fetch(`${pushUrl}/notify`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${key}`
-    },
+    headers: { 'Content-Type': 'application/json', 'x-api-key': pushKey },
     body: JSON.stringify({
-      recipients: { id: recipientId },
+      targetUserId: recipientId,
       title: title.substring(0, 50),
       body: body.substring(0, 100),
-      url: url || PUSH_DESTINATION_URL
-    })
+      url: url || PUSH_DESTINATION_URL,
+    }),
   });
   if (!res.ok) {
     const text = await res.text();
-    throw new Error(`Progressier API error ${res.status}: ${text}`);
+    throw new Error(`Push service error ${res.status}: ${text}`);
   }
 }
 
@@ -225,10 +222,10 @@ export default async function handler(req, res) {
 
     for (const item of toSend) {
       try {
-        await sendProgressierPush(item.recipientId, item.title, item.body, item.url);
+        await sendPush(item.recipientId, item.title, item.body, item.url);
         newDigests[item.key] = item.digestVal;
       } catch (err) {
-        console.error('Progressier send failed:', err);
+        console.error('Push send failed:', err);
       }
     }
 

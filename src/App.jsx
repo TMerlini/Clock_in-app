@@ -22,8 +22,8 @@ function App() {
   }, []);
 
   useEffect(() => {
-    if (user?.uid && typeof window !== 'undefined' && window.progressier?.add) {
-      window.progressier.add({ id: user.uid });
+    if (user?.uid && typeof window !== 'undefined') {
+      window.scaffoldPush?.identify(user.uid);
     }
   }, [user?.uid]);
 
