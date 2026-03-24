@@ -12,19 +12,19 @@
   "categories": ["productivity", "utilities", "business"],
   "icons": [
     {
-      "src": "https://scaffold-push-service-production.up.railway.app/pwa/icon/6j4G6GmNvBwZaZJ-FTz67/192.png",
+      "src": "https://pushers.club/pwa/icon/ydSRia5ZLZ5UCTcrIx-9u/192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "https://scaffold-push-service-production.up.railway.app/pwa/icon/6j4G6GmNvBwZaZJ-FTz67/512.png",
+      "src": "https://pushers.club/pwa/icon/ydSRia5ZLZ5UCTcrIx-9u/512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "https://scaffold-push-service-production.up.railway.app/pwa/icon/6j4G6GmNvBwZaZJ-FTz67/512.png",
+      "src": "https://pushers.club/pwa/icon/ydSRia5ZLZ5UCTcrIx-9u/512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
