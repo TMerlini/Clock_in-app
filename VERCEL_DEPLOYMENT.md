@@ -41,7 +41,7 @@ Vercel will auto-detect that this is a Vite project. The default settings should
 2. Add each variable one by one:
 
 ```
-VITE_FIREBASE_API_KEY = AIzaSyBCd9Y1JB1_sMURbn3kklCUALTfo2g0O1c
+VITE_FIREBASE_API_KEY = your_firebase_api_key_here
 VITE_FIREBASE_AUTH_DOMAIN = clock-in-app-e6bfc.firebaseapp.com
 VITE_FIREBASE_PROJECT_ID = clock-in-app-e6bfc
 VITE_FIREBASE_STORAGE_BUCKET = clock-in-app-e6bfc.firebasestorage.app
