@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { doc, getDoc, setDoc, collection, query, orderBy, onSnapshot } from 'firebase/firestore';
 import { auth, db } from '../lib/firebase';
-import { Mail, Send, Loader, Eye, EyeOff, Bold, Italic, Link, Image, Settings, Clock, X, CheckCircle, AlertCircle, Calendar } from 'lucide-react';
+import { Mail, Send, Loader, Eye, EyeOff, Bold, Italic, Link, Image, Settings, Clock, X, CheckCircle, AlertCircle, Calendar, Youtube } from 'lucide-react';
 
 const BASE_TEMPLATE = (title, body, ctaLabel, ctaUrl = 'https://www.clock-in.pt', footer) => `<div style="font-family:Inter,Arial,sans-serif;max-width:600px;margin:0 auto;background:#0f0f0f;color:#e5e5e5;border-radius:12px;overflow:hidden">
   <div style="background:#6366f1;padding:32px 24px;text-align:center">
@@ -294,6 +294,8 @@ export function EmailComposer({ emailForm, setEmailForm, emailSending, emailResu
   const [showLinkInput, setShowLinkInput] = useState(false);
   const [textColor, setTextColor] = useState('#a5b4fc');
   const [scheduleEnabled, setScheduleEnabled] = useState(false);
+  const [videoUrl, setVideoUrl] = useState('');
+  const [showVideoInput, setShowVideoInput] = useState(false);
 
   const applyFormat = (before, after = '') => {
     const ta = document.getElementById('email-body-textarea');
@@ -308,6 +310,19 @@ export function EmailComposer({ emailForm, setEmailForm, emailSending, emailResu
     applyFormat(`<img src="${imageUrl.trim()}" alt="" style="max-width:100%;border-radius:8px;margin:12px 0" />`);
     setImageUrl('');
     setShowImageInput(false);
+  };
+
+  const insertVideo = () => {
+    const url = videoUrl.trim();
+    if (!url) return;
+    const ytMatch = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+    if (!ytMatch) { alert('Please enter a valid YouTube URL'); return; }
+    const videoId = ytMatch[1];
+    const thumb = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+    const watchUrl = `https://www.youtube.com/watch?v=${videoId}`;
+    applyFormat(`<a href="${watchUrl}" style="display:block;position:relative;margin:16px 0;border-radius:8px;overflow:hidden;text-decoration:none"><img src="${thumb}" alt="Watch video" style="width:100%;display:block;border-radius:8px" /><div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,0.7);border-radius:50%;width:56px;height:56px;display:flex;align-items:center;justify-content:center"><div style="width:0;height:0;border-top:12px solid transparent;border-bottom:12px solid transparent;border-left:20px solid #fff;margin-left:4px"></div></div></a>`);
+    setVideoUrl('');
+    setShowVideoInput(false);
   };
 
   const insertLink = () => {
@@ -414,6 +429,7 @@ export function EmailComposer({ emailForm, setEmailForm, emailSending, emailResu
           </button>
           <button type="button" style={toolbarBtnStyle} onClick={() => setShowLinkInput(v => !v)}><Link size={13} /> Link</button>
           <button type="button" style={toolbarBtnStyle} onClick={() => setShowImageInput(v => !v)}><Image size={13} /> Image</button>
+          <button type="button" style={toolbarBtnStyle} onClick={() => setShowVideoInput(v => !v)}><Youtube size={13} /> Video</button>
           <button type="button" style={toolbarBtnStyle} onClick={() => applyFormat('<p style="margin:0 0 16px">', '</p>')}>&lt;p&gt;</button>
           <button type="button" style={toolbarBtnStyle} onClick={() => applyFormat('<h2 style="color:#a5b4fc;margin:0 0 12px">', '</h2>')}>&lt;h2&gt;</button>
           <div style={{ marginLeft: 'auto' }}>
@@ -429,6 +445,14 @@ export function EmailComposer({ emailForm, setEmailForm, emailSending, emailResu
             <input style={{ ...inputStyle, flex: 1, minWidth: '180px' }} placeholder="URL (https://...)" value={linkUrl} onChange={e => setLinkUrl(e.target.value)} />
             <input style={{ ...inputStyle, flex: 1, minWidth: '140px' }} placeholder="Link text (optional)" value={linkText} onChange={e => setLinkText(e.target.value)} />
             <button type="button" style={{ ...toolbarBtnStyle, background: 'var(--accent)', color: '#fff' }} onClick={insertLink}>Insert</button>
+          </div>
+        )}
+
+        {/* Video insert helper */}
+        {showVideoInput && (
+          <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.5rem' }}>
+            <input style={{ ...inputStyle, flex: 1 }} placeholder="YouTube URL (https://youtube.com/watch?v=...)" value={videoUrl} onChange={e => setVideoUrl(e.target.value)} />
+            <button type="button" style={{ ...toolbarBtnStyle, background: 'var(--accent)', color: '#fff' }} onClick={insertVideo}>Insert</button>
           </div>
         )}
 
