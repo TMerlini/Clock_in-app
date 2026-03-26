@@ -1966,51 +1966,50 @@ export function Admin({ user }) {
           </div>
 
           {/* Create form */}
-          <div className="admin-card" style={{ marginBottom: '1.5rem' }}>
+          <div className="add-guest-form" style={{ marginBottom: '1.5rem' }}>
             <h3 style={{ marginBottom: '1rem', fontSize: '0.95rem', fontWeight: 600 }}>Create New Promo Code</h3>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
-              <div>
-                <label className="admin-label">Code *</label>
+              <div className="form-group">
+                <label>Code *</label>
                 <input
-                  className="admin-input"
                   placeholder="e.g. BETA2026"
                   value={promoForm.code}
                   onChange={e => setPromoForm(f => ({ ...f, code: e.target.value.toUpperCase() }))}
                 />
               </div>
-              <div>
-                <label className="admin-label">Granted Plan *</label>
-                <select className="admin-input" value={promoForm.plan} onChange={e => setPromoForm(f => ({ ...f, plan: e.target.value }))}>
+              <div className="form-group">
+                <label>Granted Plan *</label>
+                <select className="plan-select" value={promoForm.plan} onChange={e => setPromoForm(f => ({ ...f, plan: e.target.value }))}>
                   <option value="basic">Basic</option>
                   <option value="pro">Pro</option>
                   <option value="premium_ai">Premium AI</option>
                   <option value="enterprise">Enterprise</option>
                 </select>
               </div>
-              <div>
-                <label className="admin-label">Duration (days, 0 = permanent)</label>
-                <input type="number" min="0" className="admin-input" value={promoForm.durationDays}
+              <div className="form-group">
+                <label>Duration (days, 0 = permanent)</label>
+                <input type="number" min="0" value={promoForm.durationDays}
                   onChange={e => setPromoForm(f => ({ ...f, durationDays: parseInt(e.target.value) || 0 }))} />
               </div>
-              <div>
-                <label className="admin-label">Max Uses (0 = unlimited)</label>
-                <input type="number" min="0" className="admin-input" value={promoForm.maxUses}
+              <div className="form-group">
+                <label>Max Uses (0 = unlimited)</label>
+                <input type="number" min="0" value={promoForm.maxUses}
                   onChange={e => setPromoForm(f => ({ ...f, maxUses: parseInt(e.target.value) || 0 }))} />
               </div>
-              <div>
-                <label className="admin-label">Code Expires At (optional)</label>
-                <input type="date" className="admin-input" value={promoForm.expiresAt}
+              <div className="form-group">
+                <label>Code Expires At (optional)</label>
+                <input type="date" value={promoForm.expiresAt}
                   onChange={e => setPromoForm(f => ({ ...f, expiresAt: e.target.value }))} />
               </div>
-              <div>
-                <label className="admin-label">Notes</label>
-                <input className="admin-input" placeholder="e.g. Beta testers batch 1" value={promoForm.notes}
+              <div className="form-group">
+                <label>Notes</label>
+                <input placeholder="e.g. Beta testers batch 1" value={promoForm.notes}
                   onChange={e => setPromoForm(f => ({ ...f, notes: e.target.value }))} />
               </div>
             </div>
             <div style={{ marginTop: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
               <button
-                className="admin-button primary"
+                className="submit-button"
                 disabled={promoCreating || !promoForm.code}
                 onClick={async () => {
                   setPromoCreating(true);

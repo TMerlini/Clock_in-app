@@ -653,17 +653,18 @@ export function Settings({ googleCalendar, onUsernameChange, onProfilePicChange,
             Have a promo code? Enter it below to unlock a plan upgrade.
           </p>
           <div className="setting-item" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: '0.5rem' }}>
-            <div style={{ display: 'flex', gap: '0.5rem', width: '100%', maxWidth: '360px' }}>
+            <div className="setting-input-group" style={{ maxWidth: '360px' }}>
               <input
                 type="text"
+                className="setting-input"
                 placeholder="Enter promo code"
                 value={promoCodeInput}
+                style={{ letterSpacing: '0.05em', fontWeight: 600, textTransform: 'uppercase' }}
                 onChange={e => { setPromoCodeInput(e.target.value.toUpperCase()); setPromoRedeemError(null); setPromoRedeemSuccess(null); }}
-                style={{ flex: 1, padding: '0.5rem 0.75rem', borderRadius: '0.375rem', border: '1px solid var(--border)', background: 'var(--bg-secondary)', color: 'var(--text)', fontSize: '0.9rem', letterSpacing: '0.05em', fontWeight: 600 }}
               />
               <button
+                className="save-button"
                 disabled={promoRedeeming || !promoCodeInput.trim()}
-                style={{ padding: '0.5rem 1rem', borderRadius: '0.375rem', background: 'var(--accent)', color: '#fff', border: 'none', cursor: promoRedeeming || !promoCodeInput.trim() ? 'not-allowed' : 'pointer', opacity: promoRedeeming || !promoCodeInput.trim() ? 0.6 : 1, fontWeight: 600 }}
                 onClick={async () => {
                   const user = auth.currentUser;
                   if (!user) return;
@@ -686,8 +687,8 @@ export function Settings({ googleCalendar, onUsernameChange, onProfilePicChange,
                 {promoRedeeming ? '...' : 'Redeem'}
               </button>
             </div>
-            {promoRedeemError && <p style={{ color: '#f87171', fontSize: '0.82rem', margin: 0 }}>{promoRedeemError}</p>}
-            {promoRedeemSuccess && <p style={{ color: '#4ade80', fontSize: '0.82rem', margin: 0 }}>{promoRedeemSuccess}</p>}
+            {promoRedeemError && <p style={{ margin: 0, fontSize: '0.82rem', color: 'var(--error, #f87171)' }}>{promoRedeemError}</p>}
+            {promoRedeemSuccess && <p style={{ margin: 0, fontSize: '0.82rem', color: 'var(--success, #4ade80)' }}>{promoRedeemSuccess}</p>}
           </div>
         </section>
 
