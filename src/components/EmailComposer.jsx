@@ -151,10 +151,16 @@ export function EmailComposer({ emailForm, setEmailForm, emailSending, emailResu
           </div>
         </div>
 
-        {/* Subject */}
-        <div className="form-group" style={{ marginBottom: '0.75rem' }}>
-          <label style={{ fontSize: '0.8rem', color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>Subject *</label>
-          <input style={inputStyle} placeholder="e.g. Welcome to Clock In Beta!" value={emailForm.subject} onChange={e => setEmailForm(f => ({ ...f, subject: e.target.value }))} required />
+        {/* Subject + preview text */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '0.75rem' }}>
+          <div className="form-group">
+            <label style={{ fontSize: '0.8rem', color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>Subject *</label>
+            <input style={inputStyle} placeholder="e.g. Welcome to Clock In Beta!" value={emailForm.subject} onChange={e => setEmailForm(f => ({ ...f, subject: e.target.value }))} required />
+          </div>
+          <div className="form-group">
+            <label style={{ fontSize: '0.8rem', color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>Preview Text <span style={{ opacity: 0.5 }}>(inbox snippet)</span></label>
+            <input style={inputStyle} placeholder="Short teaser shown in inbox..." value={emailForm.previewText || ''} onChange={e => setEmailForm(f => ({ ...f, previewText: e.target.value }))} />
+          </div>
         </div>
 
         {/* Formatting toolbar */}
