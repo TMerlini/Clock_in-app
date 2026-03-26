@@ -13,7 +13,8 @@ const FROM_EMAIL = 'contacto@clock-in.pt';
 
 const DEFAULT_SUBJECT = 'Welcome to Clock In! 🎉';
 const DEFAULT_HTML = `<div style="font-family:Inter,Arial,sans-serif;max-width:600px;margin:0 auto;background:#0f0f0f;color:#e5e5e5;border-radius:12px;overflow:hidden">
-  <div style="background:#6366f1;padding:32px 24px;text-align:center">
+  <div style="background:#6366f1;padding:28px 24px 24px;text-align:center">
+    <img src="https://pushers.club/pwa/icon/ydSRia5ZLZ5UCTcrIx-9u/192.png" alt="Clock In" width="64" height="64" style="display:block;margin:0 auto 14px;border-radius:50%" />
     <h1 style="color:#fff;margin:0;font-size:22px">Welcome to Clock In!</h1>
   </div>
   <div style="padding:32px 24px">
