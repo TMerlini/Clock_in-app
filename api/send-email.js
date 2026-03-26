@@ -166,6 +166,9 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'Failed to sync contacts: ' + err.message });
   }
 
+  // Wait for rate limit window to reset before broadcast API calls
+  await sleep(2000);
+
   // Create broadcast
   let broadcast;
   try {
@@ -182,6 +185,7 @@ export default async function handler(req, res) {
   }
 
   // Send broadcast
+  await sleep(1000);
   try {
     await resendRequest('POST', `/broadcasts/${broadcast.id}/send`, {}, RESEND_API_KEY);
   } catch (err) {
