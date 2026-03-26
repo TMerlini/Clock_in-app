@@ -3,7 +3,8 @@ import { doc, getDoc, setDoc, collection, query, where, getDocs, updateDoc } fro
 import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import { db, auth, storage } from '../lib/firebase';
 import { CalendarAuthButton } from './CalendarAuthButton';
-import { Settings as SettingsIcon, Save, RotateCcw, Clock, Coffee, AlertTriangle, DollarSign, Calendar, CheckCircle, XCircle, AlertCircle, RefreshCw, User, AtSign, Download, Crown, Globe, Database, Camera, Trash2, MapPin, Tag } from 'lucide-react';
+import { Settings as SettingsIcon, Save, RotateCcw, Clock, Coffee, AlertTriangle, DollarSign, Calendar, CheckCircle, XCircle, AlertCircle, RefreshCw, User, AtSign, Download, Crown, Globe, Database, Camera, Trash2, MapPin, Tag, HeartCrack } from 'lucide-react';
+import { signOut } from 'firebase/auth';
 import { redeemPromoCode } from '../lib/promoUtils';
 import { format } from 'date-fns';
 import { useTranslation } from 'react-i18next';
@@ -407,6 +408,29 @@ export function Settings({ googleCalendar, onUsernameChange, onProfilePicChange,
     setFixedBonus(0);
     setDailyMealSubsidy(0);
     setMealCardDeduction(0);
+  };
+
+  const [deletingAccount, setDeletingAccount] = useState(false);
+
+  const handleDeleteAccount = async () => {
+    const confirmed = window.confirm(
+      'Are you sure you want to permanently delete your account?\n\nAll your sessions, settings, and subscription data will be removed and cannot be recovered.'
+    );
+    if (!confirmed) return;
+    setDeletingAccount(true);
+    try {
+      const token = await auth.currentUser.getIdToken();
+      const res = await fetch('/api/delete-account', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || `Error ${res.status}`);
+      await signOut(auth);
+    } catch (err) {
+      alert('Failed to delete account: ' + err.message);
+      setDeletingAccount(false);
+    }
   };
 
   const handleExportMyData = async () => {
@@ -1643,6 +1667,28 @@ export function Settings({ googleCalendar, onUsernameChange, onProfilePicChange,
           >
             <Download className={exportingData ? 'spinning' : ''} />
             {exportingData ? t('settings.dataExport.exporting', { defaultValue: 'Exporting...' }) : t('settings.dataExport.download', { defaultValue: 'Download my data' })}
+          </button>
+        </section>
+
+        <section className="settings-section" style={{ borderColor: 'rgba(239,68,68,0.25)', marginTop: '2rem' }}>
+          <div className="section-title" style={{ color: '#ef4444' }}>
+            <HeartCrack size={20} />
+            <h2>Delete Account</h2>
+          </div>
+          <p style={{ fontSize: '0.95rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>
+            We hate to see you leave 💔
+          </p>
+          <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '1.25rem', lineHeight: 1.6 }}>
+            Don't worry — once you delete your account, all your data and any active subscriptions will be completely removed from our system. Nothing is kept.
+          </p>
+          <button
+            type="button"
+            onClick={handleDeleteAccount}
+            disabled={deletingAccount}
+            style={{ background: 'transparent', border: '1px solid #ef4444', color: '#ef4444', borderRadius: '8px', padding: '0.5rem 1.25rem', cursor: 'pointer', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '0.5rem', opacity: deletingAccount ? 0.6 : 1 }}
+          >
+            {deletingAccount ? <RotateCcw size={15} className="spinning" /> : <Trash2 size={15} />}
+            {deletingAccount ? 'Deleting your account…' : 'Delete my account'}
           </button>
         </section>
 
