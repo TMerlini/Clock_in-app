@@ -725,6 +725,23 @@ export function Admin({ user }) {
     }
   };
 
+  const handleDeleteUser = async (uid, email) => {
+    if (!confirm(`Permanently delete user ${email}?\n\nThis removes them from Firebase Auth and all their Firestore data. Cannot be undone.`)) return;
+    try {
+      const token = await auth.currentUser.getIdToken();
+      const res = await fetch('/api/delete-user', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ uid }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || `Error ${res.status}`);
+      await loadAdminData();
+    } catch (err) {
+      alert('Error deleting user: ' + err.message);
+    }
+  };
+
   const handleDeleteGuest = async (guestId, guestEmail) => {
     if (!confirm(`Are you sure you want to delete guest account: ${guestEmail}?`)) {
       return;
@@ -1129,6 +1146,13 @@ export function Admin({ user }) {
                             title="View details"
                           >
                             <Eye size={16} />
+                          </button>
+                          <button
+                            className="action-button delete"
+                            onClick={() => handleDeleteUser(userItem.id, userItem.email)}
+                            title="Delete user"
+                          >
+                            <Trash2 size={16} />
                           </button>
                         </div>
                       </td>
