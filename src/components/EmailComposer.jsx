@@ -1,5 +1,7 @@
-import { useState } from 'react';
-import { Mail, Send, Loader, Eye, EyeOff, Bold, Italic, Link, Image } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { auth, db } from '../lib/firebase';
+import { Mail, Send, Loader, Eye, EyeOff, Bold, Italic, Link, Image, Settings } from 'lucide-react';
 
 const BASE_TEMPLATE = (title, body, ctaLabel, ctaUrl = 'https://www.clock-in.pt', footer) => `<div style="font-family:Inter,Arial,sans-serif;max-width:600px;margin:0 auto;background:#0f0f0f;color:#e5e5e5;border-radius:12px;overflow:hidden">
   <div style="background:#6366f1;padding:32px 24px;text-align:center">
@@ -131,7 +133,81 @@ function insertAtCursor(textarea, before, after = '') {
   return { value: newVal, cursor: start + before.length + selected.length + after.length };
 }
 
+function WelcomeEmailEditor() {
+  const inputStyle = { background: 'var(--bg, #18181b)', border: '1px solid var(--border)', borderRadius: '6px', color: 'var(--text)', padding: '0.5rem 0.75rem', fontSize: '0.9rem', width: '100%' };
+  const [form, setForm] = useState({ subject: '', html: '', fromName: 'Clock In' });
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
+
+  useEffect(() => {
+    getDoc(doc(db, 'system', 'welcomeEmail')).then(snap => {
+      if (snap.exists()) setForm(f => ({ ...f, ...snap.data() }));
+    }).finally(() => setLoading(false));
+  }, []);
+
+  const handleSave = async (e) => {
+    e.preventDefault();
+    setSaving(true);
+    try {
+      await setDoc(doc(db, 'system', 'welcomeEmail'), form, { merge: true });
+      setSaved(true);
+      setTimeout(() => setSaved(false), 3000);
+    } finally { setSaving(false); }
+  };
+
+  if (loading) return <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>Loading...</p>;
+
+  return (
+    <form onSubmit={handleSave} style={{ maxWidth: '820px' }}>
+      <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginBottom: '1rem' }}>
+        Sent automatically when a new user signs in for the first time. Use <code style={{ background: 'var(--bg-secondary, rgba(255,255,255,0.06))', padding: '1px 5px', borderRadius: '4px' }}>{'{{name}}'}</code> to personalise.
+      </p>
+
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '0.75rem' }}>
+        <div className="form-group">
+          <label style={{ fontSize: '0.8rem', color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>Subject *</label>
+          <input style={inputStyle} value={form.subject} onChange={e => setForm(f => ({ ...f, subject: e.target.value }))} placeholder="Welcome to Clock In! 🎉" required />
+        </div>
+        <div className="form-group">
+          <label style={{ fontSize: '0.8rem', color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>From Name</label>
+          <input style={inputStyle} value={form.fromName} onChange={e => setForm(f => ({ ...f, fromName: e.target.value }))} placeholder="Clock In" />
+        </div>
+      </div>
+
+      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '0.4rem' }}>
+        <button type="button" style={{ background: 'none', border: '1px solid var(--border)', borderRadius: '6px', color: showPreview ? 'var(--accent)' : 'var(--text-muted)', padding: '4px 12px', cursor: 'pointer', fontSize: '0.78rem', display: 'flex', alignItems: 'center', gap: '4px' }} onClick={() => setShowPreview(v => !v)}>
+          {showPreview ? <EyeOff size={13} /> : <Eye size={13} />} {showPreview ? 'Hide Preview' : 'Preview'}
+        </button>
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: showPreview ? '1fr 1fr' : '1fr', gap: '0.75rem', marginBottom: '1rem' }}>
+        <div>
+          <label style={{ fontSize: '0.8rem', color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>HTML Body *</label>
+          <textarea style={{ ...inputStyle, minHeight: '280px', fontFamily: 'monospace', fontSize: '0.78rem', resize: 'vertical' }} value={form.html} onChange={e => setForm(f => ({ ...f, html: e.target.value }))} placeholder="<p>Hi {{name}} 👋</p>" required />
+        </div>
+        {showPreview && (
+          <div>
+            <label style={{ fontSize: '0.8rem', color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>Preview</label>
+            <div style={{ border: '1px solid var(--border)', borderRadius: '6px', overflow: 'auto', minHeight: '280px', background: '#fff' }}>
+              <iframe srcDoc={form.html} style={{ width: '100%', minHeight: '280px', border: 'none', display: 'block' }} title="Welcome Email Preview" sandbox="allow-same-origin" />
+            </div>
+          </div>
+        )}
+      </div>
+
+      {saved && <p style={{ color: 'var(--success, #4ade80)', fontSize: '0.85rem', marginBottom: '0.75rem' }}>✓ Saved — new signups will receive this email</p>}
+      <button type="submit" className="submit-button" disabled={saving}>
+        {saving ? <Loader size={14} className="spin" /> : <Settings size={14} />}
+        {saving ? 'Saving...' : 'Save Welcome Email'}
+      </button>
+    </form>
+  );
+}
+
 export function EmailComposer({ emailForm, setEmailForm, emailSending, emailResult, emailError, onSubmit }) {
+  const [activeTab, setActiveTab] = useState('newsletter');
   const [lang, setLang] = useState('en');
   const [showPreview, setShowPreview] = useState(false);
   const [imageUrl, setImageUrl] = useState('');
@@ -172,7 +248,17 @@ export function EmailComposer({ emailForm, setEmailForm, emailSending, emailResu
       <div className="section-header">
         <Mail size={20} />
         <h2>Email / Newsletter</h2>
+        <div style={{ marginLeft: 'auto', display: 'flex', gap: '2px', background: 'var(--bg-secondary, rgba(255,255,255,0.06))', borderRadius: '6px', padding: '2px', border: '1px solid var(--border)' }}>
+          {[['newsletter', 'Newsletter'], ['welcome', 'Welcome Email']].map(([id, label]) => (
+            <button key={id} type="button" onClick={() => setActiveTab(id)} style={{ padding: '4px 14px', borderRadius: '4px', border: 'none', cursor: 'pointer', fontSize: '0.78rem', fontWeight: 600, background: activeTab === id ? 'var(--accent)' : 'transparent', color: activeTab === id ? '#fff' : 'var(--text-muted)' }}>
+              {label}
+            </button>
+          ))}
+        </div>
       </div>
+
+      {activeTab === 'welcome' && <WelcomeEmailEditor />}
+      {activeTab === 'newsletter' && <>
 
       {/* Template picker + language toggle */}
       <div style={{ marginBottom: '1.25rem' }}>
@@ -317,6 +403,7 @@ export function EmailComposer({ emailForm, setEmailForm, emailSending, emailResu
           {emailSending ? 'Sending...' : 'Send Email'}
         </button>
       </form>
+      </>}
     </div>
   );
 }

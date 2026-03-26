@@ -57,6 +57,15 @@ function App() {
           } catch (pushErr) {
             console.warn('Pending welcome push check failed:', pushErr);
           }
+          // Send welcome email
+          try {
+            await fetch(`${base}/api/send-welcome`, {
+              method: 'POST',
+              headers: { Authorization: `Bearer ${token}` }
+            });
+          } catch (emailErr) {
+            console.warn('Welcome email failed:', emailErr);
+          }
         }
       } catch (err) {
         console.error('Failed to ensure userSettings:', err);
