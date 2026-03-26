@@ -26,6 +26,7 @@ import { SessionList } from './SessionList';
 
 // Lazy load route components for code splitting
 const Analytics = lazy(() => import('./Analytics').then(module => ({ default: module.Analytics })));
+const PromoPage = lazy(() => import('./PromoPage').then(module => ({ default: module.PromoPage })));
 const Finance = lazy(() => import('./Finance').then(module => ({ default: module.Finance })));
 const Settings = lazy(() => import('./Settings').then(module => ({ default: module.Settings })));
 const AIAdvisor = lazy(() => import('./AIAdvisor').then(module => ({ default: module.AIAdvisor })));
@@ -1064,6 +1065,14 @@ export function ClockInApp({ user }) {
           <ErrorBoundary>
             <Suspense fallback={<Loader />}>
               <Enterprise user={user} onNavigate={handlePageChange} />
+            </Suspense>
+          </ErrorBoundary>
+        );
+      case 'promo':
+        return (
+          <ErrorBoundary>
+            <Suspense fallback={<Loader />}>
+              <PromoPage onNavigate={handlePageChange} />
             </Suspense>
           </ErrorBoundary>
         );

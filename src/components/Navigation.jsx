@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, memo } from 'react';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
-import { Menu, X, Home, Calendar, BarChart3, Info, Settings, HelpCircle, Bot, Crown, Shield, DollarSign, Building2 } from 'lucide-react';
+import { Menu, X, Home, Calendar, BarChart3, Info, Settings, HelpCircle, Bot, Crown, Shield, DollarSign, Building2, Tag } from 'lucide-react';
 import { isAdmin } from '../lib/adminUtils';
 import { useTranslation } from 'react-i18next';
 import './Navigation.css';
@@ -55,7 +55,8 @@ export const Navigation = memo(function Navigation({ currentPage, onPageChange, 
   ];
 
   const menuItems = isFreePlan
-    ? allMenuItems.filter((item) => ['home', 'ai-advisor', 'premium-plus', 'faq', 'about'].includes(item.id))
+    ? [...allMenuItems.filter((item) => ['home', 'ai-advisor', 'premium-plus', 'faq', 'about'].includes(item.id)),
+       { id: 'promo', label: 'Promo Code', icon: Tag }]
     : allMenuItems;
   const finalMenuItems = [...menuItems];
   if (showEnterprise) {
