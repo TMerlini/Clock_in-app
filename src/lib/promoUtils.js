@@ -89,7 +89,7 @@ export async function redeemPromoCode(userId, rawCode) {
   }
 
   // Check if user already redeemed this code
-  const userRef = doc(db, 'users', userId);
+  const userRef = doc(db, 'userSettings', userId);
   const userSnap = await getDoc(userRef);
   if (userSnap.exists() && userSnap.data().promoCode === code) {
     throw new Error('You have already redeemed this code.');
@@ -121,7 +121,7 @@ export async function redeemPromoCode(userId, rawCode) {
 
 // ── Helper: check if user's promo has expired and downgrade if needed ─────────
 export async function checkPromoExpiry(userId) {
-  const userRef = doc(db, 'users', userId);
+  const userRef = doc(db, 'userSettings', userId);
   const userSnap = await getDoc(userRef);
   if (!userSnap.exists()) return;
 
