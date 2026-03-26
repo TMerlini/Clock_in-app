@@ -85,6 +85,15 @@ service cloud.firestore {
       allow write: if isAuth() && isAppAdmin();
     }
 
+    match /promoCodes/{code} {
+      // Admin: full access
+      allow read, write, delete: if isAuth() && isAppAdmin();
+      // Any signed-in user: read (to validate) + increment uses on redeem
+      allow read: if isAuth();
+      allow update: if isAuth()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['uses']);
+    }
+
     match /system/{docId} {
       allow read, write: if false;
     }
