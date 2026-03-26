@@ -3,7 +3,8 @@ import { doc, getDoc, setDoc, collection, query, where, getDocs, updateDoc } fro
 import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import { db, auth, storage } from '../lib/firebase';
 import { CalendarAuthButton } from './CalendarAuthButton';
-import { Settings as SettingsIcon, Save, RotateCcw, Clock, Coffee, AlertTriangle, DollarSign, Calendar, CheckCircle, XCircle, AlertCircle, RefreshCw, User, AtSign, Download, Crown, Globe, Database, Camera, Trash2, MapPin } from 'lucide-react';
+import { Settings as SettingsIcon, Save, RotateCcw, Clock, Coffee, AlertTriangle, DollarSign, Calendar, CheckCircle, XCircle, AlertCircle, RefreshCw, User, AtSign, Download, Crown, Globe, Database, Camera, Trash2, MapPin, Tag } from 'lucide-react';
+import { redeemPromoCode } from '../lib/promoUtils';
 import { format } from 'date-fns';
 import { useTranslation } from 'react-i18next';
 import i18n from '../lib/i18n';
@@ -55,6 +56,10 @@ export function Settings({ googleCalendar, onUsernameChange, onProfilePicChange,
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
   const [exportingData, setExportingData] = useState(false);
+  const [promoCodeInput, setPromoCodeInput] = useState('');
+  const [promoRedeeming, setPromoRedeeming] = useState(false);
+  const [promoRedeemError, setPromoRedeemError] = useState(null);
+  const [promoRedeemSuccess, setPromoRedeemSuccess] = useState(null);
   const [showSetupInstructions, setShowSetupInstructions] = useState(false);
   const [calendarAutoSync, setCalendarAutoSync] = useState(true);
   const [syncStats, setSyncStats] = useState({
@@ -636,6 +641,53 @@ export function Settings({ googleCalendar, onUsernameChange, onProfilePicChange,
               />
               <span className="toggle-slider"></span>
             </label>
+          </div>
+        </section>
+
+        <section className="settings-section">
+          <div className="section-title">
+            <Tag />
+            <h2>Promo Code</h2>
+          </div>
+          <p className="section-description">
+            Have a promo code? Enter it below to unlock a plan upgrade.
+          </p>
+          <div className="setting-item" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: '0.5rem' }}>
+            <div style={{ display: 'flex', gap: '0.5rem', width: '100%', maxWidth: '360px' }}>
+              <input
+                type="text"
+                placeholder="Enter promo code"
+                value={promoCodeInput}
+                onChange={e => { setPromoCodeInput(e.target.value.toUpperCase()); setPromoRedeemError(null); setPromoRedeemSuccess(null); }}
+                style={{ flex: 1, padding: '0.5rem 0.75rem', borderRadius: '0.375rem', border: '1px solid var(--border)', background: 'var(--bg-secondary)', color: 'var(--text)', fontSize: '0.9rem', letterSpacing: '0.05em', fontWeight: 600 }}
+              />
+              <button
+                disabled={promoRedeeming || !promoCodeInput.trim()}
+                style={{ padding: '0.5rem 1rem', borderRadius: '0.375rem', background: 'var(--accent)', color: '#fff', border: 'none', cursor: promoRedeeming || !promoCodeInput.trim() ? 'not-allowed' : 'pointer', opacity: promoRedeeming || !promoCodeInput.trim() ? 0.6 : 1, fontWeight: 600 }}
+                onClick={async () => {
+                  const user = auth.currentUser;
+                  if (!user) return;
+                  setPromoRedeeming(true);
+                  setPromoRedeemError(null);
+                  setPromoRedeemSuccess(null);
+                  try {
+                    const result = await redeemPromoCode(user.uid, promoCodeInput);
+                    const planLabel = result.plan.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+                    const duration = result.durationDays === 0 ? 'permanently' : `for ${result.durationDays} days`;
+                    setPromoRedeemSuccess(`✓ Activated ${planLabel} plan ${duration}! Refresh to see changes.`);
+                    setPromoCodeInput('');
+                  } catch (err) {
+                    setPromoRedeemError(err.message);
+                  } finally {
+                    setPromoRedeeming(false);
+                  }
+                }}
+              >
+                {promoRedeeming ? '...' : 'Redeem'}
+              </button>
+            </div>
+            {promoRedeemError && <p style={{ color: '#f87171', fontSize: '0.82rem', margin: 0 }}>{promoRedeemError}</p>}
+            {promoRedeemSuccess && <p style={{ color: '#4ade80', fontSize: '0.82rem', margin: 0 }}>{promoRedeemSuccess}</p>}
           </div>
         </section>
 

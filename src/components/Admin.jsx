@@ -5,7 +5,8 @@ import { db, auth, storage } from '../lib/firebase';
 import { isAdmin } from '../lib/adminUtils';
 import { addCallPack } from '../lib/tokenManager';
 import { getPlanConfig, savePlanConfig, DEFAULT_FEATURES } from '../lib/planConfig';
-import { Shield, Users, UserPlus, Crown, BarChart3, Package, Settings, Search, Trash2, Edit2, Eye, Loader, AlertCircle, Check, X, Plus, ChevronDown, ChevronUp, ImageIcon, Upload, ArrowUp, ArrowDown, Play, AlignLeft, AlignRight, Film, Maximize2, Square, Bell, RotateCcw } from 'lucide-react';
+import { Shield, Users, UserPlus, Crown, BarChart3, Package, Settings, Search, Trash2, Edit2, Eye, Loader, AlertCircle, Check, X, Plus, ChevronDown, ChevronUp, ImageIcon, Upload, ArrowUp, ArrowDown, Play, AlignLeft, AlignRight, Film, Maximize2, Square, Bell, RotateCcw, Tag, Copy, ToggleLeft, ToggleRight } from 'lucide-react';
+import { listPromoCodes, createPromoCode, togglePromoActive, deletePromoCode } from '../lib/promoUtils';
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { format, startOfDay, startOfMonth, subDays, eachDayOfInterval } from 'date-fns';
 import { useTranslation } from 'react-i18next';
@@ -59,6 +60,14 @@ export function Admin({ user }) {
   const [manualLoading, setManualLoading] = useState(false);
   const [manualResult, setManualResult] = useState(null);
 
+  // Promos state
+  const [promos, setPromos] = useState([]);
+  const [promosLoading, setPromosLoading] = useState(false);
+  const [promoForm, setPromoForm] = useState({ code: '', plan: 'premium_ai', durationDays: 90, maxUses: 0, expiresAt: '', notes: '' });
+  const [promoCreating, setPromoCreating] = useState(false);
+  const [promoError, setPromoError] = useState(null);
+  const [promoSuccess, setPromoSuccess] = useState(null);
+
   useEffect(() => {
     if (user && isAdmin(user)) {
       loadAdminData();
@@ -84,6 +93,10 @@ export function Admin({ user }) {
     }
     if (activeSection === 'images' && user && isAdmin(user)) {
       loadLoginImages();
+    }
+    if (activeSection === 'promos' && user && isAdmin(user)) {
+      setPromosLoading(true);
+      listPromoCodes().then(setPromos).catch(console.error).finally(() => setPromosLoading(false));
     }
   }, [activeSection, user]);
 
@@ -888,6 +901,13 @@ export function Admin({ user }) {
         >
           <Bell size={18} />
           <span>Push Notifications</span>
+        </button>
+        <button
+          className={`admin-tab ${activeSection === 'promos' ? 'active' : ''}`}
+          onClick={() => setActiveSection('promos')}
+        >
+          <Tag size={18} />
+          <span>Promos ({promos.length})</span>
         </button>
       </div>
 
@@ -1934,6 +1954,160 @@ export function Admin({ user }) {
               )}
             </div>
           </div>
+        </div>
+      )}
+
+      {/* ── Promos Section ───────────────────────────────────────── */}
+      {activeSection === 'promos' && (
+        <div className="admin-section">
+          <div className="section-header">
+            <Tag size={20} />
+            <h2>Promo Codes</h2>
+          </div>
+
+          {/* Create form */}
+          <div className="admin-card" style={{ marginBottom: '1.5rem' }}>
+            <h3 style={{ marginBottom: '1rem', fontSize: '0.95rem', fontWeight: 600 }}>Create New Promo Code</h3>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+              <div>
+                <label className="admin-label">Code *</label>
+                <input
+                  className="admin-input"
+                  placeholder="e.g. BETA2026"
+                  value={promoForm.code}
+                  onChange={e => setPromoForm(f => ({ ...f, code: e.target.value.toUpperCase() }))}
+                />
+              </div>
+              <div>
+                <label className="admin-label">Granted Plan *</label>
+                <select className="admin-input" value={promoForm.plan} onChange={e => setPromoForm(f => ({ ...f, plan: e.target.value }))}>
+                  <option value="basic">Basic</option>
+                  <option value="pro">Pro</option>
+                  <option value="premium_ai">Premium AI</option>
+                  <option value="enterprise">Enterprise</option>
+                </select>
+              </div>
+              <div>
+                <label className="admin-label">Duration (days, 0 = permanent)</label>
+                <input type="number" min="0" className="admin-input" value={promoForm.durationDays}
+                  onChange={e => setPromoForm(f => ({ ...f, durationDays: parseInt(e.target.value) || 0 }))} />
+              </div>
+              <div>
+                <label className="admin-label">Max Uses (0 = unlimited)</label>
+                <input type="number" min="0" className="admin-input" value={promoForm.maxUses}
+                  onChange={e => setPromoForm(f => ({ ...f, maxUses: parseInt(e.target.value) || 0 }))} />
+              </div>
+              <div>
+                <label className="admin-label">Code Expires At (optional)</label>
+                <input type="date" className="admin-input" value={promoForm.expiresAt}
+                  onChange={e => setPromoForm(f => ({ ...f, expiresAt: e.target.value }))} />
+              </div>
+              <div>
+                <label className="admin-label">Notes</label>
+                <input className="admin-input" placeholder="e.g. Beta testers batch 1" value={promoForm.notes}
+                  onChange={e => setPromoForm(f => ({ ...f, notes: e.target.value }))} />
+              </div>
+            </div>
+            <div style={{ marginTop: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+              <button
+                className="admin-button primary"
+                disabled={promoCreating || !promoForm.code}
+                onClick={async () => {
+                  setPromoCreating(true);
+                  setPromoError(null);
+                  setPromoSuccess(null);
+                  try {
+                    const code = await createPromoCode(promoForm);
+                    setPromoSuccess(`Created: ${code}`);
+                    setPromoForm({ code: '', plan: 'premium_ai', durationDays: 90, maxUses: 0, expiresAt: '', notes: '' });
+                    const updated = await listPromoCodes();
+                    setPromos(updated);
+                  } catch (err) {
+                    setPromoError(err.message);
+                  } finally {
+                    setPromoCreating(false);
+                  }
+                }}
+              >
+                {promoCreating ? <Loader size={14} className="spin" /> : <Plus size={14} />}
+                <span>Create Code</span>
+              </button>
+              {promoError && <span style={{ color: '#f87171', fontSize: '0.8rem' }}>{promoError}</span>}
+              {promoSuccess && <span style={{ color: '#4ade80', fontSize: '0.8rem' }}>{promoSuccess}</span>}
+            </div>
+          </div>
+
+          {/* Promo list */}
+          {promosLoading ? (
+            <div className="loading-state"><Loader size={20} className="spin" /> Loading promo codes...</div>
+          ) : promos.length === 0 ? (
+            <div className="empty-state">No promo codes yet. Create one above.</div>
+          ) : (
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th>Code</th>
+                  <th>Plan</th>
+                  <th>Duration</th>
+                  <th>Uses</th>
+                  <th>Code Expires</th>
+                  <th>Status</th>
+                  <th>Notes</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {promos.map(promo => (
+                  <tr key={promo.code}>
+                    <td>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                        <code style={{ fontWeight: 700 }}>{promo.code}</code>
+                        <button title="Copy code" style={{ background: 'none', border: 'none', cursor: 'pointer', opacity: 0.6 }}
+                          onClick={() => navigator.clipboard.writeText(promo.code)}>
+                          <Copy size={12} />
+                        </button>
+                      </div>
+                    </td>
+                    <td><span className={`plan-badge plan-${promo.plan}`}>{promo.plan}</span></td>
+                    <td>{promo.durationDays === 0 ? '∞ permanent' : `${promo.durationDays}d`}</td>
+                    <td>{promo.uses}{promo.maxUses > 0 ? ` / ${promo.maxUses}` : ' / ∞'}</td>
+                    <td>{promo.expiresAt ? new Date(promo.expiresAt.toDate()).toLocaleDateString() : '—'}</td>
+                    <td>
+                      <span style={{ color: promo.active ? '#4ade80' : '#f87171', fontWeight: 600, fontSize: '0.75rem' }}>
+                        {promo.active ? '● Active' : '○ Inactive'}
+                      </span>
+                    </td>
+                    <td style={{ fontSize: '0.8rem', color: '#9ca3af' }}>{promo.notes || '—'}</td>
+                    <td>
+                      <div style={{ display: 'flex', gap: '0.4rem' }}>
+                        <button
+                          title={promo.active ? 'Deactivate' : 'Activate'}
+                          className="action-btn"
+                          onClick={async () => {
+                            await togglePromoActive(promo.code, !promo.active);
+                            setPromos(ps => ps.map(p => p.code === promo.code ? { ...p, active: !p.active } : p));
+                          }}
+                        >
+                          {promo.active ? <ToggleRight size={15} /> : <ToggleLeft size={15} />}
+                        </button>
+                        <button
+                          title="Delete"
+                          className="action-btn danger"
+                          onClick={async () => {
+                            if (!confirm(`Delete promo code "${promo.code}"?`)) return;
+                            await deletePromoCode(promo.code);
+                            setPromos(ps => ps.filter(p => p.code !== promo.code));
+                          }}
+                        >
+                          <Trash2 size={15} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
         </div>
       )}
     </div>
