@@ -70,7 +70,7 @@ export function Admin({ user }) {
   const [promoSuccess, setPromoSuccess] = useState(null);
 
   // Email / Newsletter state
-  const [emailForm, setEmailForm] = useState({ subject: '', html: '', recipients: 'all', fromName: 'Clock In', previewText: '' });
+  const [emailForm, setEmailForm] = useState({ subject: '', html: '', recipients: 'all', fromName: 'Clock In', previewText: '', scheduledAt: null });
   const [emailSending, setEmailSending] = useState(false);
   const [emailResult, setEmailResult] = useState(null);
   const [emailError, setEmailError] = useState(null);

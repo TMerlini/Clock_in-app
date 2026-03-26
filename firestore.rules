@@ -96,11 +96,17 @@ service cloud.firestore {
 
     match /system/{docId} {
       allow read, write: if false;
+      allow read, write: if isAuth() && isAppAdmin();
     }
 
     // Server-only: pending push invites for guests (API uses Admin SDK)
     match /pendingPushInvites/{emailKey} {
       allow read, write: if false;
+    }
+
+    // Scheduled email broadcasts — admin read/write; server writes via Admin SDK
+    match /scheduledEmails/{broadcastId} {
+      allow read, write: if isAuth() && isAppAdmin();
     }
   }
 }

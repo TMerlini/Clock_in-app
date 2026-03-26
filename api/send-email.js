@@ -107,7 +107,7 @@ export default async function handler(req, res) {
   }
   if (!isAdminEmail(decoded.email)) return res.status(403).json({ error: 'Admin only' });
 
-  const { subject, html, recipients, fromName = 'Clock In', previewText = '' } = req.body || {};
+  const { subject, html, recipients, fromName = 'Clock In', previewText = '', scheduledAt = null } = req.body || {};
   if (!subject?.trim()) return res.status(400).json({ error: 'subject is required' });
   if (!html?.trim())    return res.status(400).json({ error: 'html is required' });
   if (!recipients)      return res.status(400).json({ error: 'recipients is required' });
@@ -184,18 +184,36 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'Failed to create broadcast: ' + err.message });
   }
 
-  // Send broadcast
+  // Send (or schedule) broadcast
   await sleep(1000);
+  const sendBody = scheduledAt ? { scheduled_at: new Date(scheduledAt).toISOString() } : {};
   try {
-    await resendRequest('POST', `/broadcasts/${broadcast.id}/send`, {}, RESEND_API_KEY);
+    await resendRequest('POST', `/broadcasts/${broadcast.id}/send`, sendBody, RESEND_API_KEY);
   } catch (err) {
     return res.status(500).json({ error: 'Failed to send broadcast: ' + err.message });
   }
+
+  // Save record to Firestore for the scheduled list UI
+  try {
+    const db = adminInstance.firestore();
+    await db.collection('scheduledEmails').doc(broadcast.id).set({
+      broadcastId: broadcast.id,
+      subject,
+      recipients,
+      fromName,
+      previewText: previewText || '',
+      scheduledAt: scheduledAt ? new Date(scheduledAt) : null,
+      status: scheduledAt ? 'scheduled' : 'sent',
+      total: contacts.length,
+      createdAt: new Date(),
+    });
+  } catch { /* non-critical */ }
 
   return res.status(200).json({
     sent: contacts.length,
     total: contacts.length,
     broadcastId: broadcast.id,
+    scheduled: !!scheduledAt,
     mode: 'broadcast',
   });
 }

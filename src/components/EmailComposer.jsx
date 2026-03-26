@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc, collection, query, orderBy, onSnapshot } from 'firebase/firestore';
 import { auth, db } from '../lib/firebase';
-import { Mail, Send, Loader, Eye, EyeOff, Bold, Italic, Link, Image, Settings } from 'lucide-react';
+import { Mail, Send, Loader, Eye, EyeOff, Bold, Italic, Link, Image, Settings, Clock, X, CheckCircle, AlertCircle, Calendar } from 'lucide-react';
 
 const BASE_TEMPLATE = (title, body, ctaLabel, ctaUrl = 'https://www.clock-in.pt', footer) => `<div style="font-family:Inter,Arial,sans-serif;max-width:600px;margin:0 auto;background:#0f0f0f;color:#e5e5e5;border-radius:12px;overflow:hidden">
   <div style="background:#6366f1;padding:32px 24px;text-align:center">
@@ -133,6 +133,83 @@ function insertAtCursor(textarea, before, after = '') {
   return { value: newVal, cursor: start + before.length + selected.length + after.length };
 }
 
+function StatusBadge({ status }) {
+  const map = {
+    scheduled: { color: '#facc15', bg: 'rgba(250,204,21,0.12)', icon: <Clock size={11} /> },
+    sent:      { color: '#4ade80', bg: 'rgba(74,222,128,0.12)', icon: <CheckCircle size={11} /> },
+    cancelled: { color: '#6b7280', bg: 'rgba(107,114,128,0.12)', icon: <X size={11} /> },
+    failed:    { color: '#f87171', bg: 'rgba(248,113,113,0.12)', icon: <AlertCircle size={11} /> },
+  };
+  const s = map[status] || map.failed;
+  return (
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '3px', background: s.bg, color: s.color, border: `1px solid ${s.color}33`, borderRadius: '4px', padding: '2px 7px', fontSize: '0.7rem', fontWeight: 600, textTransform: 'capitalize' }}>
+      {s.icon}{status}
+    </span>
+  );
+}
+
+function ScheduledEmailsList() {
+  const [items, setItems] = useState([]);
+  const [cancelling, setCancelling] = useState(null);
+
+  useEffect(() => {
+    const q = query(collection(db, 'scheduledEmails'), orderBy('createdAt', 'desc'));
+    return onSnapshot(q, snap => setItems(snap.docs.map(d => ({ id: d.id, ...d.data() }))));
+  }, []);
+
+  const handleCancel = async (broadcastId) => {
+    if (!confirm('Cancel this scheduled broadcast?')) return;
+    setCancelling(broadcastId);
+    try {
+      const token = await auth.currentUser.getIdToken();
+      const res = await fetch('/api/cancel-email', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ broadcastId }),
+      });
+      if (!res.ok) { const d = await res.json(); throw new Error(d.error); }
+    } catch (err) {
+      alert('Cancel failed: ' + err.message);
+    } finally {
+      setCancelling(null);
+    }
+  };
+
+  if (!items.length) return (
+    <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', margin: '1rem 0 0', fontStyle: 'italic' }}>No broadcasts sent yet.</p>
+  );
+
+  const fmtDate = (val) => {
+    if (!val) return '—';
+    const d = val?.toDate ? val.toDate() : new Date(val);
+    return d.toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+  };
+
+  return (
+    <div style={{ marginTop: '1.5rem' }}>
+      <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '0.6rem', fontWeight: 600 }}>Broadcast History</p>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', maxWidth: '820px' }}>
+        {items.map(item => (
+          <div key={item.id} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', background: 'var(--bg-secondary, rgba(255,255,255,0.04))', border: '1px solid var(--border)', borderRadius: '8px', padding: '0.5rem 0.75rem', fontSize: '0.82rem' }}>
+            <StatusBadge status={item.status} />
+            <span style={{ flex: 1, color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.subject}</span>
+            <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem', whiteSpace: 'nowrap' }}>{item.recipients || 'all'}</span>
+            <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem', whiteSpace: 'nowrap' }}>
+              {item.status === 'scheduled' ? <><Calendar size={10} style={{ display: 'inline', marginRight: 3 }} />{fmtDate(item.scheduledAt)}</> : fmtDate(item.createdAt)}
+            </span>
+            <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem', whiteSpace: 'nowrap' }}>{item.total ?? '—'} rcpt</span>
+            {item.status === 'scheduled' && (
+              <button onClick={() => handleCancel(item.id)} disabled={cancelling === item.id} style={{ background: 'none', border: '1px solid var(--border)', borderRadius: '5px', color: 'var(--text-muted)', padding: '2px 8px', cursor: 'pointer', fontSize: '0.72rem', display: 'flex', alignItems: 'center', gap: '3px' }}>
+                {cancelling === item.id ? <Loader size={11} className="spin" /> : <X size={11} />} Cancel
+              </button>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function WelcomeEmailEditor() {
   const inputStyle = { background: 'var(--bg, #18181b)', border: '1px solid var(--border)', borderRadius: '6px', color: 'var(--text)', padding: '0.5rem 0.75rem', fontSize: '0.9rem', width: '100%' };
   const [form, setForm] = useState({ subject: '', html: '', fromName: 'Clock In' });
@@ -216,6 +293,7 @@ export function EmailComposer({ emailForm, setEmailForm, emailSending, emailResu
   const [linkText, setLinkText] = useState('');
   const [showLinkInput, setShowLinkInput] = useState(false);
   const [textColor, setTextColor] = useState('#a5b4fc');
+  const [scheduleEnabled, setScheduleEnabled] = useState(false);
 
   const applyFormat = (before, after = '') => {
     const ta = document.getElementById('email-body-textarea');
@@ -390,19 +468,41 @@ export function EmailComposer({ emailForm, setEmailForm, emailSending, emailResu
           )}
         </div>
 
+        {/* Schedule toggle */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.75rem', padding: '0.6rem 0.75rem', background: 'var(--bg-secondary, rgba(255,255,255,0.04))', border: '1px solid var(--border)', borderRadius: '8px' }}>
+          <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.85rem', color: 'var(--text-muted)', userSelect: 'none' }}>
+            <input type="checkbox" checked={scheduleEnabled} onChange={e => { setScheduleEnabled(e.target.checked); if (!e.target.checked) setEmailForm(f => ({ ...f, scheduledAt: null })); }} style={{ accentColor: 'var(--accent)', width: 15, height: 15 }} />
+            <Clock size={14} /> Schedule for later
+          </label>
+          {scheduleEnabled && (
+            <input
+              type="datetime-local"
+              style={{ background: 'var(--bg, #18181b)', border: '1px solid var(--border)', borderRadius: '6px', color: 'var(--text)', padding: '0.35rem 0.6rem', fontSize: '0.85rem', marginLeft: 'auto' }}
+              min={new Date(Date.now() + 5 * 60000).toISOString().slice(0, 16)}
+              value={emailForm.scheduledAt ? new Date(emailForm.scheduledAt).toISOString().slice(0, 16) : ''}
+              onChange={e => setEmailForm(f => ({ ...f, scheduledAt: e.target.value ? new Date(e.target.value).toISOString() : null }))}
+              required={scheduleEnabled}
+            />
+          )}
+        </div>
+
         {emailError && <p style={{ color: 'var(--error, #f87171)', fontSize: '0.85rem', marginBottom: '0.75rem' }}>{emailError}</p>}
         {emailResult && (
           <p style={{ color: 'var(--success, #4ade80)', fontSize: '0.85rem', marginBottom: '0.75rem' }}>
-            ✓ Sent to {emailResult.sent} / {emailResult.total} recipients
-            {emailResult.errors?.length > 0 && ` · ${emailResult.errors.length} failed`}
+            {emailResult.scheduled
+              ? `✓ Scheduled for ${new Date(emailForm.scheduledAt).toLocaleString()} · ${emailResult.total} recipients`
+              : `✓ Sent to ${emailResult.sent} / ${emailResult.total} recipients${emailResult.errors?.length > 0 ? ` · ${emailResult.errors.length} failed` : ''}`
+            }
           </p>
         )}
 
         <button type="submit" className="submit-button" disabled={emailSending}>
-          {emailSending ? <Loader size={14} className="spin" /> : <Send size={14} />}
-          {emailSending ? 'Sending...' : 'Send Email'}
+          {emailSending ? <Loader size={14} className="spin" /> : scheduleEnabled ? <Clock size={14} /> : <Send size={14} />}
+          {emailSending ? (scheduleEnabled ? 'Scheduling...' : 'Sending...') : scheduleEnabled ? 'Schedule Email' : 'Send Now'}
         </button>
       </form>
+
+      <ScheduledEmailsList />
       </>}
     </div>
   );
