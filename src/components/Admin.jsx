@@ -5,7 +5,7 @@ import { db, auth, storage } from '../lib/firebase';
 import { isAdmin } from '../lib/adminUtils';
 import { addCallPack } from '../lib/tokenManager';
 import { getPlanConfig, savePlanConfig, DEFAULT_FEATURES } from '../lib/planConfig';
-import { Shield, Users, UserPlus, Crown, BarChart3, Package, Settings, Search, Trash2, Edit2, Eye, Loader, AlertCircle, Check, X, Plus, ChevronDown, ChevronUp, ImageIcon, Upload, ArrowUp, ArrowDown, Play, AlignLeft, AlignRight, Film, Maximize2, Square, Bell, RotateCcw, Tag, Copy, ToggleLeft, ToggleRight } from 'lucide-react';
+import { Shield, Users, UserPlus, Crown, BarChart3, Package, Settings, Search, Trash2, Edit2, Eye, Loader, AlertCircle, Check, X, Plus, ChevronDown, ChevronUp, ImageIcon, Upload, ArrowUp, ArrowDown, Play, AlignLeft, AlignRight, Film, Maximize2, Square, Bell, RotateCcw, Tag, Copy, ToggleLeft, ToggleRight, Mail, Send } from 'lucide-react';
 import { listPromoCodes, createPromoCode, togglePromoActive, deletePromoCode } from '../lib/promoUtils';
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { format, startOfDay, startOfMonth, subDays, eachDayOfInterval } from 'date-fns';
@@ -67,6 +67,12 @@ export function Admin({ user }) {
   const [promoCreating, setPromoCreating] = useState(false);
   const [promoError, setPromoError] = useState(null);
   const [promoSuccess, setPromoSuccess] = useState(null);
+
+  // Email / Newsletter state
+  const [emailForm, setEmailForm] = useState({ subject: '', html: '', recipients: 'all', fromName: 'Clock In' });
+  const [emailSending, setEmailSending] = useState(false);
+  const [emailResult, setEmailResult] = useState(null);
+  const [emailError, setEmailError] = useState(null);
 
   useEffect(() => {
     if (user && isAdmin(user)) {
@@ -696,6 +702,28 @@ export function Admin({ user }) {
     }
   };
 
+  const handleSendEmail = async (e) => {
+    e.preventDefault();
+    setEmailSending(true);
+    setEmailResult(null);
+    setEmailError(null);
+    try {
+      const token = await auth.currentUser.getIdToken();
+      const res = await fetch('/api/send-email', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify(emailForm),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || `Error ${res.status}`);
+      setEmailResult(data);
+    } catch (err) {
+      setEmailError(err.message);
+    } finally {
+      setEmailSending(false);
+    }
+  };
+
   const handleDeleteGuest = async (guestId, guestEmail) => {
     if (!confirm(`Are you sure you want to delete guest account: ${guestEmail}?`)) {
       return;
@@ -908,6 +936,13 @@ export function Admin({ user }) {
         >
           <Tag size={18} />
           <span>Promos ({promos.length})</span>
+        </button>
+        <button
+          className={`admin-tab ${activeSection === 'email' ? 'active' : ''}`}
+          onClick={() => setActiveSection('email')}
+        >
+          <Mail size={18} />
+          <span>Email</span>
         </button>
       </div>
 
@@ -2107,6 +2142,86 @@ export function Admin({ user }) {
               </tbody>
             </table>
           )}
+        </div>
+      )}
+
+      {/* ── Email / Newsletter Section ───────────────────────────── */}
+      {activeSection === 'email' && (
+        <div className="admin-section">
+          <div className="section-header">
+            <Mail size={20} />
+            <h2>Email / Newsletter</h2>
+          </div>
+
+          <form className="add-guest-form" onSubmit={handleSendEmail} style={{ maxWidth: '680px' }}>
+            <h3 style={{ marginBottom: '1rem', fontSize: '0.95rem', fontWeight: 600 }}>Compose Email</h3>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '0.75rem' }}>
+              <div className="form-group">
+                <label>Recipients</label>
+                <select
+                  className="plan-select"
+                  value={emailForm.recipients}
+                  onChange={e => setEmailForm(f => ({ ...f, recipients: e.target.value }))}
+                >
+                  <option value="all">All Users</option>
+                  <option value="plan:free">Free Plan</option>
+                  <option value="plan:basic">Basic Plan</option>
+                  <option value="plan:pro">Pro Plan</option>
+                  <option value="plan:premium_ai">Premium AI Plan</option>
+                  <option value="plan:enterprise">Enterprise Plan</option>
+                </select>
+              </div>
+              <div className="form-group">
+                <label>From Name</label>
+                <input
+                  className="plan-select"
+                  placeholder="Clock In"
+                  value={emailForm.fromName}
+                  onChange={e => setEmailForm(f => ({ ...f, fromName: e.target.value }))}
+                />
+              </div>
+            </div>
+
+            <div className="form-group" style={{ marginBottom: '0.75rem' }}>
+              <label>Subject *</label>
+              <input
+                className="plan-select"
+                style={{ width: '100%' }}
+                placeholder="e.g. Welcome to Clock In Beta!"
+                value={emailForm.subject}
+                onChange={e => setEmailForm(f => ({ ...f, subject: e.target.value }))}
+                required
+              />
+            </div>
+
+            <div className="form-group" style={{ marginBottom: '1rem' }}>
+              <label>Body (HTML) *</label>
+              <textarea
+                className="plan-select"
+                style={{ width: '100%', minHeight: '200px', fontFamily: 'monospace', fontSize: '0.82rem', resize: 'vertical' }}
+                placeholder={'<p>Hello,</p>\n<p>Your message here...</p>'}
+                value={emailForm.html}
+                onChange={e => setEmailForm(f => ({ ...f, html: e.target.value }))}
+                required
+              />
+            </div>
+
+            {emailError && (
+              <p style={{ color: 'var(--error, #f87171)', fontSize: '0.85rem', marginBottom: '0.75rem' }}>{emailError}</p>
+            )}
+            {emailResult && (
+              <p style={{ color: 'var(--success, #4ade80)', fontSize: '0.85rem', marginBottom: '0.75rem' }}>
+                ✓ Sent to {emailResult.sent} / {emailResult.total} recipients
+                {emailResult.errors?.length > 0 && ` (${emailResult.errors.length} errors)`}
+              </p>
+            )}
+
+            <button type="submit" className="submit-button" disabled={emailSending}>
+              {emailSending ? <Loader size={14} className="spin" /> : <Send size={14} />}
+              {emailSending ? 'Sending...' : 'Send Email'}
+            </button>
+          </form>
         </div>
       )}
     </div>
