@@ -49,6 +49,7 @@
 /* Input row */
 .promo-input-row {
   display: flex;
+  flex-direction: column;
   gap: 0.5rem;
   width: 100%;
   margin-top: 0.5rem;
@@ -81,6 +82,7 @@
 }
 
 .promo-redeem-button {
+  width: 100%;
   padding: 0.65rem 1.25rem;
   border-radius: 0.5rem;
   background: var(--accent);
@@ -90,7 +92,6 @@
   font-size: 0.95rem;
   cursor: pointer;
   transition: opacity 0.15s;
-  white-space: nowrap;
 }
 
 .promo-redeem-button:disabled {
