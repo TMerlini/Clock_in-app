@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Mail, Send, Loader, Eye, EyeOff, Bold, Italic, Link, Image } from 'lucide-react';
 
-const BASE_TEMPLATE = (title, body, ctaLabel = 'Open Clock In', ctaUrl = 'https://www.clock-in.pt') => `<div style="font-family:Inter,Arial,sans-serif;max-width:600px;margin:0 auto;background:#0f0f0f;color:#e5e5e5;border-radius:12px;overflow:hidden">
+const BASE_TEMPLATE = (title, body, ctaLabel, ctaUrl = 'https://www.clock-in.pt', footer) => `<div style="font-family:Inter,Arial,sans-serif;max-width:600px;margin:0 auto;background:#0f0f0f;color:#e5e5e5;border-radius:12px;overflow:hidden">
   <div style="background:#6366f1;padding:32px 24px;text-align:center">
     <h1 style="color:#fff;margin:0;font-size:22px">${title}</h1>
   </div>
@@ -10,59 +10,118 @@ const BASE_TEMPLATE = (title, body, ctaLabel = 'Open Clock In', ctaUrl = 'https:
     <div style="text-align:center;margin:24px 0 8px">
       <a href="${ctaUrl}" style="display:inline-block;background:#6366f1;color:#fff;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:600">${ctaLabel} →</a>
     </div>
-    <p style="margin:24px 0 0;font-size:12px;color:#666;text-align:center">You're receiving this because you signed up at clock-in.pt</p>
+    <p style="margin:24px 0 0;font-size:12px;color:#666;text-align:center">${footer}</p>
   </div>
 </div>`;
 
-const TEMPLATES = [
-  {
-    label: 'Welcome / Beta',
-    subject: 'Welcome to Clock In Beta! 🎉',
-    html: BASE_TEMPLATE(
-      'Welcome to Clock In Beta!',
-      `<p style="margin:0 0 16px">Hi there 👋</p>
+const TEMPLATES = {
+  en: [
+    {
+      label: 'Welcome / Beta',
+      subject: 'Welcome to Clock In Beta! 🎉',
+      html: BASE_TEMPLATE(
+        'Welcome to Clock In Beta!',
+        `<p style="margin:0 0 16px">Hi there 👋</p>
     <p style="margin:0 0 16px">Thanks for joining the Clock In beta. We're excited to have you on board!</p>
     <p style="margin:0 0 16px">Clock In helps you track work hours, manage overtime, and stay compliant with Portuguese labour law — all in one place.</p>
     <p style="margin:0">Give it a try and let us know what you think.</p>`,
-      'Start Tracking'
-    ),
-  },
-  {
-    label: 'New Feature',
-    subject: 'New in Clock In: [Feature Name] ✨',
-    html: BASE_TEMPLATE(
-      'Something new just landed ✨',
-      `<p style="margin:0 0 16px">Hi there 👋</p>
+        'Start Tracking', 'https://www.clock-in.pt',
+        "You're receiving this because you signed up at clock-in.pt"
+      ),
+    },
+    {
+      label: 'New Feature',
+      subject: 'New in Clock In: [Feature Name] ✨',
+      html: BASE_TEMPLATE(
+        'Something new just landed ✨',
+        `<p style="margin:0 0 16px">Hi there 👋</p>
     <p style="margin:0 0 16px">We just shipped a new feature: <strong style="color:#a5b4fc">[Feature Name]</strong>.</p>
     <p style="margin:0 0 16px">[Short description of what it does and why it's useful.]</p>
     <p style="margin:0">Head over to Clock In to check it out.</p>`,
-      'See What\'s New'
-    ),
-  },
-  {
-    label: 'Promo / Offer',
-    subject: 'Exclusive offer for Clock In users 🎁',
-    html: BASE_TEMPLATE(
-      'A special offer just for you 🎁',
-      `<p style="margin:0 0 16px">Hi there 👋</p>
+        "See What's New", 'https://www.clock-in.pt',
+        "You're receiving this because you signed up at clock-in.pt"
+      ),
+    },
+    {
+      label: 'Promo / Offer',
+      subject: 'Exclusive offer for Clock In users 🎁',
+      html: BASE_TEMPLATE(
+        'A special offer just for you 🎁',
+        `<p style="margin:0 0 16px">Hi there 👋</p>
     <p style="margin:0 0 16px">As a valued Clock In user, we'd like to offer you <strong style="color:#a5b4fc">[offer details]</strong>.</p>
     <p style="margin:0 0 16px">Use promo code <span style="background:#1e1e2e;padding:4px 10px;border-radius:6px;font-family:monospace;letter-spacing:0.1em;color:#a5b4fc">[CODE]</span> at checkout.</p>
     <p style="margin:0">Valid until [date].</p>`,
-      'Claim Offer'
-    ),
-  },
-  {
-    label: 'Announcement',
-    subject: 'Important update from Clock In',
-    html: BASE_TEMPLATE(
-      'An important update',
-      `<p style="margin:0 0 16px">Hi there 👋</p>
+        'Claim Offer', 'https://www.clock-in.pt',
+        "You're receiving this because you signed up at clock-in.pt"
+      ),
+    },
+    {
+      label: 'Announcement',
+      subject: 'Important update from Clock In',
+      html: BASE_TEMPLATE(
+        'An important update',
+        `<p style="margin:0 0 16px">Hi there 👋</p>
     <p style="margin:0 0 16px">[Your announcement here.]</p>
     <p style="margin:0">Thank you for being part of Clock In.</p>`,
-      'Learn More'
-    ),
-  },
-];
+        'Learn More', 'https://www.clock-in.pt',
+        "You're receiving this because you signed up at clock-in.pt"
+      ),
+    },
+  ],
+  pt: [
+    {
+      label: 'Boas-vindas / Beta',
+      subject: 'Bem-vindo ao Clock In Beta! 🎉',
+      html: BASE_TEMPLATE(
+        'Bem-vindo ao Clock In Beta!',
+        `<p style="margin:0 0 16px">Olá 👋</p>
+    <p style="margin:0 0 16px">Obrigado por te juntares à beta do Clock In. Estamos muito contentes por te ter cá!</p>
+    <p style="margin:0 0 16px">O Clock In ajuda-te a registar horas de trabalho, gerir horas extra e cumprir a legislação laboral portuguesa — tudo num só lugar.</p>
+    <p style="margin:0">Experimenta e diz-nos o que achas.</p>`,
+        'Começar a Registar', 'https://www.clock-in.pt',
+        'Estás a receber este email porque te registaste em clock-in.pt'
+      ),
+    },
+    {
+      label: 'Nova Funcionalidade',
+      subject: 'Novidade no Clock In: [Nome da Funcionalidade] ✨',
+      html: BASE_TEMPLATE(
+        'Chegou algo novo ✨',
+        `<p style="margin:0 0 16px">Olá 👋</p>
+    <p style="margin:0 0 16px">Acabámos de lançar uma nova funcionalidade: <strong style="color:#a5b4fc">[Nome da Funcionalidade]</strong>.</p>
+    <p style="margin:0 0 16px">[Descrição breve do que faz e por que é útil.]</p>
+    <p style="margin:0">Vai ao Clock In e experimenta.</p>`,
+        'Ver Novidades', 'https://www.clock-in.pt',
+        'Estás a receber este email porque te registaste em clock-in.pt'
+      ),
+    },
+    {
+      label: 'Promoção / Oferta',
+      subject: 'Oferta exclusiva para utilizadores Clock In 🎁',
+      html: BASE_TEMPLATE(
+        'Uma oferta especial para ti 🎁',
+        `<p style="margin:0 0 16px">Olá 👋</p>
+    <p style="margin:0 0 16px">Como utilizador do Clock In, gostaríamos de te oferecer <strong style="color:#a5b4fc">[detalhes da oferta]</strong>.</p>
+    <p style="margin:0 0 16px">Usa o código promocional <span style="background:#1e1e2e;padding:4px 10px;border-radius:6px;font-family:monospace;letter-spacing:0.1em;color:#a5b4fc">[CÓDIGO]</span> no checkout.</p>
+    <p style="margin:0">Válido até [data].</p>`,
+        'Usar Oferta', 'https://www.clock-in.pt',
+        'Estás a receber este email porque te registaste em clock-in.pt'
+      ),
+    },
+    {
+      label: 'Anúncio',
+      subject: 'Atualização importante do Clock In',
+      html: BASE_TEMPLATE(
+        'Uma atualização importante',
+        `<p style="margin:0 0 16px">Olá 👋</p>
+    <p style="margin:0 0 16px">[O teu anúncio aqui.]</p>
+    <p style="margin:0">Obrigado por fazeres parte do Clock In.</p>`,
+        'Saber Mais', 'https://www.clock-in.pt',
+        'Estás a receber este email porque te registaste em clock-in.pt'
+      ),
+    },
+  ],
+};
 
 function insertAtCursor(textarea, before, after = '') {
   const start = textarea.selectionStart;
@@ -73,6 +132,7 @@ function insertAtCursor(textarea, before, after = '') {
 }
 
 export function EmailComposer({ emailForm, setEmailForm, emailSending, emailResult, emailError, onSubmit }) {
+  const [lang, setLang] = useState('en');
   const [showPreview, setShowPreview] = useState(false);
   const [imageUrl, setImageUrl] = useState('');
   const [showImageInput, setShowImageInput] = useState(false);
@@ -114,11 +174,28 @@ export function EmailComposer({ emailForm, setEmailForm, emailSending, emailResu
         <h2>Email / Newsletter</h2>
       </div>
 
-      {/* Template picker */}
+      {/* Template picker + language toggle */}
       <div style={{ marginBottom: '1.25rem' }}>
-        <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>Start from a template:</p>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
+          <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', margin: 0 }}>Start from a template:</p>
+          <div style={{ display: 'flex', gap: '2px', background: 'var(--bg-secondary, rgba(255,255,255,0.06))', borderRadius: '6px', padding: '2px', border: '1px solid var(--border)' }}>
+            {['en', 'pt'].map(l => (
+              <button
+                key={l}
+                type="button"
+                onClick={() => setLang(l)}
+                style={{ padding: '3px 12px', borderRadius: '4px', border: 'none', cursor: 'pointer', fontSize: '0.78rem', fontWeight: 600,
+                  background: lang === l ? 'var(--accent)' : 'transparent',
+                  color: lang === l ? '#fff' : 'var(--text-muted)',
+                }}
+              >
+                {l.toUpperCase()}
+              </button>
+            ))}
+          </div>
+        </div>
         <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-          {TEMPLATES.map(t => (
+          {TEMPLATES[lang].map(t => (
             <button
               key={t.label}
               type="button"
