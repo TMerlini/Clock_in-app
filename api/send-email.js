@@ -70,11 +70,13 @@ async function getUserEmails(adminInstance, recipients) {
   return emails;
 }
 
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+
 async function syncContactsToAudience(contacts, audienceId, apiKey) {
-  // Upsert contacts in batches of 50
+  // Resend rate limit: 5 req/sec — process 4 at a time with 1s gap to stay safe
   let synced = 0;
-  for (let i = 0; i < contacts.length; i += 50) {
-    const batch = contacts.slice(i, i + 50);
+  for (let i = 0; i < contacts.length; i += 4) {
+    const batch = contacts.slice(i, i + 4);
     await Promise.allSettled(
       batch.map(({ email, firstName }) =>
         resendRequest('POST', `/audiences/${audienceId}/contacts`, {
@@ -85,6 +87,7 @@ async function syncContactsToAudience(contacts, audienceId, apiKey) {
       )
     );
     synced += batch.length;
+    if (i + 4 < contacts.length) await sleep(1100); // 1.1s between groups
   }
   return synced;
 }
