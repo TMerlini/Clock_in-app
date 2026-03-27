@@ -1,29 +1,26 @@
 import { useState } from 'react';
-import { OpenRouter } from '@openrouter/sdk';
-import { OPENROUTER_API_KEY, OPENROUTER_DEFAULT_MODEL } from '../lib/openRouterConfig';
+import OpenAI from 'openai';
+import { OPENAI_API_KEY, OPENAI_DEFAULT_MODEL } from '../lib/openRouterConfig';
 import { auth } from '../lib/firebase';
 import { checkCallAvailability, deductCall, getCallStatus } from '../lib/tokenManager';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 
-let openRouterClient = null;
+let openAIClient = null;
 
-function getOpenRouterClient() {
-  if (!OPENROUTER_API_KEY) {
-    throw new Error('OpenRouter API key is not configured. Please set VITE_OPENROUTER_API_KEY in your environment variables.');
+function getOpenAIClient() {
+  if (!OPENAI_API_KEY) {
+    throw new Error('OpenAI API key is not configured. Please set VITE_OPENAI_API_KEY in your environment variables.');
   }
 
-  if (!openRouterClient) {
-    openRouterClient = new OpenRouter({
-      apiKey: OPENROUTER_API_KEY,
-      defaultHeaders: {
-        'HTTP-Referer': window.location.origin,
-        'X-Title': 'Clock In App',
-      },
+  if (!openAIClient) {
+    openAIClient = new OpenAI({
+      apiKey: OPENAI_API_KEY,
+      dangerouslyAllowBrowser: true,
     });
   }
 
-  return openRouterClient;
+  return openAIClient;
 }
 
 export function useOpenRouter() {
@@ -35,8 +32,8 @@ export function useOpenRouter() {
     setError(null);
 
     try {
-      const client = getOpenRouterClient();
-      
+      const client = getOpenAIClient();
+
       // Check if user is Premium AI and has calls available
       const currentUser = auth.currentUser;
       let isPremiumAI = false;
@@ -81,31 +78,22 @@ export function useOpenRouter() {
         canUseAI = true;
       }
 
-      // Use provided model, or fallback to default, or use user's OpenRouter default
-      // Since user has specific providers allowed, we'll use a model that works with those providers
-      const modelToUse = model || OPENROUTER_DEFAULT_MODEL;
-      
-      // Build request object
-      const requestBody = {
-        model: modelToUse,
-        messages: messages,
-        temperature: 0.7,
-        max_tokens: 1000,
-        stream: false,
-        provider: {
-          allowFallbacks: true, // Allow fallback providers if primary is unavailable
-        },
-      };
-      
-      console.log('Sending request to OpenRouter:', {
+      const modelToUse = model || OPENAI_DEFAULT_MODEL;
+
+      console.log('Sending request to OpenAI:', {
         model: modelToUse,
         messageCount: messages.length,
-        hasApiKey: !!OPENROUTER_API_KEY,
+        hasApiKey: !!OPENAI_API_KEY,
         isPremiumAI: isPremiumAI,
         isAdmin: isAdmin
       });
 
-      const completion = await client.chat.send(requestBody);
+      const completion = await client.chat.completions.create({
+        model: modelToUse,
+        messages: messages,
+        temperature: 0.7,
+        max_tokens: 1000,
+      });
 
       if (!completion.choices || !completion.choices[0] || !completion.choices[0].message) {
         throw new Error('Invalid response format from OpenRouter API');
@@ -199,19 +187,7 @@ export function useOpenRouter() {
       }
       
       setError(errorMessage);
-      
-      // Log the full error for debugging
-      console.error('OpenRouter API Error:', {
-        error: err,
-        errorName: err.name,
-        errorMessage: errorMessage,
-        model: model,
-        body: err.body,
-        statusCode: err.statusCode,
-        stack: err.stack
-      });
-      
-      // Create a user-friendly error
+      console.error('OpenAI API Error:', { error: err, errorMessage, model });
       const userFriendlyError = new Error(errorMessage);
       userFriendlyError.name = err.name;
       throw userFriendlyError;
@@ -222,18 +198,9 @@ export function useOpenRouter() {
 
   const listAvailableModels = async () => {
     try {
-      const response = await fetch('https://openrouter.ai/api/v1/models', {
-        headers: {
-          'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch models');
-      }
-
-      const data = await response.json();
-      return data.data || [];
+      const client = getOpenAIClient();
+      const response = await client.models.list();
+      return response.data || [];
     } catch (err) {
       console.error('Error listing models:', err);
       return [];
@@ -250,7 +217,7 @@ export function useOpenRouter() {
     let isAdmin = false;
 
     try {
-      const client = getOpenRouterClient();
+      const client = getOpenAIClient();
 
       const ADMIN_EMAIL = 'merloproductions@gmail.com';
       isAdmin = currentUser?.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase();
@@ -282,41 +249,29 @@ export function useOpenRouter() {
         canUseAI = true;
       }
 
-      const modelToUse = model || OPENROUTER_DEFAULT_MODEL;
-      const requestBody = {
+      const modelToUse = model || OPENAI_DEFAULT_MODEL;
+
+      console.log('Sending streaming request to OpenAI:', {
+        model: modelToUse,
+        messageCount: messages.length,
+        hasApiKey: !!OPENAI_API_KEY,
+        isPremiumAI,
+        isAdmin,
+      });
+
+      const stream = await client.chat.completions.create({
         model: modelToUse,
         messages,
         temperature: 0.7,
         max_tokens: 1000,
         stream: true,
-        provider: { allowFallbacks: true },
-      };
-
-      console.log('Sending streaming request to OpenRouter:', {
-        model: modelToUse,
-        messageCount: messages.length,
-        hasApiKey: !!OPENROUTER_API_KEY,
-        isPremiumAI,
-        isAdmin,
+        stream_options: { include_usage: true },
       });
 
-      const stream = await client.chat.send(requestBody);
       let accumulated = '';
       let usage = null;
 
       for await (const chunk of stream) {
-        if (chunk?.error) {
-          const errMsg = chunk.error?.message || 'Stream error';
-          onError?.(new Error(errMsg));
-          return;
-        }
-        const finishReason = chunk?.choices?.[0]?.finish_reason ?? chunk?.choices?.[0]?.finishReason;
-        if (finishReason === 'error') {
-          const errMsg = chunk?.error?.message || 'Stream ended with error';
-          onError?.(new Error(errMsg));
-          return;
-        }
-
         const delta = chunk?.choices?.[0]?.delta?.content;
         if (typeof delta === 'string') {
           accumulated += delta;
@@ -362,7 +317,7 @@ export function useOpenRouter() {
     } catch (err) {
       const errorMessage = err.message || 'Failed to send message to AI';
       setError(errorMessage);
-      console.error('OpenRouter streaming error:', err);
+      console.error('OpenAI streaming error:', err);
       onError?.(err);
       throw err;
     } finally {
