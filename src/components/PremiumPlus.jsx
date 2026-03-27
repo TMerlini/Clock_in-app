@@ -453,7 +453,7 @@ export function PremiumPlus({ user, onNavigate }) {
                     className="openrouter-logo openrouter-logo-light"
                   />
                   <img
-                    src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/webp/openai.webp"
+                    src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/webp/openai-light.webp"
                     alt="OpenAI"
                     className="openrouter-logo openrouter-logo-dark"
                   />
@@ -549,7 +549,7 @@ export function PremiumPlus({ user, onNavigate }) {
                     className="openrouter-logo openrouter-logo-light"
                   />
                   <img
-                    src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/webp/openai.webp"
+                    src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/webp/openai-light.webp"
                     alt="OpenAI"
                     className="openrouter-logo openrouter-logo-dark"
                   />
