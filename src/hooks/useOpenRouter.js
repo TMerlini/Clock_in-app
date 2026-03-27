@@ -1,26 +1,72 @@
 import { useState } from 'react';
-import OpenAI from 'openai';
-import { OPENAI_API_KEY, OPENAI_DEFAULT_MODEL } from '../lib/openRouterConfig';
+import { OPENAI_DEFAULT_MODEL } from '../lib/openRouterConfig';
 import { auth } from '../lib/firebase';
 import { checkCallAvailability, deductCall, getCallStatus } from '../lib/tokenManager';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 
-let openAIClient = null;
+async function checkUserAccess() {
+  const currentUser = auth.currentUser;
+  const ADMIN_EMAIL = 'merloproductions@gmail.com';
+  const isAdmin = currentUser?.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase();
 
-function getOpenAIClient() {
-  if (!OPENAI_API_KEY) {
-    throw new Error('OpenAI API key is not configured. Please set VITE_OPENAI_API_KEY in your environment variables.');
+  let isPremiumAI = false;
+  let canUseAI = false;
+  let subscriptionPlan = '';
+
+  if (currentUser && !isAdmin) {
+    const settingsRef = doc(db, 'userSettings', currentUser.uid);
+    const settingsDoc = await getDoc(settingsRef);
+
+    if (settingsDoc.exists()) {
+      const settings = settingsDoc.data();
+      subscriptionPlan = (settings.subscriptionPlan || settings.plan || '').toLowerCase();
+
+      if (subscriptionPlan === 'basic') {
+        throw new Error('AI Advisor is not included in the Basic plan. Upgrade to Pro or Premium AI to use AI features.');
+      }
+
+      isPremiumAI = subscriptionPlan === 'premium_ai' || subscriptionPlan === 'enterprise';
+
+      const hasCalls = await checkCallAvailability(currentUser.uid);
+      if (!hasCalls) {
+        if (isPremiumAI) {
+          const status = await getCallStatus(currentUser.uid);
+          throw new Error(`You've used all your calls for this subscription period (${status.callsUsed}/${status.callsAllocated}). Your calls will reset on your next subscription renewal.`);
+        }
+        if (subscriptionPlan === 'pro') {
+          throw new Error('You need to purchase AI call packs to use the AI Advisor. Go to Premium+ to buy call packs.');
+        }
+      }
+      canUseAI = isPremiumAI || subscriptionPlan === 'pro';
+    }
+  } else if (isAdmin) {
+    isPremiumAI = true;
+    canUseAI = true;
   }
 
-  if (!openAIClient) {
-    openAIClient = new OpenAI({
-      apiKey: OPENAI_API_KEY,
-      dangerouslyAllowBrowser: true,
-    });
-  }
+  return { currentUser, isAdmin, isPremiumAI, canUseAI };
+}
 
-  return openAIClient;
+async function trackTokens(currentUser, isAdmin, canUseAI, actualTokens) {
+  if (!canUseAI || !currentUser || actualTokens === 0) return;
+  try {
+    if (!isAdmin) {
+      await deductCall(currentUser.uid, actualTokens);
+    } else {
+      const settingsRef = doc(db, 'userSettings', currentUser.uid);
+      const settingsDoc = await getDoc(settingsRef);
+      if (settingsDoc.exists()) {
+        const settings = settingsDoc.data();
+        const aiUsage = settings.aiUsage || { totalTokensUsed: 0 };
+        await setDoc(settingsRef, {
+          aiUsage: { ...aiUsage, totalTokensUsed: (aiUsage.totalTokensUsed || 0) + actualTokens },
+        }, { merge: true });
+      }
+    }
+  } catch (err) {
+    console.error('Error updating call/token status:', err);
+  }
 }
 
 export function useOpenRouter() {
@@ -32,178 +78,57 @@ export function useOpenRouter() {
     setError(null);
 
     try {
-      const client = getOpenAIClient();
-
-      // Check if user is Premium AI and has calls available
-      const currentUser = auth.currentUser;
-      let isPremiumAI = false;
-      let canUseAI = false; // Premium AI, Enterprise, or Pro with packs
-      let actualTokens = 0;
-      
-      // Admin email - full Premium AI access, no call limits
-      const ADMIN_EMAIL = 'merloproductions@gmail.com';
-      const isAdmin = currentUser?.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase();
-      
-      let subscriptionPlan = '';
-      if (currentUser && !isAdmin) {
-        const settingsRef = doc(db, 'userSettings', currentUser.uid);
-        const settingsDoc = await getDoc(settingsRef);
-        
-        if (settingsDoc.exists()) {
-          const settings = settingsDoc.data();
-          subscriptionPlan = (settings.subscriptionPlan || settings.plan || '').toLowerCase();
-          
-          // Basic has no AI access
-          if (subscriptionPlan === 'basic') {
-            throw new Error('AI Advisor is not included in the Basic plan. Upgrade to Pro or Premium AI to use AI features.');
-          }
-          
-          isPremiumAI = subscriptionPlan === 'premium_ai' || subscriptionPlan === 'enterprise';
-          
-          // Premium AI/Enterprise: check base + pack calls. Pro: check pack calls only.
-          const hasCalls = await checkCallAvailability(currentUser.uid);
-          if (!hasCalls) {
-            if (isPremiumAI) {
-              const status = await getCallStatus(currentUser.uid);
-              throw new Error(`You've used all your calls for this subscription period (${status.callsUsed}/${status.callsAllocated}). Your calls will reset on your next subscription renewal.`);
-            }
-            if (subscriptionPlan === 'pro') {
-              throw new Error('You need to purchase AI call packs to use the AI Advisor. Go to Premium+ to buy call packs.');
-            }
-          }
-          canUseAI = isPremiumAI || subscriptionPlan === 'pro';
-        }
-      } else if (isAdmin) {
-        isPremiumAI = true;
-        canUseAI = true;
-      }
-
+      const { currentUser, isAdmin, isPremiumAI, canUseAI } = await checkUserAccess();
       const modelToUse = model || OPENAI_DEFAULT_MODEL;
 
-      console.log('Sending request to OpenAI:', {
-        model: modelToUse,
-        messageCount: messages.length,
-        hasApiKey: !!OPENAI_API_KEY,
-        isPremiumAI: isPremiumAI,
-        isAdmin: isAdmin
+      console.log('Sending request to /api/chat:', { model: modelToUse, messageCount: messages.length, isPremiumAI, isAdmin });
+
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messages, model: modelToUse }),
       });
 
-      const completion = await client.chat.completions.create({
-        model: modelToUse,
-        messages: messages,
-        temperature: 0.7,
-        max_tokens: 1000,
-      });
-
-      if (!completion.choices || !completion.choices[0] || !completion.choices[0].message) {
-        throw new Error('Invalid response format from OpenRouter API');
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({}));
+        throw new Error(err.error || `API error ${response.status}`);
       }
 
-      // Extract actual token usage from API response
-      if (completion.usage) {
-        const promptTokens = completion.usage.prompt_tokens || 0;
-        const completionTokens = completion.usage.completion_tokens || 0;
-        actualTokens = promptTokens + completionTokens;
-        console.log('Actual token usage:', { promptTokens, completionTokens, total: actualTokens });
-      }
+      // /api/chat streams SSE — read all chunks and return final text
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let accumulated = '';
+      let usage = null;
 
-      // Deduct one call and track actual tokens after successful API call
-      // Admin still tracks tokens for monitoring/testing, but doesn't deduct calls
-      if (canUseAI && currentUser) {
-        try {
-          if (!isAdmin) {
-            // Regular users: deduct call and track tokens
-            await deductCall(currentUser.uid, actualTokens);
-          } else {
-            // Admin: only track tokens (don't deduct calls), for testing/monitoring
-            // We still want to see token usage but not limit calls
-            if (actualTokens > 0) {
-              // Update token count only (increment totalTokensUsed without decrementing callsRemaining)
-              const settingsRef = doc(db, 'userSettings', currentUser.uid);
-              const settingsDoc = await getDoc(settingsRef);
-              if (settingsDoc.exists()) {
-                const settings = settingsDoc.data();
-                const aiUsage = settings.aiUsage || { totalTokensUsed: 0 };
-                const currentTotalTokens = aiUsage.totalTokensUsed || 0;
-                await setDoc(settingsRef, {
-                  aiUsage: {
-                    ...aiUsage,
-                    totalTokensUsed: currentTotalTokens + actualTokens
-                  }
-                }, { merge: true });
-              }
-            }
-          }
-        } catch (callError) {
-          console.error('Error updating call/token status:', callError);
-          // Don't fail the request if update fails
-        }
-      }
-
-      return completion.choices[0].message.content;
-    } catch (err) {
-      // Extract more detailed error information
-      let errorMessage = err.message || 'Failed to send message to AI';
-      
-      // Try to get more details from the error object
-      if (err.name === 'ChatError' || err.name === 'OpenRouterDefaultError') {
-        // Try to extract more details from the error body
-        if (err.body) {
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        const text = decoder.decode(value);
+        for (const line of text.split('\n')) {
+          if (!line.startsWith('data: ')) continue;
+          const data = line.slice(6);
+          if (data === '[DONE]') break;
           try {
-            const errorData = typeof err.body === 'string' ? JSON.parse(err.body) : err.body;
-            
-            // Check for rate limiting (429)
-            if (err.statusCode === 429 || errorData.error?.code === 429) {
-              // Extract the helpful message from metadata if available
-              const metadataMessage = errorData.error?.metadata?.raw;
-              if (metadataMessage) {
-                errorMessage = metadataMessage;
-              } else {
-                errorMessage = 'The AI model is currently rate-limited. Please wait a moment and try again, or add your own API key at https://openrouter.ai/settings/integrations to increase rate limits.';
-              }
-            } else if (errorData.error?.message) {
-              errorMessage = errorData.error.message;
-              
-              // Add helpful guidance for routing errors
-              if (errorMessage.includes('No allowed providers')) {
-                errorMessage = 'Your OpenRouter default model has no providers enabled.\n\n' +
-                  'To fix this:\n' +
-                  '1. Go to https://openrouter.ai/settings/routing\n' +
-                  '2. Check your "Default Model" setting\n' +
-                  '3. Ensure at least one provider is enabled/allowed for that model\n' +
-                  '4. Or set a different default model that has providers enabled\n\n' +
-                  'The app is using your OpenRouter default model (no model parameter specified).';
-              }
-            }
-          } catch {
-            // If parsing fails, provide a generic message
-            if (err.statusCode === 429) {
-              errorMessage = 'The AI model is currently rate-limited. Please wait a moment and try again.';
-            }
-          }
-        } else if (err.statusCode === 429) {
-          errorMessage = 'The AI model is currently rate-limited. Please wait a moment and try again.';
+            const chunk = JSON.parse(data);
+            if (chunk.error) throw new Error(chunk.error);
+            const delta = chunk?.choices?.[0]?.delta?.content;
+            if (typeof delta === 'string') accumulated += delta;
+            if (chunk?.usage) usage = chunk.usage;
+          } catch {}
         }
       }
-      
+
+      const actualTokens = (usage?.prompt_tokens || 0) + (usage?.completion_tokens || 0);
+      await trackTokens(currentUser, isAdmin, canUseAI, actualTokens);
+
+      return accumulated;
+    } catch (err) {
+      const errorMessage = err.message || 'Failed to send message to AI';
       setError(errorMessage);
-      console.error('OpenAI API Error:', { error: err, errorMessage, model });
-      const userFriendlyError = new Error(errorMessage);
-      userFriendlyError.name = err.name;
-      throw userFriendlyError;
+      console.error('AI API Error:', err);
+      throw new Error(errorMessage);
     } finally {
       setIsLoading(false);
-    }
-  };
-
-  const listAvailableModels = async () => {
-    try {
-      const client = getOpenAIClient();
-      const response = await client.models.list();
-      return response.data || [];
-    } catch (err) {
-      console.error('Error listing models:', err);
-      return [];
     }
   };
 
@@ -211,113 +136,57 @@ export function useOpenRouter() {
     setIsLoading(true);
     setError(null);
 
-    let currentUser = auth.currentUser;
-    let isPremiumAI = false;
-    let canUseAI = false;
-    let isAdmin = false;
-
     try {
-      const client = getOpenAIClient();
-
-      const ADMIN_EMAIL = 'merloproductions@gmail.com';
-      isAdmin = currentUser?.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase();
-
-      if (currentUser && !isAdmin) {
-        const settingsRef = doc(db, 'userSettings', currentUser.uid);
-        const settingsDoc = await getDoc(settingsRef);
-        if (settingsDoc.exists()) {
-          const settings = settingsDoc.data();
-          const subscriptionPlan = (settings.subscriptionPlan || settings.plan || '').toLowerCase();
-          if (subscriptionPlan === 'basic') {
-            throw new Error('AI Advisor is not included in the Basic plan. Upgrade to Pro or Premium AI to use AI features.');
-          }
-          isPremiumAI = subscriptionPlan === 'premium_ai' || subscriptionPlan === 'enterprise';
-          const hasCalls = await checkCallAvailability(currentUser.uid);
-          if (!hasCalls) {
-            if (isPremiumAI) {
-              const status = await getCallStatus(currentUser.uid);
-              throw new Error(`You've used all your calls for this subscription period (${status.callsUsed}/${status.callsAllocated}). Your calls will reset on your next subscription renewal.`);
-            }
-            if (subscriptionPlan === 'pro') {
-              throw new Error('You need to purchase AI call packs to use the AI Advisor. Go to Premium+ to buy call packs.');
-            }
-          }
-          canUseAI = isPremiumAI || subscriptionPlan === 'pro';
-        }
-      } else if (isAdmin) {
-        isPremiumAI = true;
-        canUseAI = true;
-      }
-
+      const { currentUser, isAdmin, isPremiumAI, canUseAI } = await checkUserAccess();
       const modelToUse = model || OPENAI_DEFAULT_MODEL;
 
-      console.log('Sending streaming request to OpenAI:', {
-        model: modelToUse,
-        messageCount: messages.length,
-        hasApiKey: !!OPENAI_API_KEY,
-        isPremiumAI,
-        isAdmin,
+      console.log('Sending streaming request to /api/chat:', { model: modelToUse, messageCount: messages.length, isPremiumAI, isAdmin });
+
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messages, model: modelToUse }),
       });
 
-      const stream = await client.chat.completions.create({
-        model: modelToUse,
-        messages,
-        temperature: 0.7,
-        max_tokens: 1000,
-        stream: true,
-        stream_options: { include_usage: true },
-      });
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({}));
+        throw new Error(err.error || `API error ${response.status}`);
+      }
 
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
       let accumulated = '';
       let usage = null;
 
-      for await (const chunk of stream) {
-        const delta = chunk?.choices?.[0]?.delta?.content;
-        if (typeof delta === 'string') {
-          accumulated += delta;
-          onChunk?.(accumulated);
-        }
-        if (chunk?.usage) {
-          usage = chunk.usage;
-        }
-      }
-
-      const promptTokens = usage?.prompt_tokens || 0;
-      const completionTokens = usage?.completion_tokens || 0;
-      const actualTokens = promptTokens + completionTokens;
-      if (actualTokens > 0) {
-        console.log('Stream token usage:', { promptTokens, completionTokens, total: actualTokens });
-      }
-
-      if (canUseAI && currentUser) {
-        try {
-          if (!isAdmin) {
-            await deductCall(currentUser.uid, actualTokens);
-          } else if (actualTokens > 0) {
-            const settingsRef = doc(db, 'userSettings', currentUser.uid);
-            const settingsDoc = await getDoc(settingsRef);
-            if (settingsDoc.exists()) {
-              const settings = settingsDoc.data();
-              const aiUsage = settings.aiUsage || { totalTokensUsed: 0 };
-              const currentTotalTokens = aiUsage.totalTokensUsed || 0;
-              await setDoc(settingsRef, {
-                aiUsage: {
-                  ...aiUsage,
-                  totalTokensUsed: currentTotalTokens + actualTokens,
-                },
-              }, { merge: true });
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        const text = decoder.decode(value);
+        for (const line of text.split('\n')) {
+          if (!line.startsWith('data: ')) continue;
+          const data = line.slice(6);
+          if (data === '[DONE]') break;
+          try {
+            const chunk = JSON.parse(data);
+            if (chunk.error) throw new Error(chunk.error);
+            const delta = chunk?.choices?.[0]?.delta?.content;
+            if (typeof delta === 'string') {
+              accumulated += delta;
+              onChunk?.(accumulated);
             }
-          }
-        } catch (callError) {
-          console.error('Error updating call/token status:', callError);
+            if (chunk?.usage) usage = chunk.usage;
+          } catch {}
         }
       }
+
+      const actualTokens = (usage?.prompt_tokens || 0) + (usage?.completion_tokens || 0);
+      await trackTokens(currentUser, isAdmin, canUseAI, actualTokens);
 
       onDone?.({ fullContent: accumulated, usage });
     } catch (err) {
       const errorMessage = err.message || 'Failed to send message to AI';
       setError(errorMessage);
-      console.error('OpenAI streaming error:', err);
+      console.error('AI streaming error:', err);
       onError?.(err);
       throw err;
     } finally {
@@ -325,11 +194,13 @@ export function useOpenRouter() {
     }
   };
 
+  const listAvailableModels = async () => [];
+
   return {
     sendMessage,
     sendMessageStreaming,
     isLoading,
     error,
-    listAvailableModels
+    listAvailableModels,
   };
 }
