@@ -1796,13 +1796,14 @@ export function Admin({ user }) {
             </div>
 
             <div className="premium-ai-users">
-              {users.filter(u => (u.subscriptionPlan || '').toLowerCase() === 'premium_ai').length === 0 ? (
-                <div className="empty-state">No Premium AI users found</div>
+              {users.filter(u => ['premium_ai', 'pro', 'enterprise'].includes((u.subscriptionPlan || '').toLowerCase())).length === 0 ? (
+                <div className="empty-state">No AI-enabled users found</div>
               ) : (
                 <table className="data-table">
                   <thead>
                     <tr>
                       <th>Email</th>
+                      <th>Plan</th>
                       <th>Calls Used</th>
                       <th>Calls Remaining</th>
                       <th>Packs</th>
@@ -1811,7 +1812,7 @@ export function Admin({ user }) {
                   </thead>
                   <tbody>
                     {users
-                      .filter(u => (u.subscriptionPlan || '').toLowerCase() === 'premium_ai')
+                      .filter(u => ['premium_ai', 'pro', 'enterprise'].includes((u.subscriptionPlan || '').toLowerCase()))
                       .filter(u => !searchTerm || u.email.toLowerCase().includes(searchTerm.toLowerCase()))
                       .slice(0, 100)
                       .map((userItem) => {
@@ -1823,6 +1824,7 @@ export function Admin({ user }) {
                         return (
                           <tr key={userItem.id}>
                             <td>{userItem.email || userItem.id}</td>
+                            <td style={{textTransform:'capitalize'}}>{(userItem.subscriptionPlan || 'free').replace('_', ' ')}</td>
                             <td>{callsUsed}/{callsAllocated}</td>
                             <td>{Math.max(0, callsAllocated - callsUsed) + packsRemaining}</td>
                             <td>{aiUsage.callPacks?.length || 0} packs</td>
