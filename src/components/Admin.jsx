@@ -44,6 +44,8 @@ export function Admin({ user }) {
   const [analyticsDateRange, setAnalyticsDateRange] = useState('30d');
   const [loginImages, setLoginImages] = useState([]);
   const [loginImagesLoading, setLoginImagesLoading] = useState(false);
+  const [contactSubmissions, setContactSubmissions] = useState([]);
+  const [contactSubmissionsLoading, setContactSubmissionsLoading] = useState(false);
   const [imageUploading, setImageUploading] = useState(false);
   const [imagePreview, setImagePreview] = useState(null);
   const [imageFile, setImageFile] = useState(null);
@@ -100,6 +102,7 @@ export function Admin({ user }) {
     }
     if (activeSection === 'images' && user && isAdmin(user)) {
       loadLoginImages();
+      loadContactSubmissions();
     }
     if (activeSection === 'promos' && user && isAdmin(user)) {
       setPromosLoading(true);
@@ -416,6 +419,51 @@ export function Admin({ user }) {
       console.error('Error loading login images:', err);
     } finally {
       setLoginImagesLoading(false);
+    }
+  };
+
+  const loadContactSubmissions = async () => {
+    setContactSubmissionsLoading(true);
+    try {
+      const q = query(collection(db, 'contactSubmissions'), orderBy('createdAt', 'desc'));
+      const snap = await getDocs(q);
+      setContactSubmissions(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+    } catch (err) {
+      console.error('Error loading contact submissions:', err);
+    } finally {
+      setContactSubmissionsLoading(false);
+    }
+  };
+
+  const handleAddContactSlide = async () => {
+    if (loginImages.some(img => img.mediaType === 'contact')) {
+      alert('A contact form slide already exists. Remove it first before adding a new one.');
+      return;
+    }
+    try {
+      const nextOrder = loginImages.length > 0
+        ? Math.max(...loginImages.map(i => i.order ?? 0)) + 1
+        : 0;
+      await addDoc(collection(db, 'loginImages'), {
+        mediaType: 'contact',
+        title: 'Get in Touch',
+        description: '',
+        order: nextOrder,
+        createdAt: new Date(),
+      });
+      await loadLoginImages();
+    } catch (err) {
+      console.error('Error adding contact slide:', err);
+      alert('Error adding contact form: ' + err.message);
+    }
+  };
+
+  const handleMarkSubmissionRead = async (submissionId) => {
+    try {
+      await updateDoc(doc(db, 'contactSubmissions', submissionId), { status: 'read' });
+      setContactSubmissions(prev => prev.map(s => s.id === submissionId ? { ...s, status: 'read' } : s));
+    } catch (err) {
+      console.error('Error updating submission:', err);
     }
   };
 
@@ -1552,7 +1600,7 @@ export function Admin({ user }) {
           <div className="section-header">
             <h2>Login Page Media</h2>
           </div>
-          <p className="plan-config-hint">Upload images or add YouTube videos that appear on the sign-in page. Each slide can have a title, description, and configurable text alignment.</p>
+          <p className="plan-config-hint">Upload images, add YouTube videos, or add a contact form — each appears as a slide on the sign-in page.</p>
 
           <div className="image-upload-area">
             <h4 className="image-upload-heading"><ImageIcon size={16} /> Upload Image</h4>
@@ -1615,6 +1663,20 @@ export function Admin({ user }) {
             </div>
           </div>
 
+          <div className="image-upload-area" style={{ marginTop: '0.5rem' }}>
+            <h4 className="image-upload-heading"><Mail size={16} /> Add Contact Form Page</h4>
+            <p className="plan-config-hint" style={{ marginBottom: '0.75rem' }}>Adds a contact form as a slide on the login page. Only one allowed at a time.</p>
+            <button
+              className="submit-button"
+              onClick={handleAddContactSlide}
+              disabled={loginImages.some(img => img.mediaType === 'contact')}
+              title={loginImages.some(img => img.mediaType === 'contact') ? 'Contact form already added' : 'Add contact form slide'}
+            >
+              <Plus size={16} />
+              <span>{loginImages.some(img => img.mediaType === 'contact') ? 'Contact Form Added' : 'Add Contact Form'}</span>
+            </button>
+          </div>
+
           {loginImagesLoading ? (
             <div className="plan-editor-loading">
               <Loader className="spinning" size={24} />
@@ -1626,14 +1688,21 @@ export function Admin({ user }) {
             <div className="login-images-grid">
               {loginImages.map((img, idx) => (
                 <div key={img.id} className="login-image-card">
-                  <div className="login-image-thumb">
-                    <img src={img.url} alt={img.fileName} />
-                    {(img.mediaType === 'youtube') && (
-                      <div className="login-image-thumb-badge"><Film size={14} /> YouTube</div>
-                    )}
-                  </div>
+                  {img.mediaType === 'contact' ? (
+                    <div className="login-image-thumb" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-secondary)', flexDirection: 'column', gap: '0.5rem', color: 'var(--text-secondary)' }}>
+                      <Mail size={32} />
+                      <span style={{ fontSize: '0.75rem', fontWeight: 600 }}>Contact Form</span>
+                    </div>
+                  ) : (
+                    <div className="login-image-thumb">
+                      <img src={img.url} alt={img.fileName} />
+                      {(img.mediaType === 'youtube') && (
+                        <div className="login-image-thumb-badge"><Film size={14} /> YouTube</div>
+                      )}
+                    </div>
+                  )}
                   <div className="login-image-info">
-                    <span className="login-image-name" title={img.fileName}>{img.fileName}</span>
+                    <span className="login-image-name" title={img.fileName}>{img.mediaType === 'contact' ? 'Contact Form' : img.fileName}</span>
                     <span className="login-image-order">#{idx + 1}</span>
                   </div>
 
@@ -1774,6 +1843,67 @@ export function Admin({ user }) {
               ))}
             </div>
           )}
+
+          {/* Contact Submissions */}
+          <div style={{ marginTop: '2rem' }}>
+            <div className="section-header" style={{ marginBottom: '1rem' }}>
+              <h3 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <Mail size={18} />
+                Contact Submissions
+                {contactSubmissions.filter(s => s.status === 'new').length > 0 && (
+                  <span style={{ background: '#ef4444', color: '#fff', borderRadius: '999px', fontSize: '0.75rem', padding: '0.1rem 0.5rem', fontWeight: 700 }}>
+                    {contactSubmissions.filter(s => s.status === 'new').length} new
+                  </span>
+                )}
+              </h3>
+            </div>
+            {contactSubmissionsLoading ? (
+              <div className="plan-editor-loading"><Loader className="spinning" size={20} /><span>Loading...</span></div>
+            ) : contactSubmissions.length === 0 ? (
+              <div className="empty-state">No contact messages yet</div>
+            ) : (
+              <table className="data-table">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Message</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {contactSubmissions.map(s => (
+                    <tr key={s.id} style={{ opacity: s.status === 'read' ? 0.6 : 1 }}>
+                      <td style={{ fontWeight: s.status === 'new' ? 700 : 400 }}>{s.name}</td>
+                      <td><a href={`mailto:${s.email}`}>{s.email}</a></td>
+                      <td style={{ maxWidth: '260px', whiteSpace: 'pre-wrap', wordBreak: 'break-word', fontSize: '0.85rem' }}>{s.message}</td>
+                      <td style={{ whiteSpace: 'nowrap', fontSize: '0.85rem' }}>
+                        {s.createdAt?.toDate ? s.createdAt.toDate().toLocaleDateString() : '—'}
+                      </td>
+                      <td>
+                        <span style={{ fontSize: '0.75rem', fontWeight: 600, color: s.status === 'new' ? '#ef4444' : '#888' }}>
+                          {s.status === 'new' ? 'New' : 'Read'}
+                        </span>
+                      </td>
+                      <td>
+                        {s.status === 'new' && (
+                          <button
+                            className="action-button"
+                            onClick={() => handleMarkSubmissionRead(s.id)}
+                            title="Mark as read"
+                          >
+                            <Check size={14} />
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
         </div>
       )}
 
