@@ -69,6 +69,41 @@ async function trackTokens(currentUser, isAdmin, canUseAI, actualTokens) {
   }
 }
 
+async function parseSSEStream(response, onChunk) {
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  let accumulated = '';
+  let usage = null;
+  let buffer = '';
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true });
+
+    const lines = buffer.split('\n');
+    buffer = lines.pop(); // keep incomplete last line for next iteration
+
+    for (const line of lines) {
+      if (!line.startsWith('data: ')) continue;
+      const data = line.slice(6).trim();
+      if (data === '[DONE]') continue;
+      try {
+        const chunk = JSON.parse(data);
+        if (chunk.error) throw new Error(chunk.error);
+        const delta = chunk?.choices?.[0]?.delta?.content;
+        if (typeof delta === 'string') {
+          accumulated += delta;
+          onChunk?.(accumulated);
+        }
+        if (chunk?.usage) usage = chunk.usage;
+      } catch {}
+    }
+  }
+
+  return { accumulated, usage };
+}
+
 export function useOpenRouter() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -94,33 +129,9 @@ export function useOpenRouter() {
         throw new Error(err.error || `API error ${response.status}`);
       }
 
-      // /api/chat streams SSE — read all chunks and return final text
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder();
-      let accumulated = '';
-      let usage = null;
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        const text = decoder.decode(value);
-        for (const line of text.split('\n')) {
-          if (!line.startsWith('data: ')) continue;
-          const data = line.slice(6);
-          if (data === '[DONE]') break;
-          try {
-            const chunk = JSON.parse(data);
-            if (chunk.error) throw new Error(chunk.error);
-            const delta = chunk?.choices?.[0]?.delta?.content;
-            if (typeof delta === 'string') accumulated += delta;
-            if (chunk?.usage) usage = chunk.usage;
-          } catch {}
-        }
-      }
-
+      const { accumulated, usage } = await parseSSEStream(response, null);
       const actualTokens = (usage?.prompt_tokens || 0) + (usage?.completion_tokens || 0);
       await trackTokens(currentUser, isAdmin, canUseAI, actualTokens);
-
       return accumulated;
     } catch (err) {
       const errorMessage = err.message || 'Failed to send message to AI';
@@ -153,35 +164,9 @@ export function useOpenRouter() {
         throw new Error(err.error || `API error ${response.status}`);
       }
 
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder();
-      let accumulated = '';
-      let usage = null;
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        const text = decoder.decode(value);
-        for (const line of text.split('\n')) {
-          if (!line.startsWith('data: ')) continue;
-          const data = line.slice(6);
-          if (data === '[DONE]') break;
-          try {
-            const chunk = JSON.parse(data);
-            if (chunk.error) throw new Error(chunk.error);
-            const delta = chunk?.choices?.[0]?.delta?.content;
-            if (typeof delta === 'string') {
-              accumulated += delta;
-              onChunk?.(accumulated);
-            }
-            if (chunk?.usage) usage = chunk.usage;
-          } catch {}
-        }
-      }
-
+      const { accumulated, usage } = await parseSSEStream(response, onChunk);
       const actualTokens = (usage?.prompt_tokens || 0) + (usage?.completion_tokens || 0);
       await trackTokens(currentUser, isAdmin, canUseAI, actualTokens);
-
       onDone?.({ fullContent: accumulated, usage });
     } catch (err) {
       const errorMessage = err.message || 'Failed to send message to AI';
