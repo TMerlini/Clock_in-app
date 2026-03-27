@@ -350,7 +350,7 @@ export function About() {
             <li><strong>{t('about.technologyStack.react')}</strong></li>
             <li><strong>{t('about.technologyStack.firebase')}</strong></li>
             <li><strong>{t('about.technologyStack.googleCalendar')}</strong></li>
-            <li><strong>{t('about.technologyStack.openRouter')}</strong></li>
+            <li><strong>{t('about.technologyStack.openAI')}</strong></li>
             <li><strong>{t('about.technologyStack.leaflet')}</strong></li>
             <li><strong>{t('about.technologyStack.vite')}</strong></li>
             <li><strong>{t('about.technologyStack.vercel')}</strong></li>

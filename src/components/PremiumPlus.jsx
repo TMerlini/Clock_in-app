@@ -446,15 +446,15 @@ export function PremiumPlus({ user, onNavigate }) {
 
               {['PRO', 'PREMIUM_AI', 'ENTERPRISE'].includes(plan.id) && (
                 <div className="openrouter-branding">
-                  <span className="openrouter-text">{t('premiumPlus.poweredByOpenRouter', { defaultValue: 'powered by OpenRouter' })}</span>
+                  <span className="openrouter-text">{t('premiumPlus.poweredByOpenAI', { defaultValue: 'powered by OpenAI' })}</span>
                   <img
-                    src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/webp/open-router.webp"
-                    alt="OpenRouter"
+                    src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/webp/openai.webp"
+                    alt="OpenAI"
                     className="openrouter-logo openrouter-logo-light"
                   />
                   <img
-                    src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/webp/open-router-dark.webp"
-                    alt="OpenRouter"
+                    src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/webp/openai.webp"
+                    alt="OpenAI"
                     className="openrouter-logo openrouter-logo-dark"
                   />
                 </div>
@@ -542,15 +542,15 @@ export function PremiumPlus({ user, onNavigate }) {
                   <p>{t('premiumPlus.callPackDescription')}</p>
                 </div>
                 <div className="openrouter-branding call-pack-openrouter">
-                  <span className="openrouter-text">{t('premiumPlus.poweredByOpenRouter', { defaultValue: 'powered by OpenRouter' })}</span>
+                  <span className="openrouter-text">{t('premiumPlus.poweredByOpenAI', { defaultValue: 'powered by OpenAI' })}</span>
                   <img
-                    src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/webp/open-router.webp"
-                    alt="OpenRouter"
+                    src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/webp/openai.webp"
+                    alt="OpenAI"
                     className="openrouter-logo openrouter-logo-light"
                   />
                   <img
-                    src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/webp/open-router-dark.webp"
-                    alt="OpenRouter"
+                    src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/webp/openai.webp"
+                    alt="OpenAI"
                     className="openrouter-logo openrouter-logo-dark"
                   />
                 </div>

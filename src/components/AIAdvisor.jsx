@@ -274,36 +274,14 @@ export function AIAdvisor({ user, onNavigate }) {
           }
         },
         onError: (err) => {
-          let errorMessage = err?.message || 'Unknown error';
-          if (errorMessage.includes('No allowed providers')) {
-            errorMessage = `OpenRouter Routing Issue: No providers are enabled for your default model in your routing settings.\n\n` +
-              `To fix this:\n` +
-              `1. Go to https://openrouter.ai/settings/routing\n` +
-              `2. Configure your default model (or enable Auto Router)\n` +
-              `3. Ensure at least one provider is enabled/allowed for your default model\n` +
-              `4. The app uses your OpenRouter default model (omitting the model parameter per API docs)\n\n` +
-              `See: https://openrouter.ai/docs/api-reference/overview for details on using your default model.`;
-          } else if (errorMessage.includes('calls') || errorMessage.includes('used all your')) {
-            /* already formatted */
-          }
-          replacePlaceholderWith(`Sorry, I encountered an error:\n\n${errorMessage}\n\nPlease check your OpenRouter routing settings and try again.`, false);
+          const errorMessage = err?.message || 'Unknown error';
+          replacePlaceholderWith(`Sorry, I encountered an error:\n\n${errorMessage}`, false);
         }
       });
     } catch (error) {
       console.error('Error sending message:', error);
-      let errorMessage = error?.message || 'Unknown error';
-      if (errorMessage.includes('No allowed providers')) {
-        errorMessage = `OpenRouter Routing Issue: No providers are enabled for your default model in your routing settings.\n\n` +
-          `To fix this:\n` +
-          `1. Go to https://openrouter.ai/settings/routing\n` +
-          `2. Configure your default model (or enable Auto Router)\n` +
-          `3. Ensure at least one provider is enabled/allowed for your default model\n` +
-          `4. The app uses your OpenRouter default model (omitting the model parameter per API docs)\n\n` +
-          `See: https://openrouter.ai/docs/api-reference/overview for details on using your default model.`;
-      } else if (errorMessage.includes('calls') || errorMessage.includes('used all your')) {
-        /* already formatted */
-      }
-      replacePlaceholderWith(`Sorry, I encountered an error:\n\n${errorMessage}\n\nPlease check your OpenRouter routing settings and try again.`, false);
+      const errorMessage = error?.message || 'Unknown error';
+      replacePlaceholderWith(`Sorry, I encountered an error:\n\n${errorMessage}`, false);
     }
   };
 
@@ -396,36 +374,14 @@ export function AIAdvisor({ user, onNavigate }) {
           }
         },
         onError: (err) => {
-          let errorMessage = err?.message || 'Unknown error';
-          if (errorMessage.includes('No allowed providers')) {
-            errorMessage = `OpenRouter Routing Issue: No providers are enabled for your default model in your routing settings.\n\n` +
-              `To fix this:\n` +
-              `1. Go to https://openrouter.ai/settings/routing\n` +
-              `2. Configure your default model (or enable Auto Router)\n` +
-              `3. Ensure at least one provider is enabled/allowed for your default model\n` +
-              `4. The app uses your OpenRouter default model (omitting the model parameter per API docs)\n\n` +
-              `See: https://openrouter.ai/docs/api-reference/overview for details on using your default model.`;
-          } else if (errorMessage.includes('calls') || errorMessage.includes('used all your')) {
-            /* already formatted */
-          }
-          replacePlaceholderWith(`Sorry, I encountered an error:\n\n${errorMessage}\n\nPlease check your OpenRouter routing settings and try again.`, false);
+          const errorMessage = err?.message || 'Unknown error';
+          replacePlaceholderWith(`Sorry, I encountered an error:\n\n${errorMessage}`, false);
         }
       });
     } catch (error) {
       console.error('Error sending message:', error);
-      let errorMessage = error?.message || 'Unknown error';
-      if (errorMessage.includes('No allowed providers')) {
-        errorMessage = `OpenRouter Routing Issue: No providers are enabled for your default model in your routing settings.\n\n` +
-          `To fix this:\n` +
-          `1. Go to https://openrouter.ai/settings/routing\n` +
-          `2. Configure your default model (or enable Auto Router)\n` +
-          `3. Ensure at least one provider is enabled/allowed for your default model\n` +
-          `4. The app uses your OpenRouter default model (omitting the model parameter per API docs)\n\n` +
-          `See: https://openrouter.ai/docs/api-reference/overview for details on using your default model.`;
-      } else if (errorMessage.includes('calls') || errorMessage.includes('used all your')) {
-        /* already formatted */
-      }
-      replacePlaceholderWith(`Sorry, I encountered an error:\n\n${errorMessage}\n\nPlease check your OpenRouter routing settings and try again.`, false);
+      const errorMessage = error?.message || 'Unknown error';
+      replacePlaceholderWith(`Sorry, I encountered an error:\n\n${errorMessage}`, false);
     }
   };
 

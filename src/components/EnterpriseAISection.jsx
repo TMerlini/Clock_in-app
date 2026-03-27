@@ -154,7 +154,7 @@ export const EnterpriseAISection = forwardRef(function EnterpriseAISection(
     apiMessages.push(...recent.map((m) => ({ role: m.role, content: m.content })));
 
     const onError = (err) =>
-      replacePlaceholderWith(`**Erro:** ${err?.message || 'Unknown error'}\n\nVerifique as definições do OpenRouter e tente novamente.`);
+      replacePlaceholderWith(`**Erro:** ${err?.message || 'Unknown error'}\n\nVerifique a ligação ao serviço de IA e tente novamente.`);
 
     try {
       await sendMessageStreaming(apiMessages, {
