@@ -3,6 +3,7 @@ import { signInWithPopup } from 'firebase/auth';
 import { collection, getDocs, query, orderBy } from 'firebase/firestore';
 import { auth, googleProvider, db } from '../lib/firebase';
 import { ContactFormSlide } from './ContactFormSlide';
+import { PlansSlide } from './PlansSlide';
 import './Login.css';
 
 function extractYouTubeId(url) {
@@ -97,6 +98,7 @@ export function Login({ onLogin }) {
       <div className="login-slideshow">
         {loginImages.map((img, idx) => {
           const isContact = img.mediaType === 'contact';
+          const isPlans = img.mediaType === 'plans';
           const hasText = img.title || img.description;
           const alignment = img.alignment || 'right';
           const isYoutube = img.mediaType === 'youtube';
@@ -152,6 +154,19 @@ export function Login({ onLogin }) {
                 ref={el => { slideRefs.current[idx] = el; }}
               >
                 <ContactFormSlide title={img.title} description={img.description} />
+              </div>
+            );
+          }
+
+          if (isPlans) {
+            return (
+              <div
+                key={img.id}
+                className={`login-slide ${visibleSlides.has(String(idx)) ? 'login-slide--visible' : ''}`}
+                data-slide-index={idx}
+                ref={el => { slideRefs.current[idx] = el; }}
+              >
+                <PlansSlide title={img.title} description={img.description} />
               </div>
             );
           }

@@ -5,7 +5,7 @@ import { db, auth, storage } from '../lib/firebase';
 import { isAdmin } from '../lib/adminUtils';
 import { addCallPack } from '../lib/tokenManager';
 import { getPlanConfig, savePlanConfig, DEFAULT_FEATURES } from '../lib/planConfig';
-import { Shield, Users, UserPlus, Crown, BarChart3, Package, Settings, Search, Trash2, Edit2, Eye, Loader, AlertCircle, Check, X, Plus, ChevronDown, ChevronUp, ImageIcon, Upload, ArrowUp, ArrowDown, Play, AlignLeft, AlignRight, Film, Maximize2, Square, Bell, RotateCcw, Tag, Copy, ToggleLeft, ToggleRight, Mail, Send } from 'lucide-react';
+import { Shield, Users, UserPlus, Crown, BarChart3, Package, Settings, Search, Trash2, Edit2, Eye, Loader, AlertCircle, Check, X, Plus, ChevronDown, ChevronUp, ImageIcon, Upload, ArrowUp, ArrowDown, Play, AlignLeft, AlignRight, Film, Maximize2, Square, Bell, RotateCcw, Tag, Copy, ToggleLeft, ToggleRight, Mail, Send, LayoutGrid } from 'lucide-react';
 import { listPromoCodes, createPromoCode, togglePromoActive, deletePromoCode } from '../lib/promoUtils';
 import { EmailComposer } from './EmailComposer';
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
@@ -455,6 +455,29 @@ export function Admin({ user }) {
     } catch (err) {
       console.error('Error adding contact slide:', err);
       alert('Error adding contact form: ' + err.message);
+    }
+  };
+
+  const handleAddPlansSlide = async () => {
+    if (loginImages.some(img => img.mediaType === 'plans')) {
+      alert('A plans slide already exists. Remove it first before adding a new one.');
+      return;
+    }
+    try {
+      const nextOrder = loginImages.length > 0
+        ? Math.max(...loginImages.map(i => i.order ?? 0)) + 1
+        : 0;
+      await addDoc(collection(db, 'loginImages'), {
+        mediaType: 'plans',
+        title: 'Our Plans',
+        description: '',
+        order: nextOrder,
+        createdAt: new Date(),
+      });
+      await loadLoginImages();
+    } catch (err) {
+      console.error('Error adding plans slide:', err);
+      alert('Error adding plans slide: ' + err.message);
     }
   };
 
@@ -1677,6 +1700,20 @@ export function Admin({ user }) {
             </button>
           </div>
 
+          <div className="image-upload-area" style={{ marginTop: '0.5rem' }}>
+            <h4 className="image-upload-heading"><LayoutGrid size={16} /> Add Plans Page</h4>
+            <p className="plan-config-hint" style={{ marginBottom: '0.75rem' }}>Shows the 4 pricing plans as a slide on the login page. Only one allowed at a time.</p>
+            <button
+              className="submit-button"
+              onClick={handleAddPlansSlide}
+              disabled={loginImages.some(img => img.mediaType === 'plans')}
+              title={loginImages.some(img => img.mediaType === 'plans') ? 'Plans slide already added' : 'Add plans slide'}
+            >
+              <Plus size={16} />
+              <span>{loginImages.some(img => img.mediaType === 'plans') ? 'Plans Page Added' : 'Add Plans Page'}</span>
+            </button>
+          </div>
+
           {loginImagesLoading ? (
             <div className="plan-editor-loading">
               <Loader className="spinning" size={24} />
@@ -1693,6 +1730,11 @@ export function Admin({ user }) {
                       <Mail size={32} />
                       <span style={{ fontSize: '0.75rem', fontWeight: 600 }}>Contact Form</span>
                     </div>
+                  ) : img.mediaType === 'plans' ? (
+                    <div className="login-image-thumb" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-secondary)', flexDirection: 'column', gap: '0.5rem', color: 'var(--text-secondary)' }}>
+                      <LayoutGrid size={32} />
+                      <span style={{ fontSize: '0.75rem', fontWeight: 600 }}>Plans Page</span>
+                    </div>
                   ) : (
                     <div className="login-image-thumb">
                       <img src={img.url} alt={img.fileName} />
@@ -1702,7 +1744,7 @@ export function Admin({ user }) {
                     </div>
                   )}
                   <div className="login-image-info">
-                    <span className="login-image-name" title={img.fileName}>{img.mediaType === 'contact' ? 'Contact Form' : img.fileName}</span>
+                    <span className="login-image-name" title={img.fileName}>{img.mediaType === 'contact' ? 'Contact Form' : img.mediaType === 'plans' ? 'Plans Page' : img.fileName}</span>
                     <span className="login-image-order">#{idx + 1}</span>
                   </div>
 
