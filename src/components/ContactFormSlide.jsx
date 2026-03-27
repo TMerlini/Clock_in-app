@@ -35,6 +35,9 @@ export function ContactFormSlide({ title, description }) {
   return (
     <div className="contact-slide">
       <div className="contact-slide-inner">
+        <div className="contact-slide-logo">
+          <img src="/images/animated white.gif" alt="Clock In" />
+        </div>
         <h2 className="contact-slide-title">{title || 'Get in Touch'}</h2>
         {description && <p className="contact-slide-desc">{description}</p>}
 
