@@ -358,7 +358,7 @@
     "needMoreCalls": "Need More AI Calls?",
     "callPackDescription": "Purchase additional call packs that never expire. Perfect for power users!",
     "buyCallPacks": "Buy Call Packs",
-    "poweredByOpenRouter": "powered by OpenRouter",
+    "poweredByOpenAI": "powered by OpenAI",
     "footerTrial": "Paid plans include a 14-day free trial. Cancel anytime.",
     "footerQuestions": "Questions?",
     "visitFaq": "Visit our FAQ",
@@ -965,7 +965,7 @@
         },
         "q2": {
           "question": "What is the AI Advisor and what can it do?",
-          "answer": "The AI Advisor (Premium AI feature) is an intelligent assistant with expertise in Portuguese labor law and HR best practices. It can:\n• Analyze your work patterns against Portuguese labor law requirements\n• Calculate compliance percentages (e.g., 'You've used 75% of your Isenção limit')\n• Provide legal limit calculations for overtime, Isenção, and vacation\n• Offer HR best practices and work-life balance guidance\n• Alert you when approaching legal limits\n• Answer questions about your time tracking data, analytics, and settings\n• Provide personalized recommendations based on your actual work patterns\n\nThe AI Advisor uses OpenRouter for multi-model AI routing and has access to your time tracking data for context-aware advice."
+          "answer": "The AI Advisor (Premium AI feature) is an intelligent assistant with expertise in Portuguese labor law and HR best practices. It can:\n• Analyze your work patterns against Portuguese labor law requirements\n• Calculate compliance percentages (e.g., 'You've used 75% of your Isenção limit')\n• Provide legal limit calculations for overtime, Isenção, and vacation\n• Offer HR best practices and work-life balance guidance\n• Alert you when approaching legal limits\n• Answer questions about your time tracking data, analytics, and settings\n• Provide personalized recommendations based on your actual work patterns\n\nThe AI Advisor uses the OpenAI API and has access to your time tracking data for context-aware advice."
         },
         "q3": {
           "question": "What is Premium AI and what does it include?",
@@ -1218,7 +1218,7 @@
     },
     "aiAdvisorSection": {
       "title": "AI Advisor - Premium AI Feature",
-      "description": "Premium AI subscribers get access to an intelligent AI Advisor powered by OpenRouter with expertise in Portuguese labor law and HR best practices.",
+      "description": "Premium AI subscribers get access to an intelligent AI Advisor powered by OpenAI with expertise in Portuguese labor law and HR best practices.",
       "portugueseLaborLaw": {
         "title": "🇵🇹 Portuguese Labor Law Expertise",
         "description": "AI understands Código do Trabalho and provides compliance analysis based on actual Portuguese labor law"
@@ -1243,7 +1243,7 @@
         "title": "📦 Call Pack System",
         "description": "75 calls/month included (225 for Enterprise), with option to purchase +50 call packs (€4.99, never expire) for Pro, Premium AI, and Enterprise plans. Perfect for power users who need more AI assistance."
       },
-      "poweredBy": "Powered by OpenRouter - Multi-model AI routing ensures optimal performance and reliability."
+      "poweredBy": "Powered by OpenAI (gpt-4o-mini) - Fast, reliable AI responses with strict data privacy."
     },
     "enterpriseSection": {
       "title": "Enterprise Plan",
@@ -1325,7 +1325,7 @@
       "react": "React 18 - Modern UI framework with hooks and performance optimizations",
       "firebase": "Firebase - Real-time database and authentication",
       "googleCalendar": "Google Calendar API - Seamless calendar integration",
-      "openRouter": "OpenRouter API - Multi-model AI routing for AI Advisor (powered by OpenRouter)",
+      "openAI": "OpenAI API (gpt-4o-mini) - Powers the AI Advisor with strict no-training data policy",
       "leaflet": "Leaflet & OpenStreetMap - Interactive maps with GPS location tracking and reverse geocoding",
       "vite": "Vite - Lightning-fast build tool with code splitting",
       "vercel": "Vercel - Global edge network deployment",

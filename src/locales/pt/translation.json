@@ -358,7 +358,7 @@
     "needMoreCalls": "Precisa de Mais Chamadas IA?",
     "callPackDescription": "Compre pacotes de chamadas adicionais que nunca expiram. Perfeito para utilizadores avançados!",
     "buyCallPacks": "Comprar Pacotes de Chamadas",
-    "poweredByOpenRouter": "powered by OpenRouter",
+    "poweredByOpenAI": "powered by OpenAI",
     "footerTrial": "Os planos pagos incluem um período de teste gratuito de 14 dias. Cancele quando quiser.",
     "footerQuestions": "Dúvidas?",
     "visitFaq": "Visite as nossas Perguntas Frequentes",
@@ -965,7 +965,7 @@
         },
         "q2": {
           "question": "O que é o Assistente IA e o que pode fazer?",
-          "answer": "O Assistente IA (funcionalidade Premium AI) é um assistente inteligente com experiência em lei laboral portuguesa e melhores práticas de RH. Pode:\n• Analisar os seus padrões de trabalho contra requisitos da lei laboral portuguesa\n• Calcular percentagens de conformidade (ex: 'Usou 75% do seu limite de Isenção')\n• Fornecer cálculos de limites legais para horas extras, Isenção e férias\n• Oferecer melhores práticas de RH e orientação de equilíbrio trabalho-vida\n• Alertá-lo quando se aproxima de limites legais\n• Responder a questões sobre os seus dados de rastreamento de tempo, análises e definições\n• Fornecer recomendações personalizadas baseadas nos seus padrões de trabalho reais\n\nO Assistente IA usa OpenRouter para encaminhamento multi-modelo IA e tem acesso aos seus dados de rastreamento de tempo para aconselhamento contextual."
+          "answer": "O Assistente IA (funcionalidade Premium AI) é um assistente inteligente com experiência em lei laboral portuguesa e melhores práticas de RH. Pode:\n• Analisar os seus padrões de trabalho contra requisitos da lei laboral portuguesa\n• Calcular percentagens de conformidade (ex: 'Usou 75% do seu limite de Isenção')\n• Fornecer cálculos de limites legais para horas extras, Isenção e férias\n• Oferecer melhores práticas de RH e orientação de equilíbrio trabalho-vida\n• Alertá-lo quando se aproxima de limites legais\n• Responder a questões sobre os seus dados de rastreamento de tempo, análises e definições\n• Fornecer recomendações personalizadas baseadas nos seus padrões de trabalho reais\n\nO Assistente IA usa a API da OpenAI e tem acesso aos seus dados de rastreamento de tempo para aconselhamento contextual."
         },
         "q3": {
           "question": "O que é Premium AI e o que inclui?",
@@ -1248,7 +1248,7 @@
     },
     "aiAdvisorSection": {
       "title": "Assistente IA - Funcionalidade Premium AI",
-      "description": "Os assinantes Premium AI têm acesso a um Assistente IA inteligente alimentado por OpenRouter com experiência em lei laboral portuguesa e melhores práticas de RH.",
+      "description": "Os assinantes Premium AI têm acesso a um Assistente IA inteligente alimentado por OpenAI com experiência em lei laboral portuguesa e melhores práticas de RH.",
       "portugueseLaborLaw": {
         "title": "🇵🇹 Experiência em Lei Laboral Portuguesa",
         "description": "A IA compreende o Código do Trabalho e fornece análise de conformidade baseada na lei laboral portuguesa real"
@@ -1273,7 +1273,7 @@
         "title": "📦 Sistema de Pacotes de Chamadas",
         "description": "75 chamadas/mês incluídas (225 para Enterprise), com opção de comprar pacotes de +50 chamadas (€4.99, nunca expiram) para planos Pro, Premium AI e Enterprise. Perfeito para utilizadores avançados que precisam de mais assistência IA."
       },
-      "poweredBy": "Alimentado por OpenRouter - O encaminhamento multi-modelo IA garante desempenho e fiabilidade ótimos."
+      "poweredBy": "Alimentado por OpenAI (gpt-4o-mini) - Respostas IA rápidas e fiáveis com privacidade de dados rigorosa."
     },
     "enterpriseSection": {
       "title": "Plano Enterprise",
@@ -1355,7 +1355,7 @@
       "react": "React 18 - Framework de UI moderno com hooks e otimizações de desempenho",
       "firebase": "Firebase - Base de dados em tempo real e autenticação",
       "googleCalendar": "Google Calendar API - Integração perfeita de calendário",
-      "openRouter": "OpenRouter API - Encaminhamento multi-modelo IA para Assistente IA (alimentado por OpenRouter)",
+      "openAI": "OpenAI API (gpt-4o-mini) - Alimenta o Assistente IA com política rigorosa de não utilização de dados para treino",
       "leaflet": "Leaflet e OpenStreetMap - Mapas interativos com rastreamento de localização GPS e geocodificação reversa",
       "vite": "Vite - Ferramenta de construção extremamente rápida com divisão de código",
       "vercel": "Vercel - Implementação de rede global edge",

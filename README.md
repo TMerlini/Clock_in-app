@@ -109,7 +109,7 @@ A comprehensive time tracking application for managing work hours, overtime, mea
 - **Context-Aware Advice** - AI understands your sessions, settings, and work patterns
 - **75 AI Calls/Month Base** - Included with Premium AI subscription
 - **Call Pack System** - Purchase additional +50 call packs (€4.99, never expire) for power users
-- **Powered by OpenRouter** - Multi-model AI routing for optimal performance
+- **Powered by OpenAI (gpt-4o-mini) - Fast and reliable AI with strict data privacy.
 
 ### 🏢 Enterprise Plan (€199/month)
 - **Team Management** - Create organization, invite members by email, manage roles (admin/member)
@@ -192,7 +192,7 @@ A comprehensive time tracking application for managing work hours, overtime, mea
 ### Integrations
 - **Google Calendar API** - Calendar event creation and sync
 - **Google Identity Services** - OAuth 2.0 authentication
-- **OpenRouter API** - Multi-model AI routing for AI Advisor (powered by OpenRouter)
+- **OpenAI API** (gpt-4o-mini) - Powers the AI Advisor
 - **OpenStreetMap Nominatim** - Reverse geocoding for GPS coordinates to street addresses
 - **Stripe** - Payment processing for subscription plans and call packs
 
@@ -669,7 +669,7 @@ This app is actively maintained with regular updates and new features. For a com
 - ✅ **AI Advisor with Portuguese Labor Law Expertise** - AI-powered compliance analysis and HR guidance
 - ✅ **Premium AI Subscription Plan** - €9.99/month with 75 AI calls/month base
 - ✅ **Call Pack System** - Purchase +50 call packs for €4.99 (never expire, roll over indefinitely)
-- ✅ **OpenRouter Integration** - Multi-model AI routing for optimal performance
+- ✅ **OpenAI Integration** - gpt-4o-mini powers the AI Advisor with strict data privacy
 - ✅ **Compliance Monitoring** - Proactive alerts when approaching legal limits
 - ✅ **Context-Aware Analysis** - AI understands your sessions, settings, and work patterns
 - ✅ **Admin Dashboard** - Management interface for user administration and analytics
