@@ -97,7 +97,9 @@ async function parseSSEStream(response, onChunk) {
           onChunk?.(accumulated);
         }
         if (chunk?.usage) usage = chunk.usage;
-      } catch {}
+      } catch (e) {
+        if (e.message && !e.message.startsWith('JSON')) throw e;
+      }
     }
   }
 

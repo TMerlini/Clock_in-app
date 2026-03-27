@@ -3,7 +3,6 @@ import { doc, getDoc } from 'firebase/firestore';
 import { db, auth } from '../lib/firebase';
 import { useOpenRouter } from '../hooks/useOpenRouter';
 import { getUserContext } from '../lib/userContextHelper';
-import { OPENROUTER_DEFAULT_MODEL } from '../lib/openRouterConfig';
 import { getCallStatus, checkAndResetCalls, initializeCalls } from '../lib/tokenManager';
 import { ShoppingCart, Download } from 'lucide-react';
 import { Bot, Crown, Send, AlertCircle, Settings, Loader, BarChart3, TrendingUp, Clock } from 'lucide-react';
