@@ -36,7 +36,7 @@ export function Admin({ user }) {
   const [newGuestEmail, setNewGuestEmail] = useState('');
   const [newGuestPlan, setNewGuestPlan] = useState('free');
   const [showInviteForm, setShowInviteForm] = useState(false);
-  const [inviteForm, setInviteForm] = useState({ to: '', subject: "You're invited to Clock In 🎉", message: '', fromName: 'Clock In' });
+  const [inviteForm, setInviteForm] = useState({ to: '', subject: 'Está convidado para o Clock In 🎉', message: '', fromName: 'Clock In' });
   const [inviteSending, setInviteSending] = useState(false);
   const [inviteResult, setInviteResult] = useState(null);
   const [selectedUser, setSelectedUser] = useState(null);
@@ -854,15 +854,15 @@ export function Admin({ user }) {
   const buildInviteHtml = (message, fromName) => `<div style="font-family:Inter,Arial,sans-serif;max-width:600px;margin:0 auto;background:#0f0f0f;color:#e5e5e5;border-radius:12px;overflow:hidden">
   <div style="background:#6366f1;padding:28px 24px 24px;text-align:center">
     <img src="https://pushers.club/pwa/icon/ydSRia5ZLZ5UCTcrIx-9u/192.png" alt="Clock In" width="64" height="64" style="display:block;margin:0 auto 14px;border-radius:50%" />
-    <h1 style="color:#fff;margin:0;font-size:22px">You've been invited to Clock In</h1>
+    <h1 style="color:#fff;margin:0;font-size:22px">Foi convidado para o Clock In</h1>
   </div>
   <div style="padding:32px 24px">
     ${message ? `<p style="margin:0 0 20px;white-space:pre-line">${message}</p>` : ''}
-    <p style="margin:0 0 20px">Clock In helps you track work hours, manage overtime, and stay compliant with Portuguese labour law — all in one place.</p>
+    <p style="margin:0 0 20px">O Clock In ajuda-o a registar horas de trabalho, gerir horas extra e cumprir a legislação laboral portuguesa — tudo num só lugar.</p>
     <div style="text-align:center;margin:24px 0 8px">
-      <a href="https://www.clock-in.pt" style="display:inline-block;background:#6366f1;color:#fff;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:600">Sign In Now →</a>
+      <a href="https://www.clock-in.pt" style="display:inline-block;background:#6366f1;color:#fff;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:600">Entrar agora →</a>
     </div>
-    <p style="margin:24px 0 0;font-size:12px;color:#666;text-align:center">You received this invite from ${fromName || 'Clock In'}.</p>
+    <p style="margin:24px 0 0;font-size:12px;color:#666;text-align:center">Recebeu este convite de ${fromName || 'Clock In'}.</p>
   </div>
 </div>`;
 
@@ -1279,7 +1279,7 @@ export function Admin({ user }) {
                   <textarea
                     value={inviteForm.message}
                     onChange={e => setInviteForm(prev => ({ ...prev, message: e.target.value }))}
-                    placeholder="Hi! I'd like to invite you to Clock In..."
+                    placeholder="Olá! Gostaria de convidá-lo para o Clock In..."
                     rows={4}
                     style={{ width: '100%', resize: 'vertical' }}
                   />
