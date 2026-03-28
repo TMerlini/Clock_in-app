@@ -5,7 +5,7 @@ import { db, auth, storage } from '../lib/firebase';
 import { isAdmin } from '../lib/adminUtils';
 import { addCallPack } from '../lib/tokenManager';
 import { getPlanConfig, savePlanConfig, DEFAULT_FEATURES } from '../lib/planConfig';
-import { Shield, Users, UserPlus, Crown, BarChart3, Package, Settings, Search, Trash2, Edit2, Eye, Loader, AlertCircle, Check, X, Plus, ChevronDown, ChevronUp, ImageIcon, Upload, ArrowUp, ArrowDown, Play, AlignLeft, AlignRight, Film, Maximize2, Square, Bell, RotateCcw, Tag, Copy, ToggleLeft, ToggleRight, Mail, Send, LayoutGrid } from 'lucide-react';
+import { Shield, Users, UserPlus, Crown, BarChart3, Package, Settings, Search, Trash2, Edit2, Eye, Loader, AlertCircle, Check, CheckCircle, X, Plus, ChevronDown, ChevronUp, ImageIcon, Upload, ArrowUp, ArrowDown, Play, AlignLeft, AlignRight, Film, Maximize2, Square, Bell, RotateCcw, Tag, Copy, ToggleLeft, ToggleRight, Mail, Send, LayoutGrid } from 'lucide-react';
 import { listPromoCodes, createPromoCode, togglePromoActive, deletePromoCode } from '../lib/promoUtils';
 import { EmailComposer } from './EmailComposer';
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
@@ -35,6 +35,10 @@ export function Admin({ user }) {
   const [showAddGuest, setShowAddGuest] = useState(false);
   const [newGuestEmail, setNewGuestEmail] = useState('');
   const [newGuestPlan, setNewGuestPlan] = useState('free');
+  const [showInviteForm, setShowInviteForm] = useState(false);
+  const [inviteForm, setInviteForm] = useState({ to: '', subject: "You're invited to Clock In 🎉", message: '', fromName: 'Clock In' });
+  const [inviteSending, setInviteSending] = useState(false);
+  const [inviteResult, setInviteResult] = useState(null);
   const [selectedUser, setSelectedUser] = useState(null);
   const [showUserDetails, setShowUserDetails] = useState(false);
   const [planConfig, setPlanConfig] = useState(null);
@@ -847,7 +851,49 @@ export function Admin({ user }) {
     }
   };
 
-  const filteredUsers = users.filter(u => 
+  const buildInviteHtml = (message, fromName) => `<div style="font-family:Inter,Arial,sans-serif;max-width:600px;margin:0 auto;background:#0f0f0f;color:#e5e5e5;border-radius:12px;overflow:hidden">
+  <div style="background:#6366f1;padding:28px 24px 24px;text-align:center">
+    <img src="https://pushers.club/pwa/icon/ydSRia5ZLZ5UCTcrIx-9u/192.png" alt="Clock In" width="64" height="64" style="display:block;margin:0 auto 14px;border-radius:50%" />
+    <h1 style="color:#fff;margin:0;font-size:22px">You've been invited to Clock In</h1>
+  </div>
+  <div style="padding:32px 24px">
+    ${message ? `<p style="margin:0 0 20px;white-space:pre-line">${message}</p>` : ''}
+    <p style="margin:0 0 20px">Clock In helps you track work hours, manage overtime, and stay compliant with Portuguese labour law — all in one place.</p>
+    <div style="text-align:center;margin:24px 0 8px">
+      <a href="https://www.clock-in.pt" style="display:inline-block;background:#6366f1;color:#fff;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:600">Sign In Now →</a>
+    </div>
+    <p style="margin:24px 0 0;font-size:12px;color:#666;text-align:center">You received this invite from ${fromName || 'Clock In'}.</p>
+  </div>
+</div>`;
+
+  const handleSendInviteEmail = async (e) => {
+    e.preventDefault();
+    setInviteSending(true);
+    setInviteResult(null);
+    try {
+      const token = await auth.currentUser.getIdToken();
+      const res = await fetch('/api/send-email', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          subject: inviteForm.subject,
+          html: buildInviteHtml(inviteForm.message, inviteForm.fromName),
+          recipients: `email:${inviteForm.to.trim()}`,
+          fromName: inviteForm.fromName || 'Clock In',
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || `Error ${res.status}`);
+      setInviteResult({ success: true, to: inviteForm.to });
+      setInviteForm(prev => ({ ...prev, to: '', message: '' }));
+    } catch (err) {
+      setInviteResult({ success: false, error: err.message });
+    } finally {
+      setInviteSending(false);
+    }
+  };
+
+  const filteredUsers = users.filter(u =>
     u.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
     (u.subscriptionPlan || '').toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -1058,13 +1104,22 @@ export function Admin({ user }) {
         <div className="admin-section">
           <div className="section-header">
             <h2>Guest Management</h2>
-            <button
-              className="add-guest-button"
-              onClick={() => setShowAddGuest(!showAddGuest)}
-            >
-              <UserPlus size={18} />
-              <span>Add Guest</span>
-            </button>
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <button
+                className="add-guest-button"
+                onClick={() => { setShowInviteForm(false); setShowAddGuest(!showAddGuest); }}
+              >
+                <UserPlus size={18} />
+                <span>Add Guest</span>
+              </button>
+              <button
+                className="add-guest-button"
+                onClick={() => { setShowAddGuest(false); setInviteResult(null); setShowInviteForm(!showInviteForm); }}
+              >
+                <Mail size={18} />
+                <span>Send Invite</span>
+              </button>
+            </div>
           </div>
 
           {showAddGuest && (
@@ -1156,7 +1211,19 @@ export function Admin({ user }) {
                           ? new Date(guest.createdAt.seconds * 1000).toLocaleDateString()
                           : 'N/A'}
                       </td>
-                      <td>
+                      <td style={{ display: 'flex', gap: '0.4rem' }}>
+                        <button
+                          className="action-button"
+                          title="Send invite email"
+                          onClick={() => {
+                            setInviteForm(prev => ({ ...prev, to: guest.email }));
+                            setInviteResult(null);
+                            setShowAddGuest(false);
+                            setShowInviteForm(true);
+                          }}
+                        >
+                          <Mail size={16} />
+                        </button>
                         <button
                           className="action-button delete"
                           onClick={() => handleDeleteGuest(guest.id, guest.email)}
@@ -1171,6 +1238,77 @@ export function Admin({ user }) {
               </table>
             )}
           </div>
+
+          {showInviteForm && (
+            <div className="add-guest-form" style={{ marginTop: '1.5rem' }}>
+              <h3 style={{ margin: '0 0 1rem', fontSize: '1rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <Mail size={16} /> Send Invite Email
+              </h3>
+              <form onSubmit={handleSendInviteEmail}>
+                <div className="form-group">
+                  <label>To</label>
+                  <input
+                    type="email"
+                    value={inviteForm.to}
+                    onChange={e => setInviteForm(prev => ({ ...prev, to: e.target.value }))}
+                    placeholder="recipient@example.com"
+                    required
+                  />
+                </div>
+                <div className="form-group">
+                  <label>From Name</label>
+                  <input
+                    type="text"
+                    value={inviteForm.fromName}
+                    onChange={e => setInviteForm(prev => ({ ...prev, fromName: e.target.value }))}
+                    placeholder="Clock In"
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Subject</label>
+                  <input
+                    type="text"
+                    value={inviteForm.subject}
+                    onChange={e => setInviteForm(prev => ({ ...prev, subject: e.target.value }))}
+                    placeholder="You're invited to Clock In 🎉"
+                    required
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Personal Message <span style={{ fontWeight: 400, color: 'var(--text-secondary)' }}>(optional)</span></label>
+                  <textarea
+                    value={inviteForm.message}
+                    onChange={e => setInviteForm(prev => ({ ...prev, message: e.target.value }))}
+                    placeholder="Hi! I'd like to invite you to Clock In..."
+                    rows={4}
+                    style={{ width: '100%', resize: 'vertical' }}
+                  />
+                </div>
+
+                {inviteResult && (
+                  <div className={`email-result ${inviteResult.success ? 'success' : 'error'}`} style={{ marginBottom: '0.75rem' }}>
+                    {inviteResult.success
+                      ? <><CheckCircle size={16} /> Invite sent to {inviteResult.to}</>
+                      : <><AlertCircle size={16} /> {inviteResult.error}</>
+                    }
+                  </div>
+                )}
+
+                <div className="form-actions">
+                  <button type="submit" className="submit-button" disabled={inviteSending}>
+                    {inviteSending ? <><Loader size={16} className="spinning" /><span>Sending...</span></> : <><Send size={16} /><span>Send Invite</span></>}
+                  </button>
+                  <button
+                    type="button"
+                    className="cancel-button"
+                    onClick={() => { setShowInviteForm(false); setInviteResult(null); }}
+                  >
+                    <X size={18} /><span>Close</span>
+                  </button>
+                </div>
+              </form>
+            </div>
+          )}
         </div>
       )}
 
