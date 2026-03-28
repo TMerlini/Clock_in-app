@@ -412,13 +412,15 @@ export function Admin({ user }) {
   const loadLoginImages = async () => {
     setLoginImagesLoading(true);
     try {
-      const [snap, settingsSnap] = await Promise.all([
+      const [imagesResult, settingsResult] = await Promise.allSettled([
         getDocs(query(collection(db, 'loginImages'), orderBy('order', 'asc'))),
         getDoc(doc(db, 'settings', 'loginPage')),
       ]);
-      setLoginImages(snap.docs.map(d => ({ id: d.id, ...d.data() })));
-      if (settingsSnap.exists()) {
-        setCarouselGrouping(settingsSnap.data().carouselGrouping ?? true);
+      if (imagesResult.status === 'fulfilled') {
+        setLoginImages(imagesResult.value.docs.map(d => ({ id: d.id, ...d.data() })));
+      }
+      if (settingsResult.status === 'fulfilled' && settingsResult.value.exists()) {
+        setCarouselGrouping(settingsResult.value.data().carouselGrouping ?? true);
       }
     } catch (err) {
       console.error('Error loading login images:', err);
