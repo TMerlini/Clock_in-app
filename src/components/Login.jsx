@@ -1,9 +1,10 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { signInWithPopup } from 'firebase/auth';
 import { collection, getDocs, query, orderBy } from 'firebase/firestore';
 import { auth, googleProvider, db } from '../lib/firebase';
 import { ContactFormSlide } from './ContactFormSlide';
 import { PlansSlide } from './PlansSlide';
+import { CarouselSlide } from './CarouselSlide';
 import './Login.css';
 
 function extractYouTubeId(url) {
@@ -18,6 +19,9 @@ function extractYouTubeId(url) {
   }
   return null;
 }
+
+const isPlainImage = (img) =>
+  !img.mediaType || img.mediaType === 'image';
 
 export function Login({ onLogin }) {
   const [loginImages, setLoginImages] = useState([]);
@@ -39,6 +43,33 @@ export function Login({ onLogin }) {
     loadImages();
   }, []);
 
+  // Group consecutive plain images into carousel slides
+  const groupedSlides = useMemo(() => {
+    const result = [];
+    let imageGroup = [];
+
+    const flushGroup = () => {
+      if (imageGroup.length === 0) return;
+      result.push({
+        type: 'carousel',
+        images: imageGroup,
+        id: 'carousel-' + imageGroup[0].id,
+      });
+      imageGroup = [];
+    };
+
+    for (const img of loginImages) {
+      if (isPlainImage(img)) {
+        imageGroup.push(img);
+      } else {
+        flushGroup();
+        result.push({ type: img.mediaType, img, id: img.id });
+      }
+    }
+    flushGroup();
+    return result;
+  }, [loginImages]);
+
   const observerCallback = useCallback((entries) => {
     setVisibleSlides(prev => {
       const next = new Set(prev);
@@ -55,7 +86,7 @@ export function Login({ onLogin }) {
   }, []);
 
   useEffect(() => {
-    if (!loginImages.length) return;
+    if (!groupedSlides.length) return;
     const observer = new IntersectionObserver(observerCallback, {
       threshold: 0.15,
     });
@@ -63,7 +94,7 @@ export function Login({ onLogin }) {
       if (el) observer.observe(el);
     });
     return () => observer.disconnect();
-  }, [loginImages, observerCallback]);
+  }, [groupedSlides, observerCallback]);
 
   const handleGoogleSignIn = async () => {
     try {
@@ -96,14 +127,60 @@ export function Login({ onLogin }) {
       </div>
 
       <div className="login-slideshow">
-        {loginImages.map((img, idx) => {
-          const isContact = img.mediaType === 'contact';
-          const isPlans = img.mediaType === 'plans';
+        {groupedSlides.map((slide, idx) => {
+          const visibleClass = visibleSlides.has(String(idx)) ? 'login-slide--visible' : '';
+          const slideRef = el => { slideRefs.current[idx] = el; };
+
+          // Carousel: group of plain images
+          if (slide.type === 'carousel') {
+            return (
+              <div
+                key={slide.id}
+                className={`login-slide ${visibleClass}`}
+                data-slide-index={idx}
+                ref={slideRef}
+              >
+                <CarouselSlide images={slide.images} />
+              </div>
+            );
+          }
+
+          // Contact form
+          if (slide.type === 'contact') {
+            return (
+              <div
+                key={slide.id}
+                className={`login-slide ${visibleClass}`}
+                data-slide-index={idx}
+                ref={slideRef}
+              >
+                <ContactFormSlide title={slide.img.title} description={slide.img.description} />
+              </div>
+            );
+          }
+
+          // Plans
+          if (slide.type === 'plans') {
+            return (
+              <div
+                key={slide.id}
+                className={`login-slide ${visibleClass}`}
+                data-slide-index={idx}
+                ref={slideRef}
+              >
+                <PlansSlide title={slide.img.title} description={slide.img.description} />
+              </div>
+            );
+          }
+
+          // YouTube / remaining single-image slides
+          const img = slide.img;
           const hasText = img.title || img.description;
           const alignment = img.alignment || 'right';
-          const isYoutube = img.mediaType === 'youtube';
+          const isYoutube = slide.type === 'youtube';
           const videoId = isYoutube ? extractYouTubeId(img.youtubeUrl) : null;
           const isVideoActive = activeVideo === img.id;
+          const isFullScreen = img.fullScreen === true;
 
           const mediaElement = isYoutube && videoId ? (
             isVideoActive ? (
@@ -143,40 +220,12 @@ export function Login({ onLogin }) {
             <img src={img.url} alt={img.fileName || `Slide ${idx + 1}`} />
           );
 
-          const isFullScreen = img.fullScreen === true;
-
-          if (isContact) {
-            return (
-              <div
-                key={img.id}
-                className={`login-slide ${visibleSlides.has(String(idx)) ? 'login-slide--visible' : ''}`}
-                data-slide-index={idx}
-                ref={el => { slideRefs.current[idx] = el; }}
-              >
-                <ContactFormSlide title={img.title} description={img.description} />
-              </div>
-            );
-          }
-
-          if (isPlans) {
-            return (
-              <div
-                key={img.id}
-                className={`login-slide ${visibleSlides.has(String(idx)) ? 'login-slide--visible' : ''}`}
-                data-slide-index={idx}
-                ref={el => { slideRefs.current[idx] = el; }}
-              >
-                <PlansSlide title={img.title} description={img.description} />
-              </div>
-            );
-          }
-
           return (
             <div
-              key={img.id}
-              className={`login-slide ${visibleSlides.has(String(idx)) ? 'login-slide--visible' : ''} ${isFullScreen ? 'login-slide--fullscreen' : ''}`}
+              key={slide.id}
+              className={`login-slide ${visibleClass} ${isFullScreen ? 'login-slide--fullscreen' : ''}`}
               data-slide-index={idx}
-              ref={el => { slideRefs.current[idx] = el; }}
+              ref={slideRef}
             >
               {hasText ? (
                 <div className={`login-slide-content ${alignment === 'left' ? 'login-slide-content--text-left' : 'login-slide-content--text-right'}`}>
