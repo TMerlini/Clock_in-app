@@ -40,23 +40,11 @@
   margin: 0;
 }
 
-/* Override grid for slide layout */
+/* 4-column grid on desktop */
 .plans-grid--slide {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 1rem;
-}
-
-@media (max-width: 900px) {
-  .plans-grid--slide {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-@media (max-width: 560px) {
-  .plans-grid--slide {
-    grid-template-columns: 1fr;
-  }
 }
 
 /* Compact cards for slide */
@@ -66,4 +54,82 @@
 
 .plans-grid--slide .plan-features {
   margin-bottom: 0;
+}
+
+/* ===== Tablet: 2×2 grid, smaller text ===== */
+@media (max-width: 900px) {
+  .plans-grid--slide {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+  }
+
+  .plans-slide {
+    align-items: flex-start;
+    padding: 1.5rem 1rem;
+    overflow-y: auto;
+  }
+
+  .plans-slide-title {
+    font-size: 1.4rem;
+  }
+
+  .plans-grid--slide .plan-card {
+    padding: 1rem 0.85rem;
+  }
+
+  .plans-grid--slide .plan-name {
+    font-size: 1rem;
+  }
+
+  .plans-grid--slide .price-amount {
+    font-size: 1.5rem;
+  }
+}
+
+/* ===== Mobile: horizontal scroll with snap ===== */
+@media (max-width: 600px) {
+  .plans-slide {
+    align-items: center;
+    padding: 1.25rem 0;
+    overflow: visible;
+  }
+
+  .plans-slide-inner {
+    overflow: hidden;
+  }
+
+  .plans-slide-header {
+    padding: 0 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .plans-slide-title {
+    font-size: 1.25rem;
+  }
+
+  .plans-grid--slide {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    gap: 0.75rem;
+    padding: 0.25rem 1rem 1rem;
+    /* hide scrollbar but keep scrollable */
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .plans-grid--slide::-webkit-scrollbar {
+    display: none;
+  }
+
+  .plans-grid--slide .plan-card {
+    min-width: 72vw;
+    max-width: 72vw;
+    flex-shrink: 0;
+    scroll-snap-align: start;
+    padding: 1rem 0.85rem;
+  }
 }
