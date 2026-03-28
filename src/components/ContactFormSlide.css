@@ -160,3 +160,31 @@
   font-size: 1rem;
   margin: 0;
 }
+
+/* ===== Mobile ===== */
+@media (max-width: 640px) {
+  .contact-slide {
+    align-items: flex-start;
+    overflow-y: auto;
+    padding: 1.25rem 1rem;
+  }
+
+  .contact-slide-inner {
+    padding: 1.5rem 1.25rem;
+    margin: auto 0;
+  }
+
+  .contact-slide-logo img {
+    width: 40px;
+    height: 40px;
+  }
+
+  .contact-slide-title {
+    font-size: 1.4rem;
+  }
+
+  .contact-slide-field textarea {
+    rows: 3;
+    min-height: 72px;
+  }
+}
