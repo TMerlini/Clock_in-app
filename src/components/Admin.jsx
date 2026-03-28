@@ -44,6 +44,7 @@ export function Admin({ user }) {
   const [analyticsDateRange, setAnalyticsDateRange] = useState('30d');
   const [loginImages, setLoginImages] = useState([]);
   const [loginImagesLoading, setLoginImagesLoading] = useState(false);
+  const [carouselGrouping, setCarouselGrouping] = useState(true);
   const [contactSubmissions, setContactSubmissions] = useState([]);
   const [contactSubmissionsLoading, setContactSubmissionsLoading] = useState(false);
   const [imageUploading, setImageUploading] = useState(false);
@@ -411,14 +412,29 @@ export function Admin({ user }) {
   const loadLoginImages = async () => {
     setLoginImagesLoading(true);
     try {
-      const q = query(collection(db, 'loginImages'), orderBy('order', 'asc'));
-      const snap = await getDocs(q);
-      const imgs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-      setLoginImages(imgs);
+      const [snap, settingsSnap] = await Promise.all([
+        getDocs(query(collection(db, 'loginImages'), orderBy('order', 'asc'))),
+        getDoc(doc(db, 'settings', 'loginPage')),
+      ]);
+      setLoginImages(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+      if (settingsSnap.exists()) {
+        setCarouselGrouping(settingsSnap.data().carouselGrouping ?? true);
+      }
     } catch (err) {
       console.error('Error loading login images:', err);
     } finally {
       setLoginImagesLoading(false);
+    }
+  };
+
+  const handleToggleCarouselGrouping = async () => {
+    const next = !carouselGrouping;
+    setCarouselGrouping(next);
+    try {
+      await setDoc(doc(db, 'settings', 'loginPage'), { carouselGrouping: next }, { merge: true });
+    } catch (err) {
+      console.error('Error saving carousel grouping setting:', err);
+      setCarouselGrouping(!next); // revert on error
     }
   };
 
@@ -1624,6 +1640,23 @@ export function Admin({ user }) {
             <h2>Login Page Media</h2>
           </div>
           <p className="plan-config-hint">Upload images, add YouTube videos, or add a contact form — each appears as a slide on the sign-in page.</p>
+
+          <div className="plan-config-hint" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem', padding: '0.65rem 0.85rem', background: 'var(--bg-secondary)', borderRadius: '0.5rem', border: '1px solid var(--border)' }}>
+            <div>
+              <span style={{ fontWeight: 600, fontSize: '0.875rem' }}>Group images into carousel</span>
+              <p style={{ margin: '0.15rem 0 0', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+                {carouselGrouping ? 'Consecutive images scroll horizontally as one slide.' : 'Each image is a separate full-height slide.'}
+              </p>
+            </div>
+            <button
+              className="icon-button"
+              onClick={handleToggleCarouselGrouping}
+              title={carouselGrouping ? 'Disable carousel grouping' : 'Enable carousel grouping'}
+              style={{ flexShrink: 0, marginLeft: '1rem' }}
+            >
+              {carouselGrouping ? <ToggleRight size={28} style={{ color: 'var(--primary)' }} /> : <ToggleLeft size={28} />}
+            </button>
+          </div>
 
           <div className="image-upload-area">
             <h4 className="image-upload-heading"><ImageIcon size={16} /> Upload Image</h4>

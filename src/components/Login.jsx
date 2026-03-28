@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { signInWithPopup } from 'firebase/auth';
-import { collection, getDocs, query, orderBy } from 'firebase/firestore';
+import { collection, getDocs, doc, getDoc, query, orderBy } from 'firebase/firestore';
 import { auth, googleProvider, db } from '../lib/firebase';
 import { ContactFormSlide } from './ContactFormSlide';
 import { PlansSlide } from './PlansSlide';
@@ -25,6 +25,7 @@ const isPlainImage = (img) =>
 
 export function Login({ onLogin }) {
   const [loginImages, setLoginImages] = useState([]);
+  const [carouselGrouping, setCarouselGrouping] = useState(true);
   const [visibleSlides, setVisibleSlides] = useState(new Set());
   const [activeVideo, setActiveVideo] = useState(null);
   const slideRefs = useRef([]);
@@ -32,10 +33,14 @@ export function Login({ onLogin }) {
   useEffect(() => {
     const loadImages = async () => {
       try {
-        const q = query(collection(db, 'loginImages'), orderBy('order', 'asc'));
-        const snap = await getDocs(q);
-        const imgs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-        setLoginImages(imgs);
+        const [snap, settingsSnap] = await Promise.all([
+          getDocs(query(collection(db, 'loginImages'), orderBy('order', 'asc'))),
+          getDoc(doc(db, 'settings', 'loginPage')),
+        ]);
+        setLoginImages(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+        if (settingsSnap.exists()) {
+          setCarouselGrouping(settingsSnap.data().carouselGrouping ?? true);
+        }
       } catch (err) {
         console.error('Error loading login images:', err);
       }
@@ -43,8 +48,12 @@ export function Login({ onLogin }) {
     loadImages();
   }, []);
 
-  // Group consecutive plain images into carousel slides
+  // Group consecutive plain images into carousel slides (if enabled)
   const groupedSlides = useMemo(() => {
+    if (!carouselGrouping) {
+      return loginImages.map(img => ({ type: img.mediaType || 'image', img, id: img.id }));
+    }
+
     const result = [];
     let imageGroup = [];
 
@@ -68,7 +77,7 @@ export function Login({ onLogin }) {
     }
     flushGroup();
     return result;
-  }, [loginImages]);
+  }, [loginImages, carouselGrouping]);
 
   const observerCallback = useCallback((entries) => {
     setVisibleSlides(prev => {
