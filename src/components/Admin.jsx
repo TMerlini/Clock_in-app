@@ -289,11 +289,15 @@ export function Admin({ user }) {
         console.warn('Guest invite push failed:', pushErr);
       }
 
-      alert('Guest account created! User can now sign in with Google using this email.');
+      const createdEmail = newGuestEmail.trim().toLowerCase();
       setNewGuestEmail('');
       setNewGuestPlan('free');
       setShowAddGuest(false);
       await loadAdminData();
+      // Auto-open invite form pre-filled with the new guest's email
+      setInviteForm(prev => ({ ...prev, to: createdEmail }));
+      setInviteResult(null);
+      setShowInviteForm(true);
     } catch (error) {
       console.error('Error creating guest:', error);
       alert('Error creating guest account: ' + error.message);
