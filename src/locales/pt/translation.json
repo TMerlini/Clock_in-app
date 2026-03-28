@@ -206,6 +206,19 @@
       "monday": "Segunda-feira"
     }
   },
+  "contactForm": {
+    "title": "Fale Connosco",
+    "nameLabel": "Nome",
+    "namePlaceholder": "O seu nome",
+    "emailLabel": "Email",
+    "emailPlaceholder": "o.seu@email.com",
+    "messageLabel": "Mensagem",
+    "messagePlaceholder": "Como podemos ajudar?",
+    "send": "Enviar Mensagem",
+    "sending": "A enviar...",
+    "successMessage": "Mensagem enviada! Entraremos em contacto em breve.",
+    "errorFallback": "Erro ao enviar. Por favor tente novamente."
+  },
   "home": {
     "timeTracker": "Rastreador de Tempo",
     "clockIn": "Clock In",

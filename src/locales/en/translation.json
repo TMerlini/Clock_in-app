@@ -206,6 +206,19 @@
       "monday": "Monday"
     }
   },
+  "contactForm": {
+    "title": "Get in Touch",
+    "nameLabel": "Name",
+    "namePlaceholder": "Your name",
+    "emailLabel": "Email",
+    "emailPlaceholder": "your@email.com",
+    "messageLabel": "Message",
+    "messagePlaceholder": "How can we help?",
+    "send": "Send Message",
+    "sending": "Sending...",
+    "successMessage": "Message sent! We'll get back to you soon.",
+    "errorFallback": "Failed to submit. Please try again."
+  },
   "home": {
     "timeTracker": "Time Tracker",
     "clockIn": "Clock In",
