@@ -85,6 +85,16 @@ service cloud.firestore {
       allow write: if isAuth() && isAppAdmin();
     }
 
+    match /settings/{docId} {
+      allow read: if true;
+      allow write: if isAuth() && isAppAdmin();
+    }
+
+    match /contactSubmissions/{submissionId} {
+      allow create: if true;
+      allow read, update, delete: if isAuth() && isAppAdmin();
+    }
+
     match /promoCodes/{code} {
       // Admin: full access
       allow read, write, delete: if isAuth() && isAppAdmin();
