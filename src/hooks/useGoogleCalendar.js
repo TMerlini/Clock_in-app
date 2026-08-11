@@ -93,6 +93,9 @@ export function useGoogleCalendar() {
         // Token was deleted (user disconnected on another device)
         setAccessToken(null);
         setTokenExpiry(null);
+        // Reconnecting after a disconnect is a fresh grant — ask for consent
+        // again rather than assuming the Google-side grant survived.
+        setHasGrantedBefore(false);
         if (window.gapi?.client) {
           window.gapi.client.setToken(null);
         }
