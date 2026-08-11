@@ -61,6 +61,42 @@ const GoogleCalendarIcon = () => (
   </svg>
 );
 
+// Two different situations were sharing one modal and one cadence:
+//
+//   unsynced_sessions -> real data is waiting to sync. Actionable, worth asking on every
+//                        visit until it is done. Unchanged.
+//   not_connected     -> the user has never connected Calendar. Asking on EVERY page load
+//                        is nagging, and clicking through lands on Google's consent screen
+//                        — which, while verification is pending, is the red "Google hasn't
+//                        verified this app" warning. Dismissing it did nothing: there was
+//                        no memory of the dismissal anywhere.
+//
+// Only the not_connected prompt is snoozed, per user, when dismissed. If they do connect,
+// isAuthorized goes true and the snooze stops mattering.
+//
+// Module scope on purpose: a constant and a pure function do not belong in the component
+// body, where they are rebuilt every render and have to be threaded through hook deps.
+const SYNC_NAG_SNOOZE_MS = 7 * 24 * 60 * 60 * 1000;
+
+function isSyncNagSnoozed(key) {
+  if (!key) return false;
+  try {
+    const until = Number(localStorage.getItem(key) || 0);
+    return Number.isFinite(until) && Date.now() < until;
+  } catch {
+    return false; // storage unavailable (private mode) -> behave as before, never crash
+  }
+}
+
+function snoozeSyncNag(key) {
+  if (!key) return;
+  try {
+    localStorage.setItem(key, String(Date.now() + SYNC_NAG_SNOOZE_MS));
+  } catch {
+    // storage unavailable — the dismissal simply is not remembered, as before
+  }
+}
+
 export function ClockInApp({ user }) {
   const { t } = useTranslation();
   const [currentPage, setCurrentPage] = useState('home');
@@ -79,6 +115,8 @@ export function ClockInApp({ user }) {
   const [profilePicture, setProfilePicture] = useState(null);
   const [showSyncOnVisitModal, setShowSyncOnVisitModal] = useState(false);
   const [syncOnVisitVariant, setSyncOnVisitVariant] = useState('not_connected');
+  // Per-user key for the not-connected snooze above. Derived, not stored in state.
+  const syncNagKey = user ? `clockin.syncOnVisit.notConnected.snoozedUntil.${user.uid}` : null;
   const [orphanPlaceholder, setOrphanPlaceholder] = useState(null);
   const [orphanRecoveryLoading, setOrphanRecoveryLoading] = useState(false);
   const [gpsAutoCapture, setGpsAutoCapture] = useState(true);
@@ -135,8 +173,13 @@ export function ClockInApp({ user }) {
   }, [syncOnVisitVariant, googleCalendar]);
 
   const handleSyncOnVisitContinue = useCallback(() => {
+    // Dismissing the not-connected prompt now means something. Sessions waiting to sync
+    // are a different matter and keep asking.
+    if (syncOnVisitVariant === 'not_connected') {
+      snoozeSyncNag(syncNagKey);
+    }
     setShowSyncOnVisitModal(false);
-  }, []);
+  }, [syncOnVisitVariant, syncNagKey]);
 
   const handleOrphanResume = useCallback(async () => {
     if (!orphanPlaceholder || !user) return;
@@ -358,13 +401,14 @@ export function ClockInApp({ user }) {
     loadSessionDates();
   }, [user]);
 
-  // Show sync-on-visit modal when not synced (every page load). Skip for Free users (no Calendar access).
+  // Show sync-on-visit modal when not synced. Skip for Free users (no Calendar access).
   useEffect(() => {
     if (!googleCalendar.isReady || !user || isFreePlan) return;
 
     // Delay to allow token to load from Firestore before checking isAuthorized
     const timer = setTimeout(async () => {
       if (!googleCalendar.isAuthorized) {
+        if (isSyncNagSnoozed(syncNagKey)) return;
         setSyncOnVisitVariant('not_connected');
         setShowSyncOnVisitModal(true);
         return;
@@ -379,7 +423,7 @@ export function ClockInApp({ user }) {
     }, 1500);
 
     return () => clearTimeout(timer);
-  }, [googleCalendar.isReady, googleCalendar.isAuthorized, user, isFreePlan]);
+  }, [googleCalendar.isReady, googleCalendar.isAuthorized, user, isFreePlan, syncNagKey]);
 
   // Load user display name and language from settings
   useEffect(() => {
