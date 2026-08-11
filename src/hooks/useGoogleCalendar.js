@@ -11,6 +11,10 @@ export function useGoogleCalendar() {
   const [gapiInited, setGapiInited] = useState(false);
   const [gisInited, setGisInited] = useState(false);
   const [tokenClient, setTokenClient] = useState(null);
+  // A calendarTokens doc means this user granted the scopes before, even if the token
+  // has since expired. That distinction decides whether Google may be asked for a token
+  // SILENTLY or must be shown the consent screen again.
+  const [hasGrantedBefore, setHasGrantedBefore] = useState(false);
   const [accessToken, setAccessToken] = useState(null);
   const [tokenExpiry, setTokenExpiry] = useState(null);
   const [currentUser, setCurrentUser] = useState(null);
@@ -60,6 +64,9 @@ export function useGoogleCalendar() {
     // Real-time listener for token changes
     const unsubscribe = onSnapshot(tokenRef, (docSnap) => {
       if (docSnap.exists()) {
+        // Grant history is independent of token validity — an expired token still proves
+        // consent was given once, which is exactly what makes a silent refresh legitimate.
+        setHasGrantedBefore(true);
         const data = docSnap.data();
         const storedToken = data.accessToken;
         const expiry = data.expiresAt;
@@ -165,10 +172,19 @@ export function useGoogleCalendar() {
     }
   };
 
-  const requestAuthorization = () => {
-    if (tokenClient) {
-      tokenClient.requestAccessToken({ prompt: 'consent' });
-    }
+  // `prompt: 'consent'` FORCES Google's consent screen on every call, even for a user who
+  // granted these scopes months ago. Combined with the app's pending verification, that
+  // meant an already-signed-in user met the red "Google hasn't verified this app" screen
+  // every time a token needed refreshing — which is most visits.
+  //
+  // Consent is only genuinely required for the FIRST grant. After that an empty prompt lets
+  // Google return a token silently while the grant stands, and fall back to showing consent
+  // by itself if it has been revoked. { force: true } stays available for the case where the
+  // user deliberately wants to re-pick an account or re-scope.
+  const requestAuthorization = (options = {}) => {
+    if (!tokenClient) return;
+    const needsConsent = options.force === true || !hasGrantedBefore;
+    tokenClient.requestAccessToken({ prompt: needsConsent ? 'consent' : '' });
   };
 
   const revokeAuthorization = async () => {
