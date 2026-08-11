@@ -88,10 +88,14 @@ export async function getUserContext(userId) {
     }
 
     // Format recent sessions
+    // Only numeric/derived session data is sent to the AI provider. Free-text
+    // fields (location, notes) are deliberately excluded because they can be
+    // populated verbatim from Google Calendar events on import, and Google's
+    // Limited Use policy governs what may be passed to a third-party model.
     const recentSessionsFormatted = recentSessions.slice(0, 10).map(s => {
       const clockInDate = new Date(s.clockIn);
       const clockOutDate = s.clockOut ? new Date(s.clockOut) : null;
-      return `- ${format(clockInDate, 'MMM dd, yyyy')}: ${(s.totalHours || 0).toFixed(1)}h total (${(s.regularHours || 0).toFixed(1)}h regular, ${(s.unpaidExtraHours || 0).toFixed(1)}h unpaid extra, ${(s.paidExtraHours || 0).toFixed(1)}h paid overtime)${s.isWeekend ? ' [Weekend]' : ''}${s.location ? ` - Location: ${s.location}` : ''}`;
+      return `- ${format(clockInDate, 'MMM dd, yyyy')}: ${(s.totalHours || 0).toFixed(1)}h total (${(s.regularHours || 0).toFixed(1)}h regular, ${(s.unpaidExtraHours || 0).toFixed(1)}h unpaid extra, ${(s.paidExtraHours || 0).toFixed(1)}h paid overtime)${s.isWeekend ? ' [Weekend]' : ''}`;
     }).join('\n');
 
     // Get Portuguese labor law knowledge

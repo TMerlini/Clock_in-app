@@ -59,7 +59,7 @@
   <p><strong>Google:</strong> Sign-in and optional Calendar sync. Google's privacy policy applies to data shared with Google: <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Google Privacy Policy</a>.</p>
   <p><strong>Firebase (Google):</strong> We use Firebase Authentication and Firestore to store your account and session data securely.</p>
   <p><strong>Stripe:</strong> For paid subscriptions, payment processing is handled by Stripe. We do not store full payment card details.</p>
-  <p><strong>OpenAI:</strong> The AI Advisor feature is powered by the OpenAI API (gpt-4o-mini). Requests are made server-side by Clock In; your browser never contacts OpenAI directly. Under the OpenAI API data usage policy, content submitted via the API is not used to train OpenAI's models. The AI Advisor operates on your work sessions, settings and finance data only, and no data obtained from Google APIs is ever sent to OpenAI.</p>
+  <p><strong>OpenAI:</strong> The AI Advisor feature is powered by the OpenAI API (gpt-4o-mini). Requests are made server-side by Clock In; your browser never contacts OpenAI directly. Under the OpenAI API data usage policy, content submitted via the API is not used to train OpenAI's models. The AI Advisor receives only your settings and numeric work-session data (dates, hour totals and hour categories). It never receives calendar event titles, descriptions or locations. If you have imported work sessions from Google Calendar, the dates and durations of those sessions originate from your calendar events and are included in that numeric data; no other calendar content is sent.</p>
 
   <h2>5. Google User Data and Limited Use</h2>
   <p>Clock In requests the following Google OAuth scopes:</p>
@@ -71,7 +71,7 @@
   <p>Calendar access is optional. The app is fully usable without it, and you can disconnect it at any time from within the app.</p>
   <p><strong>Clock In's use and transfer of information received from Google APIs to any other app will adhere to the <a href="https://developers.google.com/terms/api-services-user-data-policy" target="_blank" rel="noopener">Google API Services User Data Policy</a>, including the Limited Use requirements.</strong></p>
   <p>Specifically, we do not use Google user data for advertising, we do not sell it, we do not transfer it to third parties except as necessary to provide the service or as required by law, and we do not allow humans to read it except with your explicit consent, for security purposes, to comply with applicable law, or where the data has been aggregated and anonymised.</p>
-  <p>Google user data is not used to train generalised artificial intelligence or machine-learning models. The AI Advisor feature operates on your own session and finance data only, and never on Google Calendar content.</p>
+  <p>Google user data is not used to train generalised artificial intelligence or machine-learning models. The AI Advisor is served by the OpenAI API, whose terms state that content submitted through the API is not used to train OpenAI's models. Calendar event titles, descriptions and locations are never sent to it; only your settings and numeric work-session figures are.</p>
 
   <h2>6. Data Storage and Security</h2>
   <p>Your data is stored in Firebase (Google Cloud). We use industry-standard security practices. You are responsible for keeping your Google account secure.</p>
