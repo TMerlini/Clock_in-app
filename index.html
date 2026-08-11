@@ -17,9 +17,31 @@
     <title>Clock In - Intelligent Time Manager</title>
   </head>
   <body>
-    <a href="/privacy" style="position:absolute;left:-9999px">Privacy Policy</a>
-    <a href="/terms" style="position:absolute;left:-9999px">Terms of Service</a>
-    <div id="root"></div>
+    <!--
+      Static description rendered inside #root. React replaces this on mount, so
+      users see the app; anything reading the served HTML (crawlers, and Google's
+      OAuth verification checks) sees a homepage that states the app name and
+      explains what the app does. Same content for everyone — no user-agent
+      branching. Replaces two off-screen links that were previously the only
+      text in the document body.
+    -->
+    <div id="root">
+      <main style="max-width:46rem;margin:0 auto;padding:3rem 1.5rem;font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;color:#e8e8e8;background:#0a0a0a;min-height:100vh">
+        <h1 style="font-size:2rem;margin:0 0 .5rem">Clock In</h1>
+        <p style="font-size:1.1rem;color:#b9b9b9;margin:0 0 1.5rem">Intelligent time tracking for Portuguese labour law compliance.</p>
+        <p>Clock In is a work time-tracking application for freelancers, contractors and employees in Portugal. It records clock-in and clock-out times, separates regular hours from paid overtime and unpaid extra hours (<em>Isenção de horário</em>), tracks usage against the annual Isenção limit, and warns when hours approach the limits set by the Código do Trabalho.</p>
+        <h2 style="font-size:1.15rem;margin:2rem 0 .5rem">What the app does</h2>
+        <ul style="line-height:1.7">
+          <li>Track work sessions, breaks and locations, with weekend and bank-holiday rules</li>
+          <li>Categorise hours as regular, paid overtime or Isenção, and monitor the annual limit</li>
+          <li>Analytics and finance summaries, including weekend bonuses and days off earned</li>
+          <li>Optionally sync work sessions to Google Calendar, and import existing calendar events as work sessions</li>
+          <li>An AI Advisor that answers questions about your own recorded hours under Portuguese labour law</li>
+        </ul>
+        <p style="margin-top:2rem"><a href="/privacy" style="color:#7cc4ff">Privacy Policy</a> &nbsp;·&nbsp; <a href="/terms" style="color:#7cc4ff">Terms of Service</a></p>
+        <p style="color:#8a8a8a;font-size:.9rem;margin-top:2rem">Loading the application…</p>
+      </main>
+    </div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
