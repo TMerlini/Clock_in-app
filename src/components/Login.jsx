@@ -296,6 +296,13 @@ function LoginContent({ onSignIn }) {
         Sign in with Google
       </button>
 
+      <p className="login-purpose">
+        Track your work hours and breaks, separate regular time from paid overtime
+        and Isenção, and stay within Portuguese labour law limits. Work sessions can
+        optionally sync to your Google Calendar, and existing calendar events can be
+        imported as sessions.
+      </p>
+
       <p className="login-footer">
         Sign in to track and manage your work sessions
         {' · '}
