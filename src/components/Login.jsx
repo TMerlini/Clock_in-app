@@ -272,6 +272,12 @@ function LoginContent({ onSignIn }) {
         <p className="login-description">
           Intelligent Time Manager
         </p>
+        <p className="login-purpose">
+          Track your work hours and breaks, separate regular time from paid overtime
+          and Isenção, and stay within Portuguese labour law limits. Work sessions can
+          optionally sync to your Google Calendar, and existing calendar events can be
+          imported as sessions.
+        </p>
       </div>
 
       <button onClick={onSignIn} className="google-button">

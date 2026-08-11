@@ -172,6 +172,18 @@
   font-weight: 500;
 }
 
+/* States what the app actually does, on the page a visitor lands on. Google's
+   OAuth review flagged the homepage for not explaining the app's purpose; the
+   static fallback in index.html only covers readers that do not run JS. */
+.login-purpose {
+  font-size: 0.85rem;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.45);
+  font-weight: 400;
+  max-width: 30rem;
+  margin: 0.75rem auto 0;
+}
+
 /* ===== Google button ===== */
 .google-button {
   width: 100%;
